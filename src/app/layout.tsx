@@ -3,6 +3,7 @@ import { Archivo, Geist, JetBrains_Mono } from "next/font/google";
 import { Announce } from "@/components/sections/Announce";
 import { Footer } from "@/components/sections/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
+import { isIndexable } from "./robots";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
   title: { default: "NCA Dashboard: your content, organized and clipped automatically", template: "%s · NCA Dashboard" },
   description,
   openGraph: { type: "website", siteName: "NCA Dashboard", title: "NCA Dashboard", description, url: "/" },
+  robots: isIndexable() ? undefined : { index: false, follow: false },
   twitter: { card: "summary_large_image", title: "NCA Dashboard", description, creator: "@hamchowderr" },
 };
 
