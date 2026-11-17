@@ -171,6 +171,21 @@ test("platform tiles keep the logo centred beside the name and formats", async (
   }
 });
 
+test("every tab label fits inside its tab track, with nothing cut off", async ({ page }) => {
+  await page.goto("/");
+  for (const track of [page.locator(".stage-tabs"), page.locator(".seg")]) {
+    await track.scrollIntoViewIfNeeded();
+    expect(await track.evaluate((t) => t.scrollWidth - t.clientWidth)).toBe(0);
+    const box = (await track.boundingBox())!;
+    for (const tab of await track.getByRole("tab").all()) {
+      const b = (await tab.boundingBox())!;
+      expect(b.x).toBeGreaterThanOrEqual(box.x - 0.5);
+      expect(b.x + b.width).toBeLessThanOrEqual(box.x + box.width + 0.5);
+      expect(await tab.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+    }
+  }
+});
+
 test("use-case tabs switch panels", async ({ page }) => {
   await page.goto("/");
   const tab = page.getByRole("tab", { name: "Podcast teams" });

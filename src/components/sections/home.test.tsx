@@ -93,8 +93,11 @@ describe("Features", () => {
     const editors = within(screen.getByRole("list", { name: "Editors it exports to" })).getAllByRole("listitem");
     expect(editors.map((li) => li.textContent?.trim())).toEqual(["Premiere Pro", "DaVinci Resolve", "Final Cut Pro", "CapCut"]);
     for (const li of editors) expect(li.querySelector("svg, img")).not.toBeNull();
-    const n8n = within(screen.getByRole("list", { name: "Also works with" })).getByRole("listitem");
+    const n8n = within(screen.getByRole("list", { name: "Outside platforms" })).getByRole("listitem");
     expect(n8n.querySelector("img")!.getAttribute("src")).toContain("/logos/n8n.png");
+    expect(n8n).toHaveTextContent("Prefer an outside platform? n8n is available");
+    expect(screen.queryByText(/through a webhook/)).toBeNull();
+    expect(screen.getByText("Comes with its own automation builder, made for content")).toBeInTheDocument();
   });
 });
 

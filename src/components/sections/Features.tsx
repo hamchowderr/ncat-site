@@ -24,13 +24,13 @@ const ROWS: Row[] = [
     id: "runs",
     title: "Every new recording runs by itself",
     body: "Once it is on, an automation starts on its own when a file is uploaded, lands in a watched folder, a schedule comes round or another tool calls it. Plain editing steps do the work, so nothing is billed per video.",
-    points: ["Starts from an upload, a folder, a schedule or a webhook", "Watch each step finish, or come back to a list of what happened", "Works with or without n8n"],
+    points: ["Starts from an upload, a folder, a schedule or a webhook", "Watch each step finish, or come back to a list of what happened", "Comes with its own automation builder, made for content"],
     shot: run,
     alt: "A run of the Clips for social automation in progress: New upload, then Clips for a platform done with 3 clips, then Caption video running, with a list of what happened below.",
     extra: (
-      <ul className="logo-chips" aria-label="Also works with">
+      <ul className="logo-chips" aria-label="Outside platforms">
         <li>
-          <FileLogo name="n8n" size={22} /> n8n, through a webhook
+          <FileLogo name="n8n" size={22} /> Prefer an outside platform? n8n is available
         </li>
       </ul>
     ),
