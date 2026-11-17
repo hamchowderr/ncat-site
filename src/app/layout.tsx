@@ -12,7 +12,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "600"], variab
 const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-archivo" });
 
 const description =
-  "Describe the job and AI sets up the automation. From then on every recording is filed, transcribed, cut and captioned with plain editing steps on a server you own. Built on the free NCA Toolkit.";
+  "Pick a ready-made automation and switch it on. From then on every recording is filed, transcribed, cut and captioned with plain editing steps on a server you own, with no AI tokens spent on each video. Built on the free NCA Toolkit.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

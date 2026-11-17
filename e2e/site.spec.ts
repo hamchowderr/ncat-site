@@ -77,14 +77,13 @@ async function answerFirstSteps(form: import("@playwright/test").Locator) {
   await form.getByRole("button", { name: "Next" }).click();
 }
 
-test("describing an automation carries it into the early-access form", async ({ page }) => {
+test("picking a ready-made automation carries it into the early-access form", async ({ page }) => {
   await page.goto("/");
-  await page.getByLabel("Describe an automation").fill("Caption every upload in /Raw");
-  await page.getByRole("button", { name: "Set it up" }).click();
+  await page.getByRole("button", { name: "Caption every new upload" }).click();
   const form = page.locator("#early form");
   await expect(form).toBeInViewport();
   await answerFirstSteps(form);
-  await expect(form.getByLabel(/The first automation you’d want/)).toHaveValue("Caption every upload in /Raw");
+  await expect(form.getByLabel(/The first automation you’d want/)).toHaveValue("Caption every new upload");
 });
 
 test("early-access form checks each step, then sends", async ({ page }) => {
@@ -109,10 +108,10 @@ test("early-access form checks each step, then sends", async ({ page }) => {
 test("the hero plays real dashboard recordings", async ({ page, request }) => {
   await page.goto("/");
   const video = page.locator(".stage video");
-  await expect(video).toHaveAttribute("src", "/media/agent-builds.mp4");
-  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.readyState)).toBeGreaterThan(1);
-  await page.getByRole("tab", { name: "It runs by itself" }).click();
   await expect(video).toHaveAttribute("src", "/media/live-run.mp4");
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.readyState)).toBeGreaterThan(1);
+  await page.getByRole("tab", { name: "Or build your own" }).click();
+  await expect(video).toHaveAttribute("src", "/media/agent-builds.mp4");
   for (const f of ["agent-builds", "live-run", "review", "outputs"]) {
     expect((await request.get(`/media/${f}.mp4`)).status(), f).toBe(200);
     expect((await request.get(`/media/${f}.jpg`)).status(), f).toBe(200);
@@ -143,6 +142,24 @@ test("every dashboard screen is shown whole, in the same shape and frame", async
     expect(Math.abs(left - right)).toBeLessThanOrEqual(1.5);
   }
   for (const r of ratios) expect(Math.abs(r - ratios[0])).toBeLessThan(0.02);
+});
+
+test("event marks sit on one even row and platform logos are all the same size", async ({ page, isMobile }) => {
+  await page.goto("/");
+  const venues = await page.locator(".venues li").all();
+  const boxes = await Promise.all(venues.map(async (v) => (await v.boundingBox())!));
+  if (!isMobile) {
+    for (const b of boxes) expect(Math.abs(b.y + b.height / 2 - (boxes[0].y + boxes[0].height / 2))).toBeLessThanOrEqual(1);
+  }
+  for (const b of boxes) expect(b.height).toBeLessThanOrEqual(34);
+  const logos = await page.locator(".feeds li").locator("svg, img").all();
+  expect(logos).toHaveLength(9);
+  for (const l of logos) {
+    const b = (await l.boundingBox())!;
+    expect(Math.round(b.width)).toBe(28);
+    expect(Math.round(b.height)).toBe(28);
+  }
+  for (const li of await page.locator(".feeds li").all()) expect((await li.boundingBox())!.width).toBeLessThanOrEqual(34);
 });
 
 test("platform tiles keep the logo centred beside the name and formats", async ({ page }) => {

@@ -16,7 +16,7 @@ export default function OpengraphImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ fontSize: 80, fontWeight: 700, lineHeight: 1.04, letterSpacing: -2.4, maxWidth: 1000 }}>Your content, organized and clipped automatically</div>
-          <div style={{ fontSize: 30, color: "#5c5f6a" }}>AI sets it up. Plain editing runs it. Pay once, own your version.</div>
+          <div style={{ fontSize: 30, color: "#5c5f6a" }}>Ready-made automations, no AI on every video. Pay once, own it.</div>
         </div>
       </div>
     ),

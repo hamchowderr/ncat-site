@@ -3,26 +3,34 @@ import { describe, expect, it, vi } from "vitest";
 import { HeroStage, STAGE } from "@/components/HeroStage";
 import { PREFILL_EVENT } from "@/lib/prefill";
 import { Features } from "./Features";
-import { Hero } from "./Hero";
+import { Hero, PRESETS } from "./Hero";
 import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
 import { UseCases } from "./UseCases";
 
 describe("Hero", () => {
-  it("names the product promise and hands the typed job to the form", () => {
+  it("leads with ready-made automations and hands the picked one to the form", () => {
     const seen = vi.fn();
     window.addEventListener(PREFILL_EVENT, (e) => seen((e as CustomEvent).detail));
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
     render(<Hero />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Your content, organized and.*automatically/);
-    fireEvent.click(screen.getByRole("button", { name: "Caption every upload" }));
-    expect(screen.getByLabelText("Describe an automation")).toHaveValue("Caption every upload");
-    fireEvent.click(screen.getByRole("button", { name: "Set it up" }));
-    expect(seen).toHaveBeenCalledWith("Caption every upload");
+    expect(screen.getByText(/Pick a ready-made automation and switch it on/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Describe an automation")).toBeNull();
+    const presets = within(screen.getByRole("list", { name: /Ready-made automations/ })).getAllByRole("button");
+    expect(presets.map((b) => b.textContent)).toEqual([...PRESETS]);
+    fireEvent.click(screen.getByRole("button", { name: "Caption every new upload" }));
+    expect(seen).toHaveBeenCalledWith("Caption every new upload");
   });
 });
 
 describe("HeroStage", () => {
+  it("opens on an automation running by itself, with building your own last", () => {
+    render(<HeroStage />);
+    expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["It runs by itself", "Review", "Outputs", "Or build your own"]);
+    expect(screen.getByRole("tab", { name: "It runs by itself" })).toHaveAttribute("aria-selected", "true");
+  });
+
   it("plays a real recording for each tab and moves with the arrow keys", () => {
     render(<HeroStage />);
     const video = () => document.querySelector("video")!;
@@ -44,12 +52,20 @@ describe("HeroStage", () => {
 });
 
 describe("logos", () => {
-  it("shows the event and platform marks with their names", () => {
+  it("shows the events as one clean row and the platforms as logos only", () => {
     render(<Proof />);
-    for (const name of ["Claude Code Creators Summit", "Tech Week Los Angeles", "The KINN", "TikTok", "LinkedIn", "Apple Podcasts"]) {
+    for (const name of ["Claude Code Creators Summit", "Tech Week Los Angeles", "The KINN"]) {
       expect(screen.getByText(name)).toBeInTheDocument();
     }
-    expect(document.querySelectorAll(".feeds svg, .feeds img").length).toBe(9);
+    const feeds = within(screen.getByRole("list", { name: "Platforms" })).getAllByRole("listitem");
+    expect(feeds).toHaveLength(9);
+    for (const li of feeds) {
+      expect(li.querySelector("svg, img")).not.toBeNull();
+      // the name is there for screen readers only, not printed beside the logo
+      expect(li.querySelector(".sr")).not.toBeNull();
+      expect(li.querySelectorAll("span:not(.sr)")).toHaveLength(0);
+    }
+    expect(within(screen.getByRole("list", { name: "Platforms" })).getByText("Apple Podcasts")).toHaveClass("sr");
   });
 
   it("gives every platform a logo, with its name and formats kept together", () => {

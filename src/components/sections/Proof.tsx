@@ -15,12 +15,14 @@ const FEEDS = [
 
 export function Proof() {
   return (
-    <section className="proof" aria-label="Where it was shown and where it posts">
+    <section className="proof" aria-labelledby="proof-title">
       <div className="wrap">
-        <p className="proof-lead">Shown to creators and media teams at</p>
+        <h2 className="proof-lead" id="proof-title">
+          Shown to creators and media teams at
+        </h2>
         <ul className="venues">
           <li>
-            <ClaudeMark className="mark claude" />
+            <ClaudeMark className="mark" />
             <span>Claude Code Creators Summit</span>
           </li>
           <li>
@@ -32,12 +34,12 @@ export function Proof() {
             <span className="sr">The KINN</span>
           </li>
         </ul>
-        <p className="proof-lead">Made for every feed you post to</p>
-        <ul className="feeds">
+        <p className="proof-lead feeds-lead">Made for every feed you post to</p>
+        <ul className="feeds" aria-label="Platforms">
           {FEEDS.map((f) => (
-            <li key={f.name}>
-              {"file" in f ? <FileLogo name={f.file!} size={22} /> : <BrandIcon icon={f.icon!} />}
-              <span>{f.name}</span>
+            <li key={f.name} title={f.name}>
+              {"file" in f ? <FileLogo name={f.file!} size={28} /> : <BrandIcon icon={f.icon!} />}
+              <span className="sr">{f.name}</span>
             </li>
           ))}
         </ul>

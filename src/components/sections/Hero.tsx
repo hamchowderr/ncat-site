@@ -1,24 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { HeroStage } from "@/components/HeroStage";
 import { prefillEarlyAccess } from "@/lib/prefill";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 const WORDS = ["clipped", "captioned", "transcribed", "resized"];
 
-export const EXAMPLES = [
-  "Podcast to vertical clips",
-  "Caption every upload",
-  "Cut the silences",
-  "One upload, every shape",
+/** The ready-made automations the dashboard ships with, by their names in the app. */
+export const PRESETS = [
+  "Clips for social",
+  "Caption every new upload",
+  "Vertical and captioned from a watched folder",
+  "Episode to audio and transcript",
+  "Captioned video with your logo",
+  "Transcribe a link",
 ];
 
 export function Hero() {
   const reduce = useReducedMotion();
   const [word, setWord] = useState(0);
-  const [text, setText] = useState("");
-  const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (reduce) return;
@@ -39,42 +40,25 @@ export function Hero() {
           <span className="sr">clipped</span> automatically
         </h1>
         <p className="hero-sub">
-          Describe the job and the agent builds the automation. From then on, every new recording is filed, transcribed, cut and captioned by
-          itself, on a server you own.
+          Pick a ready-made automation and switch it on. From then on, every new recording is filed, transcribed, cut and captioned by itself,
+          on a server you own, with no AI tokens spent on each video.
         </p>
-        <form
-          className="ask"
-          onSubmit={(e) => {
-            e.preventDefault();
-            prefillEarlyAccess(text);
-          }}
-        >
-          <label className="sr" htmlFor="ask-input">
-            Describe an automation
-          </label>
-          <input
-            ref={input}
-            id="ask-input"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Every new episode: transcript, MP3 and captioned clips"
-            autoComplete="off"
-          />
-          <button className="btn primary" type="submit">
-            Set it up
-          </button>
-        </form>
-        <ul className="chips" aria-label="Examples">
-          {EXAMPLES.map((ex) => (
-            <li key={ex}>
-              <button
-                type="button"
-                onClick={() => {
-                  setText(ex);
-                  input.current?.focus();
-                }}
-              >
-                {ex}
+        <div className="hero-cta">
+          <a className="btn primary" href="#early">
+            Get early access
+          </a>
+          <a className="btn ghost" href="#templates">
+            See the automations
+          </a>
+        </div>
+        <p className="presets-lead" id="presets-title">
+          Ready-made automations, ready to switch on
+        </p>
+        <ul className="chips" aria-labelledby="presets-title">
+          {PRESETS.map((name) => (
+            <li key={name}>
+              <button type="button" onClick={() => prefillEarlyAccess(name)}>
+                {name}
               </button>
             </li>
           ))}

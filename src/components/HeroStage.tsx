@@ -6,13 +6,6 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 /** Real screen recordings of the dashboard, sped up and silent. Team names and files in them are demo data. */
 export const STAGE = [
   {
-    id: "agent",
-    tab: "Describe it",
-    video: "/media/agent-builds.mp4",
-    poster: "/media/agent-builds.jpg",
-    caption: "The agent reads your request, builds the automation on the canvas and asks before it changes anything.",
-  },
-  {
     id: "run",
     tab: "It runs by itself",
     video: "/media/live-run.mp4",
@@ -32,6 +25,13 @@ export const STAGE = [
     video: "/media/outputs.mp4",
     poster: "/media/outputs.jpg",
     caption: "Every clip lands in your own storage, grouped by the run that made it.",
+  },
+  {
+    id: "agent",
+    tab: "Or build your own",
+    video: "/media/agent-builds.mp4",
+    poster: "/media/agent-builds.jpg",
+    caption: "Need something the ready-made ones don’t cover? Describe it once and the agent builds it from the same plain editing steps.",
   },
 ] as const;
 

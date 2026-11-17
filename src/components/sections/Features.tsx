@@ -14,16 +14,16 @@ type Row = { id: string; title: string; body: string; points: string[]; shot: St
 const ROWS: Row[] = [
   {
     id: "templates",
-    title: "Start from a template, or just describe it",
-    body: "Pick a ready-made automation, or tell the agent what should happen to new content in plain words. It lays out the steps on a canvas you can read, tests it on one of your recordings and shows you the files before anything is switched on.",
-    points: ["Templates for clips, captions, transcripts and audio", "The agent asks before it changes anything", "Steps connect themselves, so there is nothing to wire up"],
+    title: "Start from a ready-made automation",
+    body: "Pick one for clips, captions, transcripts or audio and switch it on. It runs on every new upload with plain editing steps, so no AI tokens are spent on each video. Every step sits on a canvas you can read and change.",
+    points: ["Ready-made automations for clips, captions, transcripts and audio", "Steps connect themselves, so there is nothing to wire up", "Need something else? Describe it and the agent builds it once"],
     shot: templates,
     alt: "The New automation screen: a gallery of templates such as Clips for social, Caption every new upload and Episode to audio and transcript.",
   },
   {
     id: "runs",
     title: "Every new recording runs by itself",
-    body: "Once it is on, an automation starts on its own when a file is uploaded, lands in a watched folder, a schedule comes round or another tool calls it. The AI helped set it up; plain editing steps do the work, so no AI is billed on every video.",
+    body: "Once it is on, an automation starts on its own when a file is uploaded, lands in a watched folder, a schedule comes round or another tool calls it. Plain editing steps do the work, so nothing is billed per video.",
     points: ["Starts from an upload, a folder, a schedule or a webhook", "Watch each step finish, or come back to a list of what happened", "Works with or without n8n"],
     shot: run,
     alt: "A run of the Clips for social automation in progress: New upload, then Clips for a platform done with 3 clips, then Caption video running, with a list of what happened below.",
@@ -101,10 +101,10 @@ export function Features() {
     <section className="features" id="features" aria-labelledby="features-title">
       <div className="wrap">
         <header className="sec-head">
-          <h2 id="features-title">AI sets it up. Plain editing runs it.</h2>
+          <h2 id="features-title">Ready-made automations. No AI on every video.</h2>
           <p>
-            Clipping apps run AI on every video and bill you for it. Most of that work is plain editing: cut, resize, caption, join and level the
-            audio. Here the AI does the setting up, once. The automation it builds does the editing, every time.
+            Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work
+            is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.
           </p>
         </header>
         <div className="rows">

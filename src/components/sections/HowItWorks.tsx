@@ -4,8 +4,8 @@ const STEPS = [
     body: "Sign up, then paste the address and key of your own NCA Toolkit and your storage. That is the only thing you plug in.",
   },
   {
-    title: "Describe the job",
-    body: "Tell the agent what should happen to new content, or pick a template. Check the test run and change anything you want.",
+    title: "Pick an automation",
+    body: "Choose a ready-made automation for clips, captions, transcripts or audio. Want something else? Describe it and the agent builds it once.",
   },
   {
     title: "Turn it on",
