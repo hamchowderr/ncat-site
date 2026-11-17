@@ -52,10 +52,14 @@ describe("logos", () => {
     expect(document.querySelectorAll(".feeds svg, .feeds img").length).toBe(9);
   });
 
-  it("gives every platform a logo", () => {
+  it("gives every platform a logo, with its name and formats kept together", () => {
     render(<PlatformExpert />);
     const items = screen.getAllByRole("listitem");
-    for (const li of items) expect(li.querySelector("svg, img")).not.toBeNull();
+    for (const li of items) {
+      expect(li.querySelector("svg, img")).not.toBeNull();
+      expect(li.querySelector(".plat-text .plat-name")).not.toBeNull();
+      expect(li.querySelector(".plat-text .plat-formats")).not.toBeNull();
+    }
   });
 });
 
@@ -66,6 +70,15 @@ describe("Features", () => {
     expect(imgs.length).toBe(8);
     for (const img of imgs) expect(img.getAttribute("alt")!.length).toBeGreaterThan(30);
     expect(screen.getByText(/demo data/)).toBeInTheDocument();
+  });
+
+  it("names each editor and n8n next to its real logo", () => {
+    render(<Features />);
+    const editors = within(screen.getByRole("list", { name: "Editors it exports to" })).getAllByRole("listitem");
+    expect(editors.map((li) => li.textContent?.trim())).toEqual(["Premiere Pro", "DaVinci Resolve", "Final Cut Pro", "CapCut"]);
+    for (const li of editors) expect(li.querySelector("svg, img")).not.toBeNull();
+    const n8n = within(screen.getByRole("list", { name: "Also works with" })).getByRole("listitem");
+    expect(n8n.querySelector("img")!.getAttribute("src")).toContain("/logos/n8n.png");
   });
 });
 

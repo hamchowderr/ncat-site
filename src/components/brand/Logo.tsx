@@ -7,7 +7,6 @@ import {
   siFacebook,
   siFfmpeg,
   siInstagram,
-  siN8n,
   siSpotify,
   siTiktok,
   siTwitch,
@@ -24,12 +23,13 @@ export function BrandIcon({ icon, mono = false, className = "bi" }: { icon: Simp
   );
 }
 
-/** Marks that Simple Icons does not carry, served from /public/logos as each company publishes them. */
+/** Marks that Simple Icons does not carry (or draws wrongly, like n8n), served from /public/logos as each company publishes them. */
 const files = {
   linkedin: { src: "/logos/linkedin.svg", alt: "LinkedIn" },
   premiere: { src: "/logos/premiere-pro.svg", alt: "Adobe Premiere Pro" },
   finalcut: { src: "/logos/final-cut-pro.png", alt: "Final Cut Pro" },
   capcut: { src: "/logos/capcut.svg", alt: "CapCut" },
+  n8n: { src: "/logos/n8n.png", alt: "n8n" },
 } as const;
 
 export function FileLogo({ name, size = 24 }: { name: keyof typeof files; size?: number }) {
@@ -46,7 +46,6 @@ export const icons = {
   twitch: siTwitch,
   spotify: siSpotify,
   applepodcasts: siApplepodcasts,
-  n8n: siN8n,
   ffmpeg: siFfmpeg,
   claude: siClaude,
   resolve: siDavinciresolve,

@@ -18,7 +18,9 @@ export function HowItWorks() {
     <section className="how" id="how-it-works" aria-labelledby="how-title">
       <div className="wrap">
         <header className="sec-head">
-          <h2 id="how-title">Set it up once. It runs from then on.</h2>
+          <h2 id="how-title">
+            <span className="keep">Set it up once.</span> <span className="keep">It runs from then on.</span>
+          </h2>
         </header>
         <ol className="steps">
           {STEPS.map((s, i) => (

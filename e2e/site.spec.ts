@@ -127,6 +127,33 @@ test("every logo and screenshot loads", async ({ page }) => {
   }
 });
 
+test("every dashboard screen is shown whole, in the same shape and frame", async ({ page }) => {
+  await page.goto("/");
+  const shots = page.locator("#features .shot img");
+  await expect(shots).toHaveCount(8);
+  const ratios: number[] = [];
+  for (const img of await shots.all()) {
+    await img.scrollIntoViewIfNeeded();
+    const box = (await img.boundingBox())!;
+    ratios.push(box.width / box.height);
+    const frame = (await img.locator("..").boundingBox())!;
+    // the screen sits centred on its mat, with the same space on each side
+    const left = box.x - frame.x;
+    const right = frame.x + frame.width - (box.x + box.width);
+    expect(Math.abs(left - right)).toBeLessThanOrEqual(1.5);
+  }
+  for (const r of ratios) expect(Math.abs(r - ratios[0])).toBeLessThan(0.02);
+});
+
+test("platform tiles keep the logo centred beside the name and formats", async ({ page }) => {
+  await page.goto("/");
+  for (const li of await page.locator(".plat-grid li").all()) {
+    const logo = (await li.locator(".plat-logo").boundingBox())!;
+    const text = (await li.locator(".plat-text").boundingBox())!;
+    expect(Math.abs(logo.y + logo.height / 2 - (text.y + text.height / 2))).toBeLessThanOrEqual(2);
+  }
+});
+
 test("use-case tabs switch panels", async ({ page }) => {
   await page.goto("/");
   const tab = page.getByRole("tab", { name: "Podcast teams" });

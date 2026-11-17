@@ -23,8 +23,10 @@ export function PlatformExpert() {
           {PLATFORMS.map((p) => (
             <li key={p.name}>
               <span className="plat-logo">{"file" in p ? <FileLogo name={p.file!} size={26} /> : <BrandIcon icon={p.icon!} />}</span>
-              <span className="plat-name">{p.name}</span>
-              <span className="plat-formats">{p.formats}</span>
+              <span className="plat-text">
+                <span className="plat-name">{p.name}</span>
+                <span className="plat-formats">{p.formats}</span>
+              </span>
             </li>
           ))}
         </ul>

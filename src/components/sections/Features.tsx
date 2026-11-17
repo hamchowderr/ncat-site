@@ -1,12 +1,12 @@
 import Image, { type StaticImageData } from "next/image";
-import alerts from "@/assets/screens/alerts.png";
-import brand from "@/assets/screens/brand.png";
-import exportShot from "@/assets/screens/export.png";
-import files from "@/assets/screens/files.png";
-import review from "@/assets/screens/review.png";
-import run from "@/assets/screens/run.png";
-import schedule from "@/assets/screens/schedule.png";
-import templates from "@/assets/screens/templates.png";
+import alerts from "@/assets/screens/alerts.jpg";
+import brand from "@/assets/screens/brand.jpg";
+import exportShot from "@/assets/screens/export.jpg";
+import files from "@/assets/screens/files.jpg";
+import review from "@/assets/screens/review.jpg";
+import run from "@/assets/screens/run.jpg";
+import schedule from "@/assets/screens/schedule.jpg";
+import templates from "@/assets/screens/templates.jpg";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
 
 type Row = { id: string; title: string; body: string; points: string[]; shot: StaticImageData; alt: string; extra?: React.ReactNode };
@@ -28,9 +28,11 @@ const ROWS: Row[] = [
     shot: run,
     alt: "A run of the Clips for social automation in progress: New upload, then Clips for a platform done with 3 clips, then Caption video running, with a list of what happened below.",
     extra: (
-      <span className="also">
-        <BrandIcon icon={icons.n8n} /> n8n can start any automation with a webhook
-      </span>
+      <ul className="logo-chips" aria-label="Also works with">
+        <li>
+          <FileLogo name="n8n" size={22} /> n8n, through a webhook
+        </li>
+      </ul>
     ),
   },
   {
@@ -49,12 +51,20 @@ const ROWS: Row[] = [
     shot: exportShot,
     alt: "A finished run of Clips for Reels whose last step, Export for editors, made files for Premiere, Resolve and Final Cut.",
     extra: (
-      <span className="editors">
-        <FileLogo name="premiere" size={28} />
-        <BrandIcon icon={icons.resolve} />
-        <FileLogo name="finalcut" size={28} />
-        <FileLogo name="capcut" size={28} />
-      </span>
+      <ul className="logo-chips" aria-label="Editors it exports to">
+        <li>
+          <FileLogo name="premiere" size={22} /> Premiere Pro
+        </li>
+        <li>
+          <BrandIcon icon={icons.resolve} /> DaVinci Resolve
+        </li>
+        <li>
+          <FileLogo name="finalcut" size={22} /> Final Cut Pro
+        </li>
+        <li>
+          <FileLogo name="capcut" size={22} /> CapCut
+        </li>
+      </ul>
     ),
   },
 ];
@@ -111,7 +121,7 @@ export function Features() {
                 {r.extra}
               </div>
               <figure className="shot">
-                <Image src={r.shot} alt={r.alt} sizes="(max-width: 900px) 100vw, 680px" placeholder="blur" />
+                <Image src={r.shot} alt={r.alt} sizes="(max-width: 900px) 92vw, 640px" quality={90} placeholder="blur" />
               </figure>
             </article>
           ))}
@@ -121,7 +131,7 @@ export function Features() {
           {TILES.map((t) => (
             <article className="tile" key={t.title}>
               <figure className="shot sm">
-                <Image src={t.shot} alt={t.alt} sizes="(max-width: 700px) 100vw, 560px" placeholder="blur" />
+                <Image src={t.shot} alt={t.alt} sizes="(max-width: 700px) 92vw, 520px" quality={90} placeholder="blur" />
               </figure>
               <h4>{t.title}</h4>
               <p>{t.body}</p>

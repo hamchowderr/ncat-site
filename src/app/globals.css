@@ -618,12 +618,12 @@ html {
 .faq,
 .early,
 .engine {
-  padding-top: clamp(80px, 11vw, 140px);
+  padding-top: clamp(72px, 9vw, 112px);
 }
 .sec-head {
   text-align: center;
-  max-width: 760px;
-  margin: 0 auto clamp(40px, 6vw, 64px);
+  max-width: 780px;
+  margin: 0 auto clamp(36px, 5vw, 56px);
 }
 .sec-head h2,
 .early-head h2,
@@ -666,7 +666,7 @@ html {
 /* ---------- Features ---------- */
 .rows {
   display: grid;
-  gap: clamp(64px, 9vw, 120px);
+  gap: clamp(64px, 8vw, 104px);
 }
 .row {
   display: grid;
@@ -692,43 +692,55 @@ html {
   margin: 0;
   background: var(--panel);
   border-radius: var(--r-lg);
-  padding: clamp(10px, 1.8vw, 22px);
+  padding: clamp(12px, 2vw, 24px);
 }
 .shot img {
+  display: block;
   width: 100%;
   height: auto;
-  border-radius: 10px;
-  box-shadow: var(--shadow);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 2px rgb(11 11 18 / 0.06),
+    0 12px 32px -12px rgb(11 11 18 / 0.2);
 }
 .shot.sm {
-  border-radius: var(--r);
-  padding: 10px;
+  padding: clamp(10px, 1.4vw, 16px);
 }
 .shot.sm img {
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: top left;
+  border-radius: 10px;
 }
-.also,
-.editors {
-  display: inline-flex;
+.logo-chips {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 8px;
+  margin-top: 24px;
+}
+.logo-chips li {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 22px;
-  font-size: 15px;
-  color: var(--soft);
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px 0 10px;
+  background: var(--panel);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
 }
-.editors {
-  gap: 14px;
+.logo-chips .bi,
+.logo-chips .fl {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 }
-.editors .bi {
-  width: 28px;
-  height: 28px;
+@media (max-width: 400px) {
+  .logo-chips {
+    grid-template-columns: max-content;
+  }
 }
 .tiles-title {
   text-align: center;
   font-size: clamp(1.5rem, 2.6vw, 2rem);
-  margin: clamp(80px, 10vw, 128px) auto 36px;
+  margin: clamp(64px, 8vw, 104px) auto clamp(28px, 3vw, 40px);
 }
 .tiles {
   display: grid;
@@ -737,7 +749,7 @@ html {
 }
 .tile h4 {
   font-size: 1.25rem;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 .tile p {
   margin-top: 8px;
@@ -810,16 +822,14 @@ html {
 }
 .engine-pic {
   margin: 0;
-  background: var(--panel);
-  border-radius: var(--r-lg);
-  padding: clamp(20px, 3vw, 36px);
+  display: flex;
+  justify-content: center;
 }
 .engine-pic img {
+  display: block;
   width: 100%;
   height: auto;
-  max-width: 340px;
-  margin-inline: auto;
-  border-radius: 12px;
+  max-width: 320px;
 }
 .engine-text .bi {
   display: inline-block;
@@ -846,17 +856,21 @@ html {
   gap: 12px;
 }
 .plat-grid li {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 14px;
-  row-gap: 2px;
+  display: flex;
   align-items: center;
+  gap: 14px;
   background: var(--panel);
   border-radius: var(--r);
   padding: 18px 20px;
 }
+.plat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 .plat-logo {
-  grid-row: span 2;
+  flex-shrink: 0;
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -973,7 +987,7 @@ html {
   font-size: 15px;
 }
 .per {
-  color: var(--bad);
+  color: var(--mute);
   font-size: 14px;
   text-align: right;
 }
@@ -1067,7 +1081,7 @@ html {
 
 /* ---------- Early access ---------- */
 .early {
-  padding-bottom: clamp(80px, 10vw, 128px);
+  padding-bottom: clamp(72px, 9vw, 112px);
 }
 .early-in {
   display: grid;
@@ -1355,6 +1369,7 @@ fieldset[aria-invalid="true"] .pill span {
   gap: 16px;
   max-width: 1040px;
   margin-inline: auto;
+  align-items: start;
 }
 .plan {
   background: var(--panel);
@@ -1542,4 +1557,7 @@ fieldset[aria-invalid="true"] .pill span {
   .foot-about {
     grid-column: 1 / -1;
   }
+}
+.keep {
+  display: inline-block;
 }
