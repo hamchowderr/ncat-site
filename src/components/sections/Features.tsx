@@ -1,15 +1,7 @@
-import Image, { type StaticImageData } from "next/image";
-import alerts from "@/assets/screens/alerts.jpg";
-import brand from "@/assets/screens/brand.jpg";
-import exportShot from "@/assets/screens/export.jpg";
-import files from "@/assets/screens/files.jpg";
-import review from "@/assets/screens/review.jpg";
-import run from "@/assets/screens/run.jpg";
-import schedule from "@/assets/screens/schedule.jpg";
-import templates from "@/assets/screens/templates.jpg";
+import { FeatureVideo } from "@/components/FeatureVideo";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
 
-type Row = { id: string; title: string; body: string; points: string[]; shot: StaticImageData; alt: string; extra?: React.ReactNode };
+type Row = { id: string; title: string; body: string; points: string[]; video: string; alt: string; extra?: React.ReactNode };
 
 const ROWS: Row[] = [
   {
@@ -17,16 +9,16 @@ const ROWS: Row[] = [
     title: "Start from a ready-made automation",
     body: "Pick one for clips, captions, transcripts or audio and switch it on. It runs on every new upload with plain editing steps, so no AI tokens are spent on each video. Every step sits on a canvas you can read and change.",
     points: ["Ready-made automations for clips, captions, transcripts and audio", "Steps connect themselves, so there is nothing to wire up", "Need something else? Describe it and the agent builds it once"],
-    shot: templates,
-    alt: "The New automation screen: a gallery of templates such as Clips for social, Caption every new upload and Episode to audio and transcript.",
+    video: "templates",
+    alt: "Screen recording: New automation, pick Clips for social, choose TikTok in the clips step and switch the automation on.",
   },
   {
     id: "runs",
     title: "Every new recording runs by itself",
     body: "Once it is on, an automation starts on its own when a file is uploaded, lands in a watched folder, a schedule comes round or another tool calls it. Plain editing steps do the work, so nothing is billed per video.",
     points: ["Starts from an upload, a folder, a schedule or a webhook", "Watch each step finish, or come back to a list of what happened", "Comes with its own automation builder, made for content"],
-    shot: run,
-    alt: "A run of the Clips for social automation in progress: New upload, then Clips for a platform done with 3 clips, then Caption video running, with a list of what happened below.",
+    video: "runs",
+    alt: "Screen recording: Space interviews.mp4 is uploaded, the Clips for social run starts by itself, cuts 3 clips, captions them and pauses for approval. Sped up while the toolkit works.",
     extra: (
       <ul className="logo-chips" aria-label="Outside platforms">
         <li>
@@ -40,16 +32,16 @@ const ROWS: Row[] = [
     title: "Nothing goes out until someone says yes",
     body: "Add an approval step anywhere. The run pauses, the right people get an alert, and they watch the clip, leave a comment pinned to the exact moment and approve it or ask for changes.",
     points: ["Choose who can approve each step", "Comments pinned to a moment in the clip", "Decide what happens if nobody answers in time"],
-    shot: review,
-    alt: "The Review screen: a captioned clip with Approve and Ask for changes buttons and a comments panel.",
+    video: "review",
+    alt: "Screen recording: the Review screen plays a captioned clip, a comment is pinned to the paused moment, and the clips are approved.",
   },
   {
     id: "editors",
     title: "Finish it in the editor you already use",
     body: "The repeatable work happens automatically. Anything that still needs a human opens in your editing app with every cut adjustable, or goes to your editor already trimmed, captioned and labelled.",
     points: ["Timelines for Premiere Pro, DaVinci Resolve and Final Cut Pro", "CapCut-ready clip packs", "Caption files and the finished clips in one download"],
-    shot: exportShot,
-    alt: "A finished run of Clips for Reels whose last step, Export for editors, made files for Premiere, Resolve and Final Cut.",
+    video: "editors",
+    alt: "Screen recording: a finished run's Open in editor window with timelines for Premiere Pro, DaVinci Resolve and Final Cut Pro, and the finished clips for CapCut.",
     extra: (
       <ul className="logo-chips" aria-label="Editors it exports to">
         <li>
@@ -69,30 +61,30 @@ const ROWS: Row[] = [
   },
 ];
 
-const TILES: { title: string; body: string; shot: StaticImageData; alt: string }[] = [
+const TILES: { title: string; body: string; video: string; alt: string }[] = [
   {
     title: "Your brand, set once",
     body: "Logo, colour, font and music are saved in settings and used by every step that needs them. No step ever asks again.",
-    shot: brand,
-    alt: "Settings, Brand section: logo, brand colour, font and music library.",
+    video: "brand",
+    alt: "Screen recording: the logo, brand colour and theme music are saved in Settings, then the Add a logo step shows it is handled for you.",
   },
   {
     title: "Organized in your own storage",
     body: "Every upload and every output is filed in your bucket, with its length, picture size and the run that made it.",
-    shot: files,
-    alt: "The Files screen: a folder of videos with type, length, picture size, size and date changed.",
+    video: "files",
+    alt: "Screen recording: a new TikTok clips folder is made in the Files screen, a captioned clip is renamed and moved into it.",
   },
   {
     title: "Retries, then an alert",
-    body: "If the toolkit is busy or a file is bad, the step tries again. If it still fails you get an alert saying what went wrong.",
-    shot: alerts,
-    alt: "An alert that Captions for every upload failed after 3 tries, with the error from the toolkit.",
+    body: "If the toolkit is busy or offline, the step waits and tries again. If it still fails you get an alert saying what went wrong.",
+    video: "alerts",
+    alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails and the alert says what went wrong. Sped up while it waits.",
   },
   {
     title: "On a schedule, in your time zone",
     body: "Run it every morning or every Friday at 9. The canvas shows what starts it and when it last ran.",
-    shot: schedule,
-    alt: "An automation started by a Schedule trigger set to every day at 09:00 America/Los_Angeles.",
+    video: "schedule",
+    alt: "Screen recording: an automation's trigger is changed to a Schedule, every day at 09:00 America/Los_Angeles, and switched on.",
   },
 ];
 
@@ -120,9 +112,7 @@ export function Features() {
                 </ul>
                 {r.extra}
               </div>
-              <figure className="shot">
-                <Image src={r.shot} alt={r.alt} sizes="(max-width: 900px) 92vw, 640px" quality={90} placeholder="blur" />
-              </figure>
+              <FeatureVideo name={r.video} label={r.alt} />
             </article>
           ))}
         </div>
@@ -130,15 +120,13 @@ export function Features() {
         <div className="tiles">
           {TILES.map((t) => (
             <article className="tile" key={t.title}>
-              <figure className="shot sm">
-                <Image src={t.shot} alt={t.alt} sizes="(max-width: 700px) 92vw, 520px" quality={90} placeholder="blur" />
-              </figure>
+              <FeatureVideo name={t.video} label={t.alt} small />
               <h4>{t.title}</h4>
               <p>{t.body}</p>
             </article>
           ))}
         </div>
-        <p className="screens-note">Every screen on this page is the working dashboard. The team, people and files in them are demo data.</p>
+        <p className="screens-note">Every video on this page is a screen recording of the working dashboard, sped up where it waits on the toolkit. The team, people and files in them are demo data.</p>
       </div>
     </section>
   );

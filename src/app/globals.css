@@ -702,10 +702,12 @@ html {
   border-radius: var(--r-lg);
   padding: clamp(12px, 2vw, 24px);
 }
-.shot img {
+.shot video {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 1190 / 900;
+  background: #fafafa;
   border-radius: 12px;
   box-shadow:
     0 1px 2px rgb(11 11 18 / 0.06),
@@ -714,7 +716,7 @@ html {
 .shot.sm {
   padding: clamp(10px, 1.4vw, 16px);
 }
-.shot.sm img {
+.shot.sm video {
   border-radius: 10px;
 }
 .logo-chips {

@@ -80,11 +80,19 @@ describe("logos", () => {
 });
 
 describe("Features", () => {
-  it("shows real dashboard screens with descriptions", () => {
-    render(<Features />);
-    const imgs = screen.getAllByRole("img");
-    expect(imgs.length).toBe(8);
-    for (const img of imgs) expect(img.getAttribute("alt")!.length).toBeGreaterThan(30);
+  it("shows a silent, described screen recording for every feature", () => {
+    const { container } = render(<Features />);
+    const videos = Array.from(container.querySelectorAll("video"));
+    expect(videos.length).toBe(8);
+    for (const v of videos) {
+      expect(v.getAttribute("aria-label")).toMatch(/^Screen recording: .{30,}/);
+      expect(v.getAttribute("src")).toMatch(/^\/media\/features\/[a-z]+\.mp4$/);
+      expect(v.getAttribute("poster")).toBe(v.getAttribute("src")!.replace(".mp4", ".jpg"));
+      expect(v.muted).toBe(true);
+      expect(v.hasAttribute("playsinline")).toBe(true);
+    }
+    expect(container.querySelectorAll(".shot img").length).toBe(0);
+    expect(screen.getByText(/screen recording of the working dashboard/)).toBeInTheDocument();
     expect(screen.getByText(/demo data/)).toBeInTheDocument();
   });
 

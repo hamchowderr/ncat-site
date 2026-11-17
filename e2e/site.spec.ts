@@ -118,7 +118,7 @@ test("the hero plays real dashboard recordings", async ({ page, request }) => {
   }
 });
 
-test("every logo and screenshot loads", async ({ page }) => {
+test("every logo and picture loads", async ({ page }) => {
   await page.goto("/");
   for (const img of await page.locator("img").all()) {
     await img.scrollIntoViewIfNeeded();
@@ -126,9 +126,9 @@ test("every logo and screenshot loads", async ({ page }) => {
   }
 });
 
-test("every dashboard screen is shown whole, in the same shape and frame", async ({ page }) => {
+test("every feature is a dashboard recording, shown whole, in the same shape and frame", async ({ page, request }) => {
   await page.goto("/");
-  const shots = page.locator("#features .shot img");
+  const shots = page.locator("#features .shot video");
   await expect(shots).toHaveCount(8);
   const ratios: number[] = [];
   for (const img of await shots.all()) {
@@ -142,6 +142,33 @@ test("every dashboard screen is shown whole, in the same shape and frame", async
     expect(Math.abs(left - right)).toBeLessThanOrEqual(1.5);
   }
   for (const r of ratios) expect(Math.abs(r - ratios[0])).toBeLessThan(0.02);
+  for (const v of await shots.all()) {
+    for (const attr of ["src", "poster"]) {
+      const url = (await v.getAttribute(attr))!;
+      expect((await request.get(url)).status(), url).toBe(200);
+    }
+    await expect(v).toHaveAttribute("aria-label", /^Screen recording: /);
+  }
+});
+
+test("a feature recording plays while it is on screen and pauses when scrolled away", async ({ page }) => {
+  await page.goto("/");
+  const v = page.locator("#review .shot video");
+  await v.scrollIntoViewIfNeeded();
+  await expect.poll(() => v.evaluate((x: HTMLVideoElement) => !x.paused && x.currentTime > 0), { timeout: 15_000 }).toBe(true);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(() => v.evaluate((x: HTMLVideoElement) => x.paused)).toBe(true);
+});
+
+test.describe("with reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+  test("feature recordings stay still and offer controls instead", async ({ page }) => {
+    await page.goto("/");
+    const v = page.locator("#review .shot video");
+    await v.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1500);
+    expect(await v.evaluate((x: HTMLVideoElement) => x.paused && x.controls)).toBe(true);
+  });
 });
 
 test("event marks sit on one even row and platform logos are all the same size", async ({ page, isMobile }) => {
