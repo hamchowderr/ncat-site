@@ -1,72 +1,110 @@
-import type React from "react";
+const SELF = [
+  "Your own version of the platform",
+  "Runs on a rented server or your own always-on machine, such as a Mac Mini",
+  "The agent that sets up your automations, plus templates, the canvas, files and outputs",
+  "Unlimited runs on your toolkit, no meter",
+  "Team workspace, brand set once, approvals and alerts",
+  "Export to Premiere Pro, DaVinci Resolve, Final Cut Pro and CapCut",
+  "One price for your whole team, whatever its size",
+  "Access to the private code repository once you buy",
+  "Updates included, for now",
+  "A 4-week group cohort with Chowderr to build out your version",
+];
+
+const HOSTED = ["Everything in self-hosted", "No server to set up or maintain", "Starting credits included, for now", "Pay for what you process with credits"];
+
+const COMPARE: [string, string, string][] = [
+  ["How you pay", "Monthly, forever", "Once"],
+  ["Per-minute or per-credit fees", "Yes", "None when self-hosted"],
+  ["Runs on its own for every new upload", "Only through an API or another tool", "Yes, that’s the point"],
+  ["AI sets up the automation for you", "No", "Yes"],
+  ["AI runs on every video you edit", "Yes, and you pay for it", "No, plain editing steps"],
+  ["A visual canvas of every automation", "No", "Yes"],
+  ["Approval steps before anything goes out", "No", "Yes"],
+  ["Price goes up with team size", "Yes, per seat", "No, one price"],
+  ["Access to the code", "No", "Yes, once you buy"],
+  ["Files in your own storage", "No", "Yes, when self-hosted"],
+  ["Hands-on help building your version", "Support tickets", "4-week group cohort with Chowderr"],
+];
 
 export function PricingPlans() {
   return (
-    <>
-  <section style={{"paddingTop": "16px"} as React.CSSProperties}>
-    <div className="in">
-      <div className="plans">
-        <div className="plan feat">
-          <span className="tag">Early access</span>
-          <span className="nm">Self-hosted</span>
-          <span className="big">One-time</span>
-          <span className="tba">Price announced at launch</span>
-          <p className="desc">The dashboard and the cohort come together as one purchase. Runs on the NCA Toolkit you host.</p>
-          <ul>
-            <li>Your own version of the platform</li>
-            <li>Runs on a rented server or your own always-on machine, such as a Mac Mini</li>
-            <li>The assistant that sets up your automations, plus the content library, templates and automation map</li>
-            <li>Unlimited runs on your toolkit, no meter</li>
-            <li>Team workspace, brand kit and approvals</li>
-            <li>One price for your whole team, whatever its size</li>
-            <li>Access to the private code repository once you buy</li>
-            <li className="tbd">Export to CapCut, Premiere Pro and other editors, coming</li>
-            <li className="tbd">Updates included, for now</li>
-            <li>A 4-week group cohort with Chowderr to build out your version</li>
-          </ul>
-          <a className="btn g" href="#early">Get early access</a>
+    <section className="plans-sec" aria-label="Plans">
+      <div className="wrap">
+        <div className="plans">
+          <article className="plan main">
+            <h2>
+              Self-hosted <span className="plan-status">Early access</span>
+            </h2>
+            <p className="plan-price">One-time purchase</p>
+            <p className="plan-tba">Price announced at launch</p>
+            <p className="plan-desc">The dashboard and the cohort come together as one purchase. Runs on the NCA Toolkit you host.</p>
+            <a className="btn primary" href="#early">
+              Get early access
+            </a>
+            <ul className="ticks">
+              {SELF.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+          </article>
+          <article className="plan">
+            <h2>
+              Hosted <span className="plan-status">Planned</span>
+            </h2>
+            <p className="plan-price">Credits</p>
+            <p className="plan-tba">Details coming</p>
+            <p className="plan-desc">Don’t want to manage a server? We run the toolkit for you.</p>
+            <a className="btn ghost" href="#early">
+              Tell me you’re interested
+            </a>
+            <ul className="ticks">
+              {HOSTED.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+          </article>
         </div>
-        <div className="plan">
-          <span className="tag">Planned</span>
-          <span className="nm">Hosted</span>
-          <span className="big">Credits</span>
-          <span className="tba">Details coming</span>
-          <p className="desc">Don’t want to manage a server? We run the toolkit for you.</p>
-          <ul>
-            <li>Everything in self-hosted</li>
-            <li>No server to set up or maintain</li>
-            <li className="tbd">Starting credits included, for now</li>
-            <li>Pay for what you process with credits</li>
-          </ul>
-          <a className="btn o" href="#early">Tell me you’re interested</a>
+
+        <div className="rungs">
+          <article>
+            <h3>
+              social-clips <span className="plan-status">Free</span>
+            </h3>
+            <p>A smaller version of the idea that you clone and run yourself. A good first step if you are not ready for the dashboard.</p>
+          </article>
+          <article>
+            <h3>
+              Video editing skills <span className="plan-status">Price to be announced</span>
+            </h3>
+            <p>A plugin for Claude Code and other agents: cut silences, add captions, reframe to vertical and join clips with nothing but FFmpeg on your computer.</p>
+          </article>
+        </div>
+
+        <h2 className="cmp-title">Compared with a typical clipping app</h2>
+        <div className="cmp-wrap">
+          <table className="cmp">
+            <thead>
+              <tr>
+                <th scope="col">
+                  <span className="sr">Feature</span>
+                </th>
+                <th scope="col">Typical clipping app</th>
+                <th scope="col">NCA Dashboard</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARE.map(([k, them, us]) => (
+                <tr key={k}>
+                  <th scope="row">{k}</th>
+                  <td>{them}</td>
+                  <td className="us">{us}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-      <div className="rungs">
-        <div className="rung"><span className="mono">FREE</span><b>social-clips</b><p>A smaller version of the idea that you clone and run yourself. A good first step if you are not ready for the dashboard.</p></div>
-        <div className="rung"><span className="mono">PRICE TO BE ANNOUNCED</span><b>Video editing skills</b><p>A plugin for Claude Code and other agents: cut silences, add captions, reframe to vertical and join clips with nothing but FFmpeg on your computer.</p></div>
-      </div>
-      <div className="cmp-wrap">
-        <table className="cmp">
-          <tbody><tr><th /><th>Typical clipping app</th><th>NCA Dashboard</th></tr>
-            <tr><td>How you pay</td><td className="n">Monthly, forever</td><td className="y">Once</td></tr>
-            <tr><td>Per-minute or per-credit fees</td><td className="n">Yes</td><td className="y">None when self-hosted</td></tr>
-            <tr><td>Runs on its own for every new upload</td><td className="n">Only through an API or another tool</td><td className="y">Yes, that’s the point</td></tr>
-            <tr><td>Every toolkit feature, not just clips</td><td className="n">No</td><td className="y">Yes</td></tr>
-            <tr><td>AI sets up the automation for you</td><td className="n">No</td><td className="y">Yes</td></tr>
-            <tr><td>AI runs on every video you edit</td><td className="n">Yes, and you pay for it</td><td className="y">No, plain editing steps</td></tr>
-            <tr><td>A visual map of every automation</td><td className="n">No</td><td className="y">Yes</td></tr>
-            <tr><td>Approval steps before anything goes out</td><td className="n">No</td><td className="y">Yes</td></tr>
-            <tr><td>Price goes up with team size</td><td className="n">Yes, per seat</td><td className="y">No, one price</td></tr>
-            <tr><td>Access to the code</td><td className="n">No</td><td className="y">Yes, once you buy</td></tr>
-            <tr><td>Files in your own storage</td><td className="n">No</td><td className="y">Yes, when self-hosted</td></tr>
-            <tr><td>Hands-on help building your version</td><td className="n">Support tickets</td><td className="y">4-week group cohort with Chowderr</td></tr>
-          </tbody></table>
-      </div>
-    </div>
-  </section>
-  {/* ================= SHARED CTA ================= */}
-
-
-    </>
+    </section>
   );
 }

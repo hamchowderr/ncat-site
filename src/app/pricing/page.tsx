@@ -11,10 +11,10 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   return (
-    <div className="page" data-page="pricing">
+    <>
       <PricingHero />
       <PricingPlans />
       <EarlyAccess />
-    </div>
+    </>
   );
 }

@@ -1,10 +1,11 @@
-import type React from "react";
+import Link from "next/link";
 
 export function Announce() {
   return (
-    <>
-<div className="announce"><a href="#early">Early access is opening for people from the Creator Summit and The KINN talks · <b>Get on the list →</b></a></div>
-
-    </>
+    <div className="announce">
+      <Link href="#early">
+        Early access is open · Pay once, own it · Runs on your own NCA Toolkit <b>Get on the list</b>
+      </Link>
+    </div>
   );
 }

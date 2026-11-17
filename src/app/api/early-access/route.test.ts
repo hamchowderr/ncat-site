@@ -3,7 +3,17 @@ import { POST } from "./route";
 
 const post = (body: unknown) =>
   POST(new Request("http://localhost/api/early-access", { method: "POST", headers: { "Content-Type": "application/json" }, body: typeof body === "string" ? body : JSON.stringify(body) }));
-const valid = { name: "Ava", email: "ava@studio.co", who: "solo", job: "Caption every upload" };
+const valid = {
+  name: "Ava",
+  email: "ava@studio.co",
+  role: "agency",
+  teamSize: "6-20",
+  content: ["podcasts"],
+  volume: "5-20",
+  hosting: "server",
+  jobs: ["captions"],
+  details: "Caption every upload",
+};
 
 describe("POST /api/early-access", () => {
   const fetchMock = vi.fn();
@@ -27,6 +37,7 @@ describe("POST /api/early-access", () => {
     expect(sent.to).toEqual([{ email: "owner@example.com" }]);
     expect(sent.reply_to).toEqual({ email: "ava@studio.co", name: "Ava" });
     expect(sent.text).toContain("Caption every upload");
+    expect(sent.subject).toBe("[Editing agency · 6 to 20 · A rented server] Dashboard early access: Ava");
   });
 
   it("returns field errors without sending", async () => {

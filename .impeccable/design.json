@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-17T21:09:00.792273Z",
+  "title": "Design System: NCA Dashboard site",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Signal Violet",
+        "canonical": "#5b3df5",
+        "tonalRamp": [
+          "#1c1150",
+          "#2a1a80",
+          "#3d24c4",
+          "#4a2ee0",
+          "#5b3df5",
+          "#8a74f8",
+          "#c4b8fc",
+          "#efecff"
+        ]
+      },
+      "primary-soft": {
+        "role": "primary",
+        "displayName": "Violet Wash",
+        "canonical": "#efecff"
+      },
+      "primary-ink": {
+        "role": "primary",
+        "displayName": "Deep Violet Ink",
+        "canonical": "#3d24c4"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Night Ink",
+        "canonical": "#0b0b12",
+        "tonalRamp": [
+          "#0b0b12",
+          "#262633",
+          "#4f5260",
+          "#6b6e7c",
+          "#a3a5b0",
+          "#e2e2e9",
+          "#ebebf0",
+          "#f4f4f7"
+        ]
+      },
+      "soft-ink": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "#4f5260"
+      },
+      "mute": {
+        "role": "neutral",
+        "displayName": "Mute",
+        "canonical": "#6b6e7c"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff"
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Mat Grey",
+        "canonical": "#f4f4f7"
+      },
+      "panel-deep": {
+        "role": "neutral",
+        "displayName": "Deep Mat",
+        "canonical": "#ebebf0"
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e2e2e9"
+      },
+      "error": {
+        "role": "error",
+        "displayName": "Error Red",
+        "canonical": "#b42318"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home and pricing hero headlines only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Centred section headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Feature rows and card headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs; ledes step up in Soft Ink."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form questions, tabs, button text."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "File names and small technical values."
+      }
+    },
+    "shadows": [
+      {
+        "name": "screen-lift",
+        "value": "0 2px 4px rgb(11 11 18 / 0.04), 0 24px 60px -20px rgb(41 24 140 / 0.28)",
+        "purpose": "Product screen sitting on its grey mat."
+      },
+      {
+        "name": "soft-card",
+        "value": "0 1px 2px rgb(11 11 18 / 0.04), 0 8px 24px -8px rgb(11 11 18 / 0.12)",
+        "purpose": "Focused ask bar and small raised surfaces."
+      },
+      {
+        "name": "violet-glow",
+        "value": "0 6px 18px -6px rgb(91 61 245 / 0.55)",
+        "purpose": "Primary buttons only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All state transitions and the headline word swap."
+      },
+      {
+        "name": "word-swap",
+        "value": "0.6s, every 2.6s",
+        "purpose": "Rotating hero word; off with reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "560px"
+      },
+      {
+        "name": "menu",
+        "value": "860px"
+      },
+      {
+        "name": "stack",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action on every screen.",
+      "html": "<button class=\"ds-btn-primary\">Get early access</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#5b3df5;color:#fff;font-weight:600;font-size:16px;box-shadow:0 6px 18px -6px rgb(91 61 245 / .55);cursor:pointer;transition:background-color .2s cubic-bezier(.16,1,.3,1),transform .2s}.ds-btn-primary:hover{background:#4a2ee0}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:2px solid #5b3df5;outline-offset:2px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action.",
+      "html": "<button class=\"ds-btn-ghost\">See pricing</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#f4f4f7;color:#0b0b12;font-weight:600;font-size:16px;cursor:pointer}.ds-btn-ghost:hover{background:#ebebf0}.ds-btn-ghost:focus-visible{outline:2px solid #5b3df5;outline-offset:2px}"
+    },
+    {
+      "name": "Dark Button",
+      "kind": "button",
+      "refersTo": "button-dark",
+      "description": "Header call to action.",
+      "html": "<button class=\"ds-btn-dark\">Get early access</button>",
+      "css": ".ds-btn-dark{display:inline-flex;align-items:center;min-height:40px;padding:0 18px;border:0;border-radius:999px;background:#0b0b12;color:#fff;font-weight:600;font-size:15px;cursor:pointer}.ds-btn-dark:hover{background:#262633}"
+    },
+    {
+      "name": "Ask Bar",
+      "kind": "input",
+      "refersTo": "ask-bar",
+      "description": "Hero input that hands the typed job to the form.",
+      "html": "<form class=\"ds-ask\"><input placeholder=\"Describe an automation\"><button>Set it up</button></form>",
+      "css": ".ds-ask{display:flex;gap:8px;max-width:640px;padding:6px;background:#f4f4f7;border-radius:999px;transition:box-shadow .2s}.ds-ask:focus-within{background:#fff;box-shadow:0 0 0 2px #5b3df5,0 1px 2px rgb(11 11 18 / .04),0 8px 24px -8px rgb(11 11 18 / .12)}.ds-ask input{flex:1;border:0;background:transparent;padding:0 16px;font-size:16px;outline:none}.ds-ask button{min-height:48px;padding:0 22px;border:0;border-radius:999px;background:#5b3df5;color:#fff;font-weight:600}"
+    },
+    {
+      "name": "Example Chip",
+      "kind": "chip",
+      "description": "Fills the ask bar.",
+      "html": "<button class=\"ds-chip\">Caption every upload</button>",
+      "css": ".ds-chip{border:0;background:transparent;color:#4f5260;font-size:14px;padding:7px 14px;border-radius:999px;box-shadow:inset 0 0 0 1px #e2e2e9;cursor:pointer}.ds-chip:hover{background:#efecff;color:#3d24c4;box-shadow:none}"
+    },
+    {
+      "name": "Segmented Tabs",
+      "kind": "nav",
+      "refersTo": "segmented-tabs",
+      "description": "Hero stage and use-case switcher.",
+      "html": "<div class=\"ds-seg\"><button aria-selected=\"true\">Describe it</button><button>Review</button></div>",
+      "css": ".ds-seg{display:flex;gap:4px;width:fit-content;padding:4px;background:#f4f4f7;border-radius:999px}.ds-seg button{border:0;background:transparent;color:#4f5260;font-weight:500;font-size:15px;padding:9px 18px;border-radius:999px;cursor:pointer}.ds-seg button:hover{color:#0b0b12}.ds-seg button[aria-selected=true]{background:#fff;color:#0b0b12;box-shadow:0 1px 3px rgb(11 11 18 / .1)}"
+    },
+    {
+      "name": "Choice Pill",
+      "kind": "chip",
+      "refersTo": "choice-pill",
+      "description": "Form radio or checkbox answer.",
+      "html": "<label class=\"ds-pill\"><input type=\"checkbox\" checked><span>Podcasts</span></label>",
+      "css": ".ds-pill{position:relative}.ds-pill input{position:absolute;opacity:0;inset:0;margin:0}.ds-pill span{display:inline-flex;align-items:center;min-height:42px;padding:8px 16px;border-radius:999px;background:#fff;font-size:15px;box-shadow:inset 0 0 0 1px #e2e2e9}.ds-pill input:checked+span{background:#5b3df5;color:#fff;box-shadow:none}.ds-pill input:focus-visible+span{outline:2px solid #5b3df5;outline-offset:2px}"
+    },
+    {
+      "name": "Screen Mat",
+      "kind": "card",
+      "refersTo": "screen-panel",
+      "description": "Grey mat holding a real product screen.",
+      "html": "<figure class=\"ds-mat\"><div class=\"ds-screen\"></div></figure>",
+      "css": ".ds-mat{margin:0;background:#f4f4f7;border-radius:24px;padding:22px}.ds-screen{aspect-ratio:16/10;border-radius:14px;background:#fff;box-shadow:0 2px 4px rgb(11 11 18 / .04),0 24px 60px -20px rgb(41 24 140 / .28)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Category Standard",
+    "overview": "The site deliberately looks like the clipping platforms its buyers already know: a white page, one violet accent, a centred sentence-case headline, an ask bar with example chips, and a large stage showing the real product. Familiarity is the point. A creator or agency should recognise the category in one glance, then notice the difference in the words: pay once, own it, it runs by itself.\n\nEverything sits on white or on soft grey panels. Groups are made with space and tone, never with heavy outlines. The product does the visual work: real screen recordings in the hero and real dashboard screens through the page, each set on a soft grey panel like a photo on a mat. Motion is small and purposeful: one rotating word in the headline, tabs that swap recordings, and nothing that moves for people who turn motion off.",
+    "keyCharacteristics": [
+      "White ground, one violet accent, soft grey panels",
+      "Pill shapes for every control: buttons, ask bar, tabs, chips, form choices",
+      "Real product media on grey mats, with a soft lifted shadow on the screen itself",
+      "Archivo display with tight tracking over Geist body",
+      "Space and tone for grouping, hairlines only on chips and unselected pills"
+    ],
+    "rules": [
+      {
+        "name": "The One Voice Rule",
+        "body": "Violet is the only hue. It marks actions and the product's own side of any comparison; it never decorates.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Wash Rule",
+        "body": "At most one Violet Wash panel per view, so the highlighted choice stays obvious.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Every heading is sentence case. No kickers or eyebrow labels above headings.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Heavy Lines Rule",
+        "body": "Group with space and soft tones. Outlines are at most a 1px inset Hairline on small controls; containers never get borders.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do show the real product: recordings and screenshots of the working dashboard, with demo data said plainly.",
+      "Do use the real logo of every company or platform named.",
+      "Do keep violet for actions and for the product's own side of a comparison.",
+      "Do put product media on Mat Grey with the screen lift shadow.",
+      "Do keep every control a pill."
+    ],
+    "donts": [
+      "Don't draw borders around containers or use heavy box outlines.",
+      "Don't let anything overlay content: no floating bars or sticky overlays over text.",
+      "Don't add kickers or eyebrow labels above headings.",
+      "Don't use sparkle or star icons for AI.",
+      "Don't add a second accent hue or a dark mode."
+    ]
+  }
+}

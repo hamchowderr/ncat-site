@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "NCA Dashboard", description, creator: "@hamchowderr" },
 };
 
-export const viewport: Viewport = { themeColor: "#060709", colorScheme: "dark", viewportFit: "cover" };
+export const viewport: Viewport = { themeColor: "#ffffff", colorScheme: "light", viewportFit: "cover" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
