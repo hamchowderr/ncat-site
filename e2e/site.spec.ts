@@ -221,7 +221,7 @@ test("use-case tabs switch panels", async ({ page }) => {
   const tab = page.getByRole("tab", { name: "Podcast teams" });
   await tab.click();
   await expect(tab).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("tabpanel").filter({ hasText: "Every episode, handled the same way." })).toBeVisible();
+  await expect(page.getByRole("tabpanel").filter({ hasText: "The call ends. The episode gets to work." })).toBeVisible();
 });
 
 test("the FAQ opens and closes", async ({ page }) => {
@@ -282,4 +282,16 @@ test.describe("with reduced motion, nothing waits to appear", () => {
       expect(await el.evaluate((e) => Number(getComputedStyle(e).opacity)), sel).toBe(1);
     }
   });
+});
+
+test("the line under the headline fills in as you scroll", async ({ page }) => {
+  await page.goto("/");
+  const words = page.locator(".hero-sub .fw");
+  const total = await words.count();
+  const lit = () => page.locator(".hero-sub .fw.on").count();
+  const before = await lit();
+  expect(before).toBeGreaterThan(0);
+  expect(before).toBeLessThan(total);
+  await page.mouse.wheel(0, 500);
+  await expect.poll(lit).toBe(total);
 });

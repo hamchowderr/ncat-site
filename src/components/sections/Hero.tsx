@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FillText } from "@/components/FillText";
 import { HeroStage } from "@/components/HeroStage";
 import { prefillEarlyAccess } from "@/lib/prefill";
 import { useReducedMotion } from "@/lib/useReducedMotion";
@@ -43,10 +44,11 @@ export function Hero() {
           </span>
           <span className="sr">clipped</span> automatically
         </h1>
-        <p className="hero-sub">
-          Pick a ready-made automation and switch it on. From then on, every new recording is filed, transcribed, cut and captioned by itself,
-          on a server you own, with no AI tokens spent on each video.
-        </p>
+        <FillText
+          className="hero-sub"
+          text="Pick a ready-made automation and switch it on. From then on, every new recording is filed, transcribed, cut and captioned by itself, on a server you own, with no AI tokens spent on each video."
+          hot={["filed", "transcribed", "cut", "captioned"]}
+        />
         <div className="hero-cta">
           <a className="btn primary" href="#early">
             Get early access

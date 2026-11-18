@@ -2,66 +2,86 @@
 
 import { useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
-import { Clapperboard, Mic, Music, UsersRound, type LucideIcon } from "lucide-react";
+import { AudioLines, BadgeCheck, Clapperboard, FileText, Mic, Music, Play, SquarePen, UsersRound, type LucideIcon } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
 
-export const CASES = [
+type LogoName = Parameters<typeof Logo>[0]["name"];
+
+type Shape = "tall" | "wide" | "square" | "audio" | "doc" | "approve" | "edit";
+type Out = { label: string; shape: Shape; logos?: LogoName[] };
+
+export const CASES: { id: string; tab: string; icon: LucideIcon; title: string; body: string; input: string; outputs: Out[] }[] = [
   {
     id: "creators",
     tab: "Creators",
-    title: "Record once. Clips all week.",
-    body: "Upload your long video and it is filed, transcribed and cut into captioned clips for every platform on its own. Open the ones that need a touch in your editor. No per-minute fees.",
-    timeline: [
-      ["Mon", "Long video up, transcript done"],
-      ["Tue", "Clip 1, vertical, captioned, ready"],
-      ["Wed", "Clip 2 plus a thumbnail"],
-      ["Thu", "Clip 3 and an audio version"],
+    icon: Clapperboard,
+    title: "Hit record. The clips make themselves.",
+    body: "Drop in one long video and walk away. It is filed, transcribed and cut into captioned clips shaped for every feed, with no per-minute fees. The ones that need your touch open straight in your editor.",
+    input: "One long video",
+    outputs: [
+      { label: "Captioned vertical clips", shape: "tall", logos: ["tiktok", "instagram", "youtube"] },
+      { label: "Square cut for the feed", shape: "square", logos: ["instagram", "facebook"] },
+      { label: "Thumbnail", shape: "wide", logos: ["youtube"] },
+      { label: "Searchable transcript", shape: "doc" },
     ],
   },
   {
     id: "agencies",
     tab: "Editing agencies",
-    title: "One automation per client. Running forever.",
-    body: "Set up each client’s automation once, add an approval step, and let it run. Your editors spend their time on the creative work, and more clients doesn’t mean a bigger software bill.",
-    timeline: [
-      ["Client A", "12 shorts captioned, waiting for approval"],
-      ["Client B", "Podcast cut to clips, sent to the editor"],
-      ["Client C", "Thumbnails for 6 videos"],
-      ["You", "Every run in one list"],
+    icon: UsersRound,
+    title: "Every client on autopilot. Nothing ships unapproved.",
+    body: "Give each client their own automation with their logo, colours and font built in, plus an approval step before anything goes out. Your editors spend their time on the creative work, and more clients doesn’t mean a bigger software bill.",
+    input: "Raw footage from each client",
+    outputs: [
+      { label: "Clips in the client’s brand", shape: "tall", logos: ["tiktok", "instagram", "youtube"] },
+      { label: "Waiting for the client’s yes", shape: "approve" },
+      { label: "Timeline for your editor", shape: "edit", logos: ["premiere", "resolve", "finalcut"] },
+      { label: "Every run in one list", shape: "doc" },
     ],
   },
   {
     id: "podcasts",
     tab: "Podcast teams",
-    title: "Every episode, handled the same way.",
-    body: "Transcript, audio, clips and captions on every new episode, every time, filed where the team expects them.",
-    timeline: [
-      ["Lands", "Episode arrives in your folder"],
-      ["Then", "Transcript and MP3 ready"],
-      ["Then", "Captioned vertical clips"],
-      ["Last", "Waiting in the review queue"],
+    icon: Mic,
+    title: "The call ends. The episode gets to work.",
+    body: "Every new episode gets the same treatment, every time: audio, transcript, captioned clips and the full video, filed where the team expects them.",
+    input: "Episode recording",
+    outputs: [
+      { label: "Audio for every podcast app", shape: "audio", logos: ["spotify", "applepodcasts"] },
+      { label: "Captioned clips", shape: "tall", logos: ["tiktok", "instagram", "youtube"] },
+      { label: "Full episode video", shape: "wide", logos: ["youtube"] },
+      { label: "Transcript for show notes", shape: "doc" },
     ],
   },
   {
     id: "music",
     tab: "Music video teams",
-    title: "One master and one cover. The whole release.",
-    body: "Drop in the finished track and the artwork. Every version a release needs is made the same way each time, so the team stays on the shoot and the edit.",
-    timeline: [
-      ["16:9", "Cover art video with a waveform"],
-      ["9:16", "Vertical short for every feed"],
-      ["Lyric", "Lyric video from your own lyrics"],
-      ["Loop", "Spotify Canvas loop and a thumbnail"],
+    icon: Music,
+    title: "Drop the master. Get the whole rollout.",
+    body: "Hand over the finished track and the artwork. Every version a release needs is made the same way each time, so the team stays on the shoot and the edit.",
+    input: "Finished track and cover art",
+    outputs: [
+      { label: "Cover art video with a waveform", shape: "wide", logos: ["youtube"] },
+      { label: "Vertical short for every feed", shape: "tall", logos: ["tiktok", "instagram", "youtube"] },
+      { label: "Lyric video from your lyrics", shape: "wide", logos: ["youtube"] },
+      { label: "Spotify Canvas loop", shape: "tall", logos: ["spotify"] },
     ],
   },
-] as const;
+];
 
-const CASE_ICONS: Record<string, LucideIcon> = { creators: Clapperboard, agencies: UsersRound, podcasts: Mic, music: Music };
+function ShapeArt({ shape }: { shape: Shape }) {
+  if (shape === "audio") return <AudioLines size={22} />;
+  if (shape === "doc") return <FileText size={22} />;
+  if (shape === "approve") return <BadgeCheck size={22} />;
+  if (shape === "edit") return <SquarePen size={22} />;
+  return <Play size={16} fill="currentColor" />;
+}
 
 export function UseCases() {
   const [active, setActive] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const c = CASES[active];
-  const CaseIcon = CASE_ICONS[c.id] ?? Clapperboard;
+  const CaseIcon = c.icon;
   return (
     <section className="cases" id="use-cases" aria-labelledby="cases-title">
       <div className="wrap">
@@ -94,6 +114,7 @@ export function UseCases() {
               tabIndex={i === active ? 0 : -1}
               onClick={() => setActive(i)}
             >
+              <x.icon size={17} aria-hidden="true" />
               {x.tab}
             </button>
           ))}
@@ -106,14 +127,31 @@ export function UseCases() {
             <h3>{c.title}</h3>
             <p>{c.body}</p>
           </div>
-          <ol className="case-line">
-            {c.timeline.map(([k, v]) => (
-              <li key={k + v}>
-                <span className="when">{k}</span>
-                <span>{v}</span>
-              </li>
-            ))}
-          </ol>
+          <div className="case-flow" key={`flow-${c.id}`}>
+            <p className="case-in">
+              <span className="case-in-label">In</span>
+              {c.input}
+            </p>
+            <ul className="case-outs" aria-label="What comes out">
+              {c.outputs.map((o, i) => (
+                <li key={o.label} style={{ animationDelay: `${0.08 * i + 0.1}s` }}>
+                  <span className={`case-shape ${o.shape}`} aria-hidden="true">
+                    <ShapeArt shape={o.shape} />
+                  </span>
+                  <span className="case-out-text">
+                    <span className="case-out-label">{o.label}</span>
+                    {o.logos && (
+                      <span className="case-logos">
+                        {o.logos.map((l) => (
+                          <Logo key={l} name={l} />
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>

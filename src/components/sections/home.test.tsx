@@ -10,6 +10,17 @@ import { HowItWorks } from "./HowItWorks";
 import { UseCases } from "./UseCases";
 
 describe("Hero", () => {
+  it("fills the line under the headline in as you scroll, with the work it does in colour", () => {
+    const { container } = render(<Hero />);
+    const line = container.querySelector(".hero-sub.fill-text")!;
+    expect(line).toHaveTextContent(/every new recording is filed, transcribed, cut and captioned by itself/);
+    const hot = [...line.querySelectorAll(".fw.hot")].map((w) => w.textContent);
+    expect(hot).toEqual(["filed,", "transcribed,", "cut", "captioned"]);
+    // it starts part filled, so the line is never all grey
+    const lit = line.querySelectorAll(".fw.on").length;
+    expect(lit).toBeGreaterThan(0);
+    expect(lit).toBeLessThan(line.querySelectorAll(".fw").length);
+  });
   it("carries the Social Media Ready slogan above the headline", () => {
     const { container } = render(<Hero />);
     const slogan = screen.getByText("Social Media Ready");
@@ -23,7 +34,7 @@ describe("Hero", () => {
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
     render(<Hero />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Your content, organized and.*automatically/);
-    expect(screen.getByText(/Pick a ready-made automation and switch it on/)).toBeInTheDocument();
+    expect(document.querySelector(".hero-sub")).toHaveTextContent(/Pick a ready-made automation and switch it on/);
     expect(screen.queryByLabelText("Describe an automation")).toBeNull();
     const presets = within(screen.getByRole("list", { name: /Ready-made automations/ })).getAllByRole("button");
     expect(presets.map((b) => b.textContent)).toEqual([...PRESETS]);
@@ -121,7 +132,20 @@ describe("UseCases", () => {
   it("switches who it is for", () => {
     render(<UseCases />);
     fireEvent.click(screen.getByRole("tab", { name: "Podcast teams" }));
-    expect(within(screen.getByRole("tabpanel")).getByRole("heading")).toHaveTextContent("Every episode, handled the same way.");
+    expect(within(screen.getByRole("tabpanel")).getByRole("heading")).toHaveTextContent("The call ends. The episode gets to work.");
+  });
+  it("shows what goes in and what comes out for each team, and every tab has an icon", () => {
+    render(<UseCases />);
+    for (const tab of screen.getAllByRole("tab")) expect(tab.querySelector("svg")).not.toBeNull();
+    for (const name of ["Creators", "Editing agencies", "Podcast teams", "Music video teams"]) {
+      fireEvent.click(screen.getByRole("tab", { name }));
+      const panel = screen.getByRole("tabpanel");
+      expect(panel.querySelector(".case-in")?.textContent).toMatch(/^In.+/);
+      const outs = within(within(panel).getByRole("list", { name: "What comes out" })).getAllByRole("listitem");
+      expect(outs).toHaveLength(4);
+      for (const o of outs) expect(o.querySelector(".case-shape svg")).not.toBeNull();
+    }
+    expect(screen.queryByText("Record once. Clips all week.")).toBeNull();
   });
 });
 
