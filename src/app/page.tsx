@@ -7,6 +7,8 @@ import { HowItWorks } from "@/components/sections/HowItWorks";
 import { NoFees } from "@/components/sections/NoFees";
 import { PlatformExpert } from "@/components/sections/PlatformExpert";
 import { Proof } from "@/components/sections/Proof";
+import { SplitScene } from "@/components/sections/SplitScene";
+import { TryIt } from "@/components/sections/TryIt";
 import { UseCases } from "@/components/sections/UseCases";
 
 export default function Home() {
@@ -14,8 +16,10 @@ export default function Home() {
     <>
       <Hero />
       <Proof />
+      <SplitScene />
       <Features />
       <HowItWorks />
+      <TryIt />
       <Engine />
       <PlatformExpert />
       <UseCases />

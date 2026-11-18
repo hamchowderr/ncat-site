@@ -30,3 +30,13 @@ if (typeof window !== "undefined" && !("IntersectionObserver" in window)) {
   }
   Object.assign(window, { IntersectionObserver: NoObserver });
 }
+
+// Nor ResizeObserver; the scroll scene and the shape demo measure their boxes with it.
+if (typeof window !== "undefined" && !("ResizeObserver" in window)) {
+  class NoResize {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  Object.assign(window, { ResizeObserver: NoResize });
+}
