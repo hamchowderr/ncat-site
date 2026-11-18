@@ -126,7 +126,7 @@ test("every logo and picture loads", async ({ page }) => {
   }
 });
 
-test("every feature is a dashboard recording, shown whole, in the same shape and frame", async ({ page, request }) => {
+test("every feature is a dashboard recording, shown whole, in the same 4:3 shape, on one soft surface", async ({ page, request }) => {
   await page.goto("/");
   const shots = page.locator("#features .shot video");
   await expect(shots).toHaveCount(8);
@@ -136,12 +136,15 @@ test("every feature is a dashboard recording, shown whole, in the same shape and
     const box = (await img.boundingBox())!;
     ratios.push(box.width / box.height);
     const frame = (await img.locator("..").boundingBox())!;
-    // the screen sits centred on its mat, with the same space on each side
+    // the recording sits centred on its surface, with the same space on each side
     const left = box.x - frame.x;
     const right = frame.x + frame.width - (box.x + box.width);
     expect(Math.abs(left - right)).toBeLessThanOrEqual(1.5);
+    expect(await img.evaluate((v) => getComputedStyle(v).boxShadow)).toBe("none");
+    // and is a zoomed-in recording, not a shrunk whole screen
+    await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1280, 960]);
   }
-  for (const r of ratios) expect(Math.abs(r - ratios[0])).toBeLessThan(0.02);
+  for (const r of ratios) expect(Math.abs(r - 4 / 3)).toBeLessThan(0.02);
   for (const v of await shots.all()) {
     for (const attr of ["src", "poster"]) {
       const url = (await v.getAttribute(attr))!;

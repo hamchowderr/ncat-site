@@ -45,8 +45,8 @@ export function FeatureVideo({ name, label, small }: Props) {
         playsInline
         preload="metadata"
         controls={reduce}
-        width={1190}
-        height={900}
+        width={1280}
+        height={960}
       />
     </figure>
   );

@@ -700,24 +700,22 @@ html {
   margin: 0;
   background: var(--panel);
   border-radius: var(--r-lg);
-  padding: clamp(12px, 2vw, 24px);
+  padding: clamp(10px, 1.6vw, 20px);
 }
+/* One soft surface with the recording on it: no shadow, frame or line. */
 .shot video {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1190 / 900;
+  aspect-ratio: 4 / 3;
   background: #fafafa;
-  border-radius: 12px;
-  box-shadow:
-    0 1px 2px rgb(11 11 18 / 0.06),
-    0 12px 32px -12px rgb(11 11 18 / 0.2);
+  border-radius: 14px;
 }
 .shot.sm {
-  padding: clamp(10px, 1.4vw, 16px);
+  padding: clamp(8px, 1.2vw, 14px);
 }
 .shot.sm video {
-  border-radius: 10px;
+  border-radius: 12px;
 }
 .logo-chips {
   display: grid;
