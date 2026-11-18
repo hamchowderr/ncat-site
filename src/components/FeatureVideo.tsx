@@ -46,7 +46,7 @@ export function FeatureVideo({ name, label, small }: Props) {
         preload="metadata"
         controls={reduce}
         width={1280}
-        height={960}
+        height={800}
       />
     </figure>
   );
