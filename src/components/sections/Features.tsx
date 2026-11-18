@@ -1,4 +1,12 @@
-import { CalendarClock, FolderTree, LayoutTemplate, MessageSquareCheck, Palette, RefreshCw, Scissors, Workflow } from "lucide-react";
+import { MovingIcon } from "@/components/MovingIcon";
+import CheckedIcon from "@/components/itshover/checked-icon";
+import ClockIcon from "@/components/itshover/clock-icon";
+import LayersIcon from "@/components/itshover/layers-icon";
+import LayoutDashboardIcon from "@/components/itshover/layout-dashboard-icon";
+import PaintIcon from "@/components/itshover/paint-icon";
+import RefreshIcon from "@/components/itshover/refresh-icon";
+import SendIcon from "@/components/itshover/send-icon";
+import UploadIcon from "@/components/itshover/upload-icon";
 import { FeatureStory, type StoryRow } from "@/components/FeatureStory";
 import { FeatureVideo } from "@/components/FeatureVideo";
 import { Reveal } from "@/components/Reveal";
@@ -10,7 +18,7 @@ const ROWS: StoryRow[] = [
   {
     id: "templates",
     step: "Pick",
-    icon: <LayoutTemplate size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={LayoutDashboardIcon} size={18} trigger=".story-card" />,
     title: "Start from a ready-made automation",
     body: "Pick one for clips, captions, transcripts or audio and switch it on. It runs on every new upload with plain editing steps, so no AI tokens are spent on each video. Every step sits on a canvas you can read and change.",
     points: ["Ready-made automations for clips, captions, transcripts and audio", "Steps connect themselves, so there is nothing to wire up", "Need something else? Describe it and the agent builds it once"],
@@ -20,7 +28,7 @@ const ROWS: StoryRow[] = [
   {
     id: "runs",
     step: "Runs by itself",
-    icon: <Workflow size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={UploadIcon} size={18} trigger=".story-card" />,
     title: "Every new recording runs by itself",
     body: "Once it is on, an automation starts on its own when a file is uploaded, lands in a watched folder, a schedule comes round or another tool calls it. Plain editing steps do the work, so nothing is billed per video.",
     points: ["Starts from an upload, a folder, a schedule or a webhook", "Watch each step finish, or come back to a list of what happened", "Comes with its own automation builder, made for content"],
@@ -37,7 +45,7 @@ const ROWS: StoryRow[] = [
   {
     id: "review",
     step: "Approve",
-    icon: <MessageSquareCheck size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={CheckedIcon} size={18} trigger=".story-card" />,
     title: "Nothing goes out until someone says yes",
     body: "Add an approval step anywhere. The run pauses, the right people get an alert, and they watch the clip, leave a comment pinned to the exact moment and approve it or ask for changes.",
     points: ["Choose who can approve each step", "Comments pinned to a moment in the clip", "Decide what happens if nobody answers in time"],
@@ -47,7 +55,7 @@ const ROWS: StoryRow[] = [
   {
     id: "editors",
     step: "Finish",
-    icon: <Scissors size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={SendIcon} size={18} trigger=".story-card" />,
     title: "Finish it in the editor you already use",
     body: "The repeatable work happens automatically. Anything that still needs a human opens in your editing app with every cut adjustable, or goes to your editor already trimmed, captioned and labelled.",
     points: ["Timelines for Premiere Pro, DaVinci Resolve and Final Cut Pro", "CapCut-ready clip packs", "Caption files and the finished clips in one download"],
@@ -77,28 +85,28 @@ const TILE_SURFACE = { "--spotlight-card-surface": "transparent", "--spotlight-c
 const TILES: { title: string; icon: React.ReactNode; body: string; video: string; alt: string }[] = [
   {
     title: "Your brand, set once",
-    icon: <Palette size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={PaintIcon} size={18} trigger=".tile" />,
     body: "Logo, colour, font and music are saved in settings and used by every step that needs them. No step ever asks again.",
     video: "brand",
     alt: "Screen recording: the logo, brand colour and theme music are saved in Settings, then the Add a logo step shows it is handled for you.",
   },
   {
     title: "Organized in your own storage",
-    icon: <FolderTree size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={LayersIcon} size={18} trigger=".tile" />,
     body: "Every upload and every output is filed in your bucket, with its length, picture size and the run that made it.",
     video: "files",
     alt: "Screen recording: a new TikTok clips folder is made in the Files screen, a captioned clip is renamed and moved into it.",
   },
   {
     title: "Retries, then an alert",
-    icon: <RefreshCw size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={RefreshIcon} size={18} trigger=".tile" />,
     body: "If the toolkit is busy or offline, the step waits and tries again. If it still fails you get an alert saying what went wrong.",
     video: "alerts",
     alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails and the alert says what went wrong. Sped up while it waits.",
   },
   {
     title: "On a schedule, in your time zone",
-    icon: <CalendarClock size={18} strokeWidth={2} />,
+    icon: <MovingIcon icon={ClockIcon} size={18} trigger=".tile" />,
     body: "Run it every morning or every Friday at 9. The canvas shows what starts it and when it last ran.",
     video: "schedule",
     alt: "Screen recording: an automation's trigger is changed to a Schedule, every day at 09:00 America/Los_Angeles, and switched on.",
@@ -124,12 +132,12 @@ export function Features() {
             <Reveal key={t.title} delay={(i % 2) * 0.08}>
               <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
                 <FeatureVideo name={t.video} label={t.alt} small />
-                <h4>
+                <div className="tile-head">
                   <span className="tile-icon" aria-hidden="true">
                     {t.icon}
                   </span>
-                  {t.title}
-                </h4>
+                  <h4>{t.title}</h4>
+                </div>
                 <p>{t.body}</p>
               </SpotlightCard>
             </Reveal>

@@ -28,12 +28,12 @@ function Row({ r }: { r: StoryRow }) {
   return (
     <article className="row story-row" id={r.id}>
       <div className="row-text">
-        <p className="story-step">
+        <div className="story-step">
           <span className="story-icon" aria-hidden="true">
             {r.icon}
           </span>
           {r.step}
-        </p>
+        </div>
         <h3>{r.title}</h3>
         <p>{r.body}</p>
         <ul className="ticks">

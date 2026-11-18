@@ -14,12 +14,13 @@ describe("Hero", () => {
     const { container } = render(<Hero />);
     const line = container.querySelector(".hero-sub.fill-text")!;
     expect(line).toHaveTextContent(/every new recording is filed, transcribed, cut and captioned by itself/);
-    const hot = [...line.querySelectorAll(".fw.hot")].map((w) => w.textContent);
-    expect(hot).toEqual(["filed,", "transcribed,", "cut", "captioned"]);
-    // it starts part filled, so the line is never all grey
+    const marks = [...line.querySelectorAll(".hl")].map((w) => w.textContent);
+    expect(marks).toEqual(["ready-made automation", "filed, transcribed, cut and captioned", "server you own", "no AI tokens"]);
+    // only the first few words are filled when the page opens; the rest wait for the scroll
     const lit = line.querySelectorAll(".fw.on").length;
     expect(lit).toBeGreaterThan(0);
-    expect(lit).toBeLessThan(line.querySelectorAll(".fw").length);
+    expect(lit).toBeLessThan(line.querySelectorAll(".fw").length / 4);
+    expect(line.querySelectorAll(".hl.on")).toHaveLength(0);
   });
   it("carries the Social Media Ready slogan above the headline", () => {
     const { container } = render(<Hero />);
@@ -155,7 +156,14 @@ describe("story and icons", () => {
     const steps = [...container.querySelectorAll(".story-step")].map((s) => s.textContent);
     expect(steps).toEqual(["Pick", "Runs by itself", "Approve", "Finish"]);
     for (const s of container.querySelectorAll(".story-step")) expect(s.querySelector("svg")).not.toBeNull();
-    for (const t of container.querySelectorAll(".tile h4")) expect(t.querySelector("svg")).not.toBeNull();
+    for (const t of container.querySelectorAll(".tile-head")) expect(t.querySelector(".tile-icon svg")).not.toBeNull();
+  });
+  it("uses moving icons that play when their card is hovered", () => {
+    const { container } = render(<HowItWorks />);
+    for (const li of container.querySelectorAll(".steps li")) expect(li.querySelector(".mi svg")).not.toBeNull();
+    const hero = render(<Hero />).container;
+    expect(hero.querySelectorAll(".hero-icons .hi .mi svg")).toHaveLength(6);
+    expect(hero.querySelector(".hero-icons")).toHaveAttribute("aria-hidden", "true");
   });
   it("gives every how-it-works step and every use case an icon", () => {
     const { container } = render(<HowItWorks />);

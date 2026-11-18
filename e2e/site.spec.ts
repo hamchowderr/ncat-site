@@ -154,8 +154,10 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
   }
 });
 
-test("a feature recording plays while it is on screen and pauses when scrolled away", async ({ page }) => {
+test("a feature recording plays while it is on screen and pauses when scrolled away", async ({ page, isMobile }) => {
   await page.goto("/");
+  // on wide screens the features swap to the scroll stack once the page is live
+  if (!isMobile) await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
   const v = page.locator("#review .shot video");
   await v.scrollIntoViewIfNeeded();
   await expect.poll(() => v.evaluate((x: HTMLVideoElement) => !x.paused && x.currentTime > 0), { timeout: 15_000 }).toBe(true);
@@ -291,7 +293,47 @@ test("the line under the headline fills in as you scroll", async ({ page }) => {
   const lit = () => page.locator(".hero-sub .fw.on").count();
   const before = await lit();
   expect(before).toBeGreaterThan(0);
-  expect(before).toBeLessThan(total);
-  await page.mouse.wheel(0, 500);
+  expect(before).toBeLessThan(total / 4);
+  await expect(page.locator(".hero-sub .hl.on")).toHaveCount(0);
+  await page.mouse.wheel(0, 120);
+  await expect.poll(lit).toBeGreaterThan(before);
+  await page.mouse.wheel(0, 400);
   await expect.poll(lit).toBe(total);
+  await expect(page.locator(".hero-sub .hl.on")).toHaveCount(4);
+});
+
+test("big hero icons sit beside the headline, never on it, and move when hovered", async ({ page, isMobile }) => {
+  await page.goto("/");
+  const icons = page.locator(".hero-icons .hi");
+  if (isMobile) {
+    await expect(page.locator(".hero-icons")).toBeHidden();
+    return;
+  }
+  await expect(icons).toHaveCount(6);
+  await page.waitForTimeout(1500);
+  // the boxes of the words themselves, not of the full-width blocks they sit in
+  const text = await page.evaluate(() => {
+    const boxes: { x: number; y: number; width: number; height: number }[] = [];
+    for (const el of document.querySelectorAll(".hero h1, .hero-sub, .slogan")) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      for (const r of range.getClientRects()) boxes.push({ x: r.x, y: r.y, width: r.width, height: r.height });
+    }
+    for (const el of document.querySelectorAll(".hero-cta .btn, .chips button")) {
+      const r = el.getBoundingClientRect();
+      boxes.push({ x: r.x, y: r.y, width: r.width, height: r.height });
+    }
+    return boxes;
+  });
+  for (const icon of await icons.all()) {
+    const b = (await icon.locator("svg").boundingBox())!;
+    for (const t of text) {
+      const overlap = b.x < t.x + t.width && b.x + b.width > t.x && b.y < t.y + t.height && b.y + b.height > t.y;
+      expect(overlap).toBe(false);
+    }
+  }
+  const plane = page.locator(".hi-6 svg");
+  const before = await plane.innerHTML();
+  await plane.hover();
+  await expect.poll(() => plane.innerHTML()).not.toBe(before);
 });

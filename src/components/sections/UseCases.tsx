@@ -2,7 +2,12 @@
 
 import { useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
-import { AudioLines, BadgeCheck, Clapperboard, FileText, Mic, Music, Play, SquarePen, UsersRound, type LucideIcon } from "lucide-react";
+import { AudioLines, BadgeCheck, FileText, Play, SquarePen } from "lucide-react";
+import { MovingIcon } from "@/components/MovingIcon";
+import CameraIcon from "@/components/itshover/camera-icon";
+import UsersGroupIcon from "@/components/itshover/users-group-icon";
+import Volume2Icon from "@/components/itshover/volume-2-icon";
+import VinylIcon from "@/components/itshover/vinyl-icon";
 import { Logo } from "@/components/brand/Logo";
 
 type LogoName = Parameters<typeof Logo>[0]["name"];
@@ -10,11 +15,11 @@ type LogoName = Parameters<typeof Logo>[0]["name"];
 type Shape = "tall" | "wide" | "square" | "audio" | "doc" | "approve" | "edit";
 type Out = { label: string; shape: Shape; logos?: LogoName[] };
 
-export const CASES: { id: string; tab: string; icon: LucideIcon; title: string; body: string; input: string; outputs: Out[] }[] = [
+export const CASES: { id: string; tab: string; icon: typeof CameraIcon; title: string; body: string; input: string; outputs: Out[] }[] = [
   {
     id: "creators",
     tab: "Creators",
-    icon: Clapperboard,
+    icon: CameraIcon,
     title: "Hit record. The clips make themselves.",
     body: "Drop in one long video and walk away. It is filed, transcribed and cut into captioned clips shaped for every feed, with no per-minute fees. The ones that need your touch open straight in your editor.",
     input: "One long video",
@@ -28,7 +33,7 @@ export const CASES: { id: string; tab: string; icon: LucideIcon; title: string; 
   {
     id: "agencies",
     tab: "Editing agencies",
-    icon: UsersRound,
+    icon: UsersGroupIcon,
     title: "Every client on autopilot. Nothing ships unapproved.",
     body: "Give each client their own automation with their logo, colours and font built in, plus an approval step before anything goes out. Your editors spend their time on the creative work, and more clients doesn’t mean a bigger software bill.",
     input: "Raw footage from each client",
@@ -42,7 +47,7 @@ export const CASES: { id: string; tab: string; icon: LucideIcon; title: string; 
   {
     id: "podcasts",
     tab: "Podcast teams",
-    icon: Mic,
+    icon: Volume2Icon,
     title: "The call ends. The episode gets to work.",
     body: "Every new episode gets the same treatment, every time: audio, transcript, captioned clips and the full video, filed where the team expects them.",
     input: "Episode recording",
@@ -56,7 +61,7 @@ export const CASES: { id: string; tab: string; icon: LucideIcon; title: string; 
   {
     id: "music",
     tab: "Music video teams",
-    icon: Music,
+    icon: VinylIcon,
     title: "Drop the master. Get the whole rollout.",
     body: "Hand over the finished track and the artwork. Every version a release needs is made the same way each time, so the team stays on the shoot and the edit.",
     input: "Finished track and cover art",
@@ -114,7 +119,7 @@ export function UseCases() {
               tabIndex={i === active ? 0 : -1}
               onClick={() => setActive(i)}
             >
-              <x.icon size={17} aria-hidden="true" />
+              <MovingIcon icon={x.icon} size={17} trigger="button" />
               {x.tab}
             </button>
           ))}
@@ -122,7 +127,7 @@ export function UseCases() {
         <div className="case" id="case-panel" role="tabpanel" aria-labelledby={`case-${c.id}`}>
           <div className="case-text" key={c.id}>
             <span className="case-icon" aria-hidden="true">
-              <CaseIcon size={22} />
+              <MovingIcon icon={CaseIcon} size={22} trigger=".case-text" />
             </span>
             <h3>{c.title}</h3>
             <p>{c.body}</p>
