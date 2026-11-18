@@ -84,11 +84,16 @@ export function SplitScene() {
     const foot = st.querySelector<HTMLElement>(".split-foot");
     const next = st.querySelector<HTMLElement>(".split-next");
     let raf = 0;
+    // the scene follows the scroll with a little lag, so each change eases in rather than jumping
+    let shown = -1;
 
     const paint = () => {
       raf = 0;
       const box = el.getBoundingClientRect();
-      const p = clamp(-box.top / Math.max(1, box.height - window.innerHeight));
+      const target = clamp(-box.top / Math.max(1, box.height - window.innerHeight));
+      shown = shown < 0 || Math.abs(target - shown) < 0.0005 ? target : shown + (target - shown) * 0.09;
+      const p = shown;
+      if (p !== target) raf = requestAnimationFrame(paint);
       const W = st.clientWidth;
       const H = st.clientHeight;
       const narrow = W < 600;
@@ -142,9 +147,9 @@ export function SplitScene() {
         fs.opacity = String(1 - local(p, 0.3 + i * 0.035, 0.38 + i * 0.035));
         // once a piece has its shape it plays as the finished clip, and stops when the scene is gone
         const v = videos[i];
-        const shown = t > 0.9 && onScreen;
-        if (shown && v.paused) v.play().catch(() => {});
-        if (!shown && !v.paused) v.pause();
+        const playing = t > 0.9 && onScreen;
+        if (playing && v.paused) v.play().catch(() => {});
+        if (!playing && !v.paused) v.pause();
         s.setProperty("--lift", String(t));
         s.setProperty("--ok", String(local(p, 0.46 + i * 0.02, 0.5 + i * 0.02)));
 

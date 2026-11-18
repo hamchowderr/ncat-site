@@ -2120,7 +2120,7 @@ fieldset[aria-invalid="true"] .pill span {
 
 /* Live: the section is tall, the scene stays pinned while it plays, every piece is placed by the script. */
 .split.is-live {
-  height: 280vh;
+  height: 440vh;
 }
 .split.is-live .split-pin {
   position: sticky;

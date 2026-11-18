@@ -9,7 +9,8 @@ async function scrollSplit(page: Page, p: number) {
     const top = el.getBoundingClientRect().top + window.scrollY;
     window.scrollTo(0, top + p * (el.offsetHeight - window.innerHeight));
   }, p);
-  await page.waitForTimeout(400);
+  // the scene eases to where the scroll is, so give it time to settle
+  await page.waitForTimeout(1600);
 }
 
 test("one recording splits into clips that each take their platform's shape and land by its logo", async ({ page }) => {
@@ -90,6 +91,22 @@ test("one recording splits into clips that each take their platform's shape and 
   const top = Math.min(...(await Promise.all((await clips.all()).map(async (c) => (await c.boundingBox())!.y))));
   expect(next.y + next.height).toBeLessThanOrEqual(top + 1);
   expect(firstClip.width).toBeGreaterThan(0);
+});
+
+test("the scroll scene takes a long scroll and eases into each change instead of jumping", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".split.is-live")).toHaveCount(1);
+  const [h, vh] = await page.evaluate(() => [document.querySelector<HTMLElement>(".split")!.offsetHeight, window.innerHeight]);
+  expect(h).toBeGreaterThanOrEqual(vh * 4);
+  await scrollSplit(page, 0);
+  // jump straight to the end: a moment later the scene is still on its way there
+  await page.evaluate(() => {
+    const el = document.querySelector<HTMLElement>(".split")!;
+    window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY + el.offsetHeight - window.innerHeight);
+  });
+  await page.waitForTimeout(80);
+  expect(await page.locator(".split-steps li.on").count()).toBeLessThan(5);
+  await expect(page.locator(".split-steps li.on")).toHaveCount(5, { timeout: 4000 });
 });
 
 test.describe("with reduced motion, the scroll scene", () => {
