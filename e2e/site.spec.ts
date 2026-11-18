@@ -286,8 +286,11 @@ test.describe("with reduced motion, nothing waits to appear", () => {
   });
 });
 
-test("the line under the headline fills in as you scroll", async ({ page }) => {
+test("the line under the headline fills in as you scroll", async ({ page, isMobile }) => {
   await page.goto("/");
+  // let the page settle: on wide screens the features swap to the scroll stack once it is live
+  if (!isMobile) await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
+  await expect.poll(() => page.locator(".hero-sub .fw.on").count()).toBeGreaterThan(0);
   const words = page.locator(".hero-sub .fw");
   const total = await words.count();
   const lit = () => page.locator(".hero-sub .fw.on").count();
@@ -295,9 +298,9 @@ test("the line under the headline fills in as you scroll", async ({ page }) => {
   expect(before).toBeGreaterThan(0);
   expect(before).toBeLessThan(total / 4);
   await expect(page.locator(".hero-sub .hl.on")).toHaveCount(0);
-  await page.mouse.wheel(0, 120);
+  await page.evaluate(() => window.scrollTo({ top: 120, behavior: "instant" }));
   await expect.poll(lit).toBeGreaterThan(before);
-  await page.mouse.wheel(0, 400);
+  await page.evaluate(() => window.scrollTo({ top: 700, behavior: "instant" }));
   await expect.poll(lit).toBe(total);
   await expect(page.locator(".hero-sub .hl.on")).toHaveCount(4);
 });
