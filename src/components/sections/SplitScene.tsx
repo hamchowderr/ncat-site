@@ -15,12 +15,20 @@ import { fitFrame, frameName, frameRatio, type Frame } from "@/lib/clipShapes";
  * The shapes are the ones the dashboard's Clips step makes. With motion off (or before the page's
  * script runs) it shows the finished row of clips.
  */
-export const SPLIT_CLIPS: { platform: string; place: string; frame: Frame; caption: string; share: number }[] = [
-  { platform: "TikTok", place: "TikTok", frame: "9:16", caption: "nobody edits this by hand", share: 0.22 },
-  { platform: "Instagram", place: "Instagram feed", frame: "4:5", caption: "it cuts at the pauses", share: 0.17 },
-  { platform: "YouTube", place: "YouTube Shorts", frame: "9:16", caption: "captions land by themselves", share: 0.24 },
-  { platform: "Facebook", place: "Facebook Reels", frame: "9:16", caption: "every feed gets its shape", share: 0.18 },
-  { platform: "LinkedIn", place: "LinkedIn", frame: "original", caption: "set it up once", share: 0.19 },
+/** The recording: a real interview from LA Tech Week, 3 min 7 s, run through the clips steps. */
+export const SPLIT_RECORDING = { label: "Interview at LA Tech Week, 3 min 7 s, filed and transcribed", seconds: 187.26, film: "/media/split/recording.jpg", frames: 24 };
+
+/**
+ * The five clips the run made from it, in the order they were said. `from`/`to` is the stretch of
+ * the recording each piece of the strip covers (cut in the quiet gaps between answers); `said` is a
+ * line of what was actually said in that clip, and the clip itself has those words burned in as captions.
+ */
+export const SPLIT_CLIPS: { platform: string; place: string; frame: Frame; said: string; from: number; to: number; video: string; poster: string }[] = [
+  { platform: "LinkedIn", place: "LinkedIn", frame: "original", said: "Hello, my name is Tylan Miller.", from: 0, to: 42, video: "/media/split/linkedin.mp4", poster: "/media/split/linkedin.jpg" },
+  { platform: "TikTok", place: "TikTok", frame: "9:16", said: "clipping, overlaying, captions", from: 42, to: 73, video: "/media/split/tiktok.mp4", poster: "/media/split/tiktok.jpg" },
+  { platform: "Instagram", place: "Instagram feed", frame: "4:5", said: "how can we make this cheaper?", from: 73, to: 99, video: "/media/split/instagram.mp4", poster: "/media/split/instagram.jpg" },
+  { platform: "YouTube", place: "YouTube Shorts", frame: "9:16", said: "they don’t have to be tech adjacent", from: 99, to: 133, video: "/media/split/youtube.mp4", poster: "/media/split/youtube.jpg" },
+  { platform: "Facebook", place: "Facebook Reels", frame: "9:16", said: "come out and learn", from: 133, to: 187.26, video: "/media/split/facebook.mp4", poster: "/media/split/facebook.jpg" },
 ];
 
 export const SPLIT_STEPS = [
@@ -34,20 +42,8 @@ export const SPLIT_STEPS = [
 /** The editors a run's cuts can go to as a timeline, for anyone finishing by hand. */
 export const SPLIT_EDITORS = ["Premiere Pro", "DaVinci Resolve", "Final Cut Pro"] as const;
 
-// A fixed, pause-shaped waveform so the server and the browser draw the same bars.
-const BARS = Array.from({ length: 96 }, (_, i) => {
-  const pause = [21, 37, 61, 78].some((c) => Math.abs(i - c) < 2);
-  return pause ? 0.08 : 0.25 + 0.75 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * 0.43));
-});
-
-// each clip's share of the bars, worked out once
-const CLIP_BARS = SPLIT_CLIPS.reduce<{ from: number; bars: number[][] }>(
-  (acc, c) => {
-    const count = Math.round(c.share * BARS.length);
-    return { from: acc.from + count, bars: [...acc.bars, BARS.slice(acc.from, acc.from + count)] };
-  },
-  { from: 0, bars: [] },
-).bars;
+// a fixed waveform for the next recording, so the server and the browser draw the same bars
+const BARS = Array.from({ length: 40 }, (_, i) => 0.25 + 0.75 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * 0.43)));
 
 function DestLogo({ platform }: { platform: string }) {
   if (platform === "LinkedIn") return <FileLogo name="linkedin" size={26} />;
@@ -81,6 +77,8 @@ export function SplitScene() {
     const clips = Array.from(st.querySelectorAll<HTMLElement>(".split-clip"));
     const dests = Array.from(st.querySelectorAll<HTMLElement>(".split-dest"));
     const said = Array.from(st.querySelectorAll<HTMLElement>(".split-said"));
+    const films = Array.from(st.querySelectorAll<HTMLElement>(".split-film"));
+    const videos = Array.from(st.querySelectorAll<HTMLVideoElement>(".split-video"));
     const playhead = st.querySelector<HTMLElement>(".split-playhead");
     const name = st.querySelector<HTMLElement>(".split-name");
     const foot = st.querySelector<HTMLElement>(".split-foot");
@@ -118,8 +116,10 @@ export function SplitScene() {
       const top = topBand + (room - total) / 2;
 
       let x = pad;
+      const onScreen = box.bottom > 0 && box.top < window.innerHeight;
       SPLIT_CLIPS.forEach((c, i) => {
-        const sw = c.share * (SW - 4 * g);
+        const share = (c.to - c.from) / SPLIT_RECORDING.seconds;
+        const sw = share * (SW - 4 * g);
         const from = { x, y: stripY, w: sw, h: stripH };
         x += sw + g;
         const row = Math.floor(i / cols);
@@ -134,7 +134,17 @@ export function SplitScene() {
         s.transform = `translate(${mix(from.x, to.x, t)}px, ${mix(from.y, to.y, t)}px)`;
         s.width = `${mix(from.w, to.w, t)}px`;
         s.height = `${mix(from.h, to.h, t)}px`;
-        s.setProperty("--cap", String(local(p, 0.34 + i * 0.03, 0.42 + i * 0.03)));
+        // the strip shows frames of the recording itself, each piece starting at its own moment
+        const frameW = (mix(from.h, to.h, t) * 16) / 9;
+        const fs = films[i].style;
+        fs.backgroundSize = `${frameW * SPLIT_RECORDING.frames}px 100%`;
+        fs.backgroundPosition = `${-(c.from / SPLIT_RECORDING.seconds) * frameW * SPLIT_RECORDING.frames}px 0`;
+        fs.opacity = String(1 - local(p, 0.3 + i * 0.035, 0.38 + i * 0.035));
+        // once a piece has its shape it plays as the finished clip, and stops when the scene is gone
+        const v = videos[i];
+        const shown = t > 0.9 && onScreen;
+        if (shown && v.paused) v.play().catch(() => {});
+        if (!shown && !v.paused) v.pause();
         s.setProperty("--lift", String(t));
         s.setProperty("--ok", String(local(p, 0.46 + i * 0.02, 0.5 + i * 0.02)));
 
@@ -207,39 +217,34 @@ export function SplitScene() {
             ))}
           </ol>
           <p className="sr">
-            A recording is filed, transcribed and cut at the pauses into five clips. Each one is reshaped and captioned with its own words: {SPLIT_CLIPS.map((c) => `${frameName(c.frame)} for ${c.place}`).join(", ")}. Someone approves them in Review, and they are ready for every feed. Anyone finishing by hand gets the cuts as a timeline for {SPLIT_EDITORS.join(", ")}. No AI tokens are spent on these clips, and the next recording runs the same way.
+            A real interview from LA Tech Week is filed, transcribed and cut at the pauses into five clips. Each one is reshaped and captioned with its own words: {SPLIT_CLIPS.map((c) => `${frameName(c.frame)} for ${c.place}`).join(", ")}. Someone approves them in Review, and they are ready for every feed. Anyone finishing by hand gets the cuts as a timeline for {SPLIT_EDITORS.join(", ")}. No AI tokens are spent on these clips, and the next recording runs the same way.
           </p>
         </div>
         <div className="wrap">
           <div className="split-stage" ref={stage} aria-hidden="true">
-            <span className="split-name">Your recording, filed and transcribed</span>
+            <span className="split-name">{SPLIT_RECORDING.label}</span>
             <span className="split-playhead" />
             <span className="split-next">
               <span className="split-next-wave">
-                {BARS.slice(0, 40).map((h, i) => (
+                {BARS.map((h, i) => (
                   <i key={i} style={{ height: `${Math.round(h * 100)}%` }} />
                 ))}
               </span>
               <span className="split-next-text">Next recording came in. Same steps, nobody touching it.</span>
             </span>
             <div className="split-row">
-              {SPLIT_CLIPS.map((c, ci) => {
-                const bars = CLIP_BARS[ci];
+              {SPLIT_CLIPS.map((c) => {
                 return (
                   <div key={c.platform} className="split-col">
                     <div className="split-clip" data-frame={c.frame} data-platform={c.platform} style={{ "--r": frameRatio(c.frame) } as CSSProperties}>
-                      <span className="split-wave">
-                        {bars.map((h, i) => (
-                          <i key={i} style={{ height: `${Math.round(h * 100)}%` }} />
-                        ))}
-                      </span>
-                      <span className="split-cap">{c.caption}</span>
+                      <video className="split-video" src={c.video} poster={c.poster} muted playsInline loop preload="none" tabIndex={-1} />
+                      <span className="split-film" style={{ backgroundImage: `url(${SPLIT_RECORDING.film})` }} />
                       <span className="split-ok">
                         <MovingIcon icon={CheckedIcon} size={14} strokeWidth={2.6} />
                         <span>Approved</span>
                       </span>
                     </div>
-                    <span className="split-said">“{c.caption}”</span>
+                    <span className="split-said">“{c.said}”</span>
                     <div className="split-dest">
                       <span className="split-logo">
                         <DestLogo platform={c.platform} />

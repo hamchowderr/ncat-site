@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { HeroIcons } from "@/components/HeroIcons";
@@ -5,7 +7,7 @@ import { HeroStage, STAGE } from "@/components/HeroStage";
 import { SHIFT_PLATFORMS, ShapeShifter } from "@/components/ShapeShifter";
 import { CLIP_SHAPES, fitFrame, formatLimit, frameName } from "@/lib/clipShapes";
 import { formatBytes, formatDuration, planCuts } from "@/lib/tryIt";
-import { SPLIT_CLIPS, SPLIT_EDITORS, SPLIT_STEPS, SplitScene } from "./SplitScene";
+import { SPLIT_CLIPS, SPLIT_EDITORS, SPLIT_RECORDING, SPLIT_STEPS, SplitScene } from "./SplitScene";
 import { TRY_STEPS, TryIt } from "./TryIt";
 
 describe("clip shapes", () => {
@@ -57,9 +59,9 @@ describe("one recording in, a clip for every feed out", () => {
   it("shows each piece's words becoming its captions, a Review tick, the editor route, zero AI tokens and the next recording", () => {
     const { container } = render(<SplitScene />);
     expect(SPLIT_STEPS.map((s) => s.label)).toEqual(["Filed and transcribed", "Cut at the pauses", "Reshaped and captioned", "Approved in Review", "Ready for every feed"]);
-    // the transcript under each piece is the same words its captions show
+    // the transcript under each piece is a line from what was said in that clip
     const said = [...container.querySelectorAll(".split-said")].map((e) => e.textContent);
-    expect(said).toEqual(SPLIT_CLIPS.map((c) => `“${c.caption}”`));
+    expect(said).toEqual(SPLIT_CLIPS.map((c) => `“${c.said}”`));
     expect(container.querySelectorAll(".split-clip .split-ok")).toHaveLength(5);
     for (const ok of container.querySelectorAll(".split-ok")) expect(ok).toHaveTextContent("Approved");
     const editors = container.querySelector(".split-editors")!;
@@ -69,6 +71,35 @@ describe("one recording in, a clip for every feed out", () => {
     expect(container.querySelector(".split-tokens")).toHaveTextContent("AI tokens spent on these clips 0");
     expect(container.querySelector(".split-next")).toHaveTextContent("Next recording came in");
     expect(container.querySelector(".split-head .sr")).toHaveTextContent("No AI tokens are spent on these clips");
+  });
+});
+
+describe("the real recording in the scroll scene", () => {
+  it("plays the five clips the run made, each with its own poster, cut from back-to-back stretches of the recording", () => {
+    const { container } = render(<SplitScene />);
+    const videos = [...container.querySelectorAll<HTMLVideoElement>(".split-clip video")];
+    expect(videos.map((v) => v.getAttribute("src"))).toEqual(SPLIT_CLIPS.map((c) => c.video));
+    for (const v of videos) {
+      expect(v.muted).toBe(true);
+      expect(v).toHaveAttribute("playsinline");
+      expect(v).toHaveAttribute("poster");
+      expect(v).toHaveAttribute("preload", "none");
+    }
+    // the pieces follow one another through the whole recording, in the order they were said
+    expect(SPLIT_CLIPS[0].from).toBe(0);
+    expect(SPLIT_CLIPS[SPLIT_CLIPS.length - 1].to).toBe(SPLIT_RECORDING.seconds);
+    for (let i = 1; i < SPLIT_CLIPS.length; i++) expect(SPLIT_CLIPS[i].from).toBe(SPLIT_CLIPS[i - 1].to);
+    expect(container.querySelector(".split-name")).toHaveTextContent(SPLIT_RECORDING.label);
+    for (const f of container.querySelectorAll<HTMLElement>(".split-film")) expect(f.style.backgroundImage).toContain(SPLIT_RECORDING.film);
+  });
+
+  it("ships every clip, poster and the recording's film strip", () => {
+    const pub = path.join(process.cwd(), "public");
+    for (const c of SPLIT_CLIPS) {
+      expect(fs.statSync(path.join(pub, c.video)).size).toBeGreaterThan(50_000);
+      expect(fs.statSync(path.join(pub, c.poster)).size).toBeGreaterThan(5_000);
+    }
+    expect(fs.statSync(path.join(pub, SPLIT_RECORDING.film)).size).toBeGreaterThan(20_000);
   });
 });
 

@@ -28,6 +28,12 @@ test("one recording splits into clips that each take their platform's shape and 
   for (let i = 1; i < start.length; i++) expect(start[i].x).toBeGreaterThanOrEqual(start[i - 1].x + start[i - 1].width - 1);
   await expect(page.locator(".split-dest").first()).toHaveCSS("opacity", "0");
   await expect(page.locator(".split-steps li.on")).toHaveCount(1);
+  // the strip is frames of the real recording, and nothing plays yet
+  for (const f of await page.locator(".split-film").all()) {
+    await expect(f).toHaveCSS("opacity", "1");
+    await expect(f).toHaveCSS("background-image", /recording\.jpg/);
+  }
+  expect(await page.locator(".split-video").evaluateAll((vs) => (vs as HTMLVideoElement[]).every((v) => v.paused))).toBe(true);
   // not approved yet, nothing about editors or tokens yet
   await expect(page.locator(".split-ok").first()).toHaveCSS("opacity", "0");
   await expect(page.locator(".split-foot")).toHaveCSS("opacity", "0");
@@ -60,6 +66,11 @@ test("one recording splits into clips that each take their platform's shape and 
   await expect(page.locator(".split-steps li.on")).toHaveCount(5);
   for (const ok of await page.locator(".split-ok").all()) await expect(ok).toHaveCSS("opacity", "1");
   await expect(page.locator(".split-said").first()).toHaveCSS("opacity", "0");
+  // the finished clips play (muted), and the strip of the recording has faded off them
+  for (const f of await page.locator(".split-film").all()) await expect(f).toHaveCSS("opacity", "0");
+  await expect
+    .poll(() => page.locator(".split-video").evaluateAll((vs) => (vs as HTMLVideoElement[]).every((v) => !v.paused && v.currentTime > 0)), { timeout: 8000 })
+    .toBe(true);
   // the editor route and the token count sit at the foot, under every logo
   const foot = (await page.locator(".split-foot").boundingBox())!;
   expect(foot.y + foot.height).toBeLessThanOrEqual(stage.y + stage.height + 1);
@@ -97,6 +108,9 @@ test.describe("with reduced motion, the scroll scene", () => {
     await expect(page.locator(".split-foot")).toBeVisible();
     await expect(page.locator(".split-said").first()).toBeHidden();
     await expect(page.locator(".split-next")).toBeHidden();
+    // the clips show their posters and do not play by themselves
+    expect(await page.locator(".split-video").evaluateAll((vs) => (vs as HTMLVideoElement[]).every((v) => v.paused))).toBe(true);
+    await expect(page.locator(".split-film").first()).toBeHidden();
   });
 });
 

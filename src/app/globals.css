@@ -2057,7 +2057,6 @@ fieldset[aria-invalid="true"] .pill span {
   min-width: 0;
 }
 .split-clip {
-  --cap: 1;
   --lift: 1;
   --ok: 1;
   position: relative;
@@ -2065,33 +2064,27 @@ fieldset[aria-invalid="true"] .pill span {
   aspect-ratio: var(--r);
   border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(160deg, #241a63, #5b3df5 70%, #8a74ff);
+  background: #14112b;
   box-shadow: 0 calc(18px * var(--lift)) calc(40px * var(--lift)) -18px rgb(41 24 140 / 0.45);
 }
-.split-wave {
+.split-video,
+.split-film {
   position: absolute;
-  inset: 22% 8%;
-  display: flex;
-  align-items: center;
-  gap: 2px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
-.split-wave i {
-  flex: 1;
-  min-width: 1px;
-  border-radius: 2px;
-  background: rgb(255 255 255 / 0.55);
+.split-video {
+  object-fit: cover;
+  display: block;
 }
-.split-cap {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 10%;
-  text-align: center;
-  font: 700 clamp(10px, 1.1vw, 13px) / 1.2 var(--display);
-  color: #fff;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
-  opacity: var(--cap);
-  transform: translateY(calc((1 - var(--cap)) * 6px));
+.split-film {
+  display: none;
+  background-repeat: no-repeat;
+  background-color: #14112b;
+}
+.split.is-live .split-film {
+  display: block;
 }
 .split-dest {
   display: flex;
@@ -2193,9 +2186,6 @@ fieldset[aria-invalid="true"] .pill span {
   }
   .split-ready {
     display: none;
-  }
-  .split-cap {
-    font-size: 10px;
   }
   .split-logo {
     width: 32px;
