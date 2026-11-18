@@ -109,6 +109,20 @@ test("the scroll scene takes a long scroll and eases into each change instead of
   await expect(page.locator(".split-steps li.on")).toHaveCount(5, { timeout: 4000 });
 });
 
+test("the scroll scene holds on its finished moment before the page scrolls on", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".split.is-live")).toHaveCount(1);
+  const place = () => page.locator(".split-next").evaluate((el) => (el as HTMLElement).style.transform);
+  await scrollSplit(page, 0.82);
+  const held = await place();
+  await scrollSplit(page, 0.95);
+  expect(await place()).toBe(held);
+  await expect(page.locator(".split-steps li.on")).toHaveCount(5);
+  // and it is still pinned on screen while it holds
+  const box = (await page.locator(".split-stage").boundingBox())!;
+  expect(box.y).toBeGreaterThan(0);
+});
+
 test.describe("with reduced motion, the scroll scene", () => {
   test.use({ reducedMotion: "reduce" });
   test("is a plain row of the finished clips, not a long pinned scroll", async ({ page }) => {
@@ -269,8 +283,10 @@ test("the features heading runs through the platforms' colours, and the lead's w
       for (const rgb of ["rgb(254, 44, 85)", "rgb(225, 48, 108)", "rgb(255, 0, 0)", "rgb(8, 102, 255)", "rgb(10, 102, 194)"]) if (c.includes(rgb)) seen.add(rgb);
   }
   expect(seen.size).toBeGreaterThanOrEqual(3);
-  // once it has all appeared, the words settle back to plain text
+  // once it has all appeared, every word keeps its platform's colour, taken in turn
   await page.evaluate((y) => window.scrollTo(0, y), y0 + 2000);
   await page.waitForTimeout(400);
-  expect(await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.every((p) => !(p as HTMLElement).style.color))).toBe(true);
+  const colours = await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.map((p) => getComputedStyle(p).color));
+  const inks = ["rgb(254, 44, 85)", "rgb(225, 48, 108)", "rgb(255, 0, 0)", "rgb(8, 102, 255)", "rgb(10, 102, 194)"];
+  colours.forEach((c, i) => expect(c).toBe(inks[i % inks.length]));
 });

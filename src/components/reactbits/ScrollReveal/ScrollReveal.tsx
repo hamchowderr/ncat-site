@@ -42,6 +42,8 @@ interface ScrollRevealProps {
   duration?: number;
   /** One colour, or several taken in turn word by word (each word glows in its colour as it reveals). */
   highlightColor?: string | string[];
+  /** Keep each word in its highlight colour once it has appeared, instead of fading back. */
+  highlightStays?: boolean;
   containerClassName?: string;
   textClassName?: string;
   rotationEnd?: string;
@@ -55,6 +57,7 @@ interface RevealLook {
   blur: number;
   offset: number;
   highlightColor: string[];
+  highlightStays: boolean;
 }
 
 const clampToScroll = (position: string) =>
@@ -98,9 +101,9 @@ const paintPiece = (piece: HTMLElement, t: number, look: RevealLook, index = 0) 
   piece.style.transform = [lift ? `translateY(${lift.toFixed(2)}px)` : '', motion].filter(Boolean).join(' ');
   piece.style.filter = look.blur && settle < 1 ? `blur(${(look.blur * (1 - settle)).toFixed(2)}px)` : '';
   if (hl) {
-    const glow = glowAt(t);
+    const glow = look.highlightStays ? (t <= 0 ? 0 : t < 0.35 ? smooth(t / 0.35) : 1) : glowAt(t);
     piece.style.color =
-      glow > 0.002 ? `color-mix(in srgb, ${hl} ${(glow * 100).toFixed(1)}%, currentColor)` : '';
+      glow >= 0.999 ? hl : glow > 0.002 ? `color-mix(in srgb, ${hl} ${(glow * 100).toFixed(1)}%, currentColor)` : '';
   }
 };
 
@@ -119,6 +122,7 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
   mode = 'scrub',
   duration = 0.8,
   highlightColor = '',
+  highlightStays = false,
   containerClassName = '',
   textClassName = '',
   rotationEnd = 'bottom bottom',
@@ -178,9 +182,19 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
       baseOpacity,
       blur: enableBlur ? blurStrength : 0,
       offset: baseOffset,
-      highlightColor: hlKey ? hlKey.split('|') : []
+      highlightColor: hlKey ? hlKey.split('|') : [],
+      highlightStays
     };
     const mm = gsap.matchMedia();
+
+    if (highlightStays && look.highlightColor.length) {
+      mm.add('(prefers-reduced-motion: reduce)', () => {
+        pieces.forEach((piece, index) => {
+          piece.style.color = look.highlightColor[index % look.highlightColor.length];
+        });
+        return () => pieces.forEach(piece => (piece.style.color = ''));
+      });
+    }
 
     mm.add('(prefers-reduced-motion: no-preference)', () => {
       const order = pieces.map((_, index) => index);
@@ -325,6 +339,7 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
     mode,
     duration,
     hlKey,
+    highlightStays,
     enableBlur,
     baseOpacity,
     baseRotation,

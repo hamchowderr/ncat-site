@@ -51,6 +51,9 @@ function DestLogo({ platform }: { platform: string }) {
   return <BrandIcon icon={icons[key]} />;
 }
 
+/** How far through the section's scroll the scene finishes; the rest is a pause on the finished scene. */
+export const HOLD_AT = 0.8;
+
 const clamp = (v: number) => Math.min(1, Math.max(0, v));
 const local = (p: number, a: number, b: number) => clamp((p - a) / (b - a));
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -90,7 +93,8 @@ export function SplitScene() {
     const paint = () => {
       raf = 0;
       const box = el.getBoundingClientRect();
-      const target = clamp(-box.top / Math.max(1, box.height - window.innerHeight));
+      // the scene finishes at 80% of the scroll and holds its last moment for the rest, before the page moves on
+      const target = clamp(-box.top / Math.max(1, box.height - window.innerHeight) / HOLD_AT);
       shown = shown < 0 || Math.abs(target - shown) < 0.0005 ? target : shown + (target - shown) * 0.09;
       const p = shown;
       if (p !== target) raf = requestAnimationFrame(paint);
