@@ -66,3 +66,14 @@ describe.skipIf(!hasFfmpeg)("feature recordings", () => {
     }, 60_000);
   }
 });
+
+describe.skipIf(!hasFfmpeg)("recording sizes", () => {
+  const size = (file: string) =>
+    execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", `public/media/${file}.mp4`])
+      .toString()
+      .trim();
+  it("shows the whole app window, 16:10, in every recording", () => {
+    for (const name of ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule"]) expect(size(`features/${name}`), name).toBe("1280,800");
+    for (const name of ["live-run", "review", "outputs", "agent-builds"]) expect(size(name), name).toBe("1440,900");
+  });
+});

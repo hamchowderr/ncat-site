@@ -116,6 +116,14 @@ describe("Features", () => {
     expect(screen.getByText(/demo data/)).toBeInTheDocument();
   });
 
+  it("describes the current dashboard: the Inbox for failed runs and the Review list", () => {
+    const { container } = render(<Features />);
+    const label = (name: string) => container.querySelector(`video[src="/media/features/${name}.mp4"]`)!.getAttribute("aria-label");
+    expect(label("alerts")).toMatch(/Inbox/);
+    expect(label("alerts")).not.toMatch(/bell/i);
+    expect(label("review")).toMatch(/Review list/);
+  });
+
   it("names each editor and n8n next to its real logo", () => {
     render(<Features />);
     const editors = within(screen.getByRole("list", { name: "Editors it exports to" })).getAllByRole("listitem");

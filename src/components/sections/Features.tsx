@@ -50,7 +50,7 @@ const ROWS: StoryRow[] = [
     body: "Add an approval step anywhere. The run pauses, the right people get an alert, and they watch the clip, leave a comment pinned to the exact moment and approve it or ask for changes.",
     points: ["Choose who can approve each step", "Comments pinned to a moment in the clip", "Decide what happens if nobody answers in time"],
     video: "review",
-    alt: "Screen recording: the Review screen plays a captioned clip, a comment is pinned to the paused moment, and the clips are approved.",
+    alt: "Screen recording: the Review list opens a review of three clips side by side, a captioned clip plays, a comment is pinned to the paused moment, and the clips are approved.",
   },
   {
     id: "editors",
@@ -102,7 +102,7 @@ const TILES: { title: string; icon: React.ReactNode; body: string; video: string
     icon: <MovingIcon icon={RefreshIcon} size={18} trigger=".tile" />,
     body: "If the toolkit is busy or offline, the step waits and tries again. If it still fails you get an alert saying what went wrong.",
     video: "alerts",
-    alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails and the alert says what went wrong. Sped up while it waits.",
+    alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails, and the Inbox in the side menu says what went wrong. Sped up while it waits.",
   },
   {
     title: "On a schedule, in your time zone",
