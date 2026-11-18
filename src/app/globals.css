@@ -2700,3 +2700,22 @@ fieldset[aria-invalid="true"] .pill span {
     font-size: 11px;
   }
 }
+
+/* "No AI on every video." runs through the platforms' own colours */
+.plat-ink {
+  background: linear-gradient(90deg, #fe2c55, #e1306c, #f77737, #ff0000, #0866ff, #0a66c2, #fe2c55) 0 0 / 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: plat-ink 9s linear infinite;
+}
+@keyframes plat-ink {
+  to {
+    background-position: 150% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plat-ink {
+    animation: none;
+  }
+}

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { HeroStage, STAGE } from "@/components/HeroStage";
-import { Features } from "./Features";
+import { Features, PLATFORM_INKS } from "./Features";
 import { Hero } from "./Hero";
 import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
@@ -94,6 +94,14 @@ describe("logos", () => {
 });
 
 describe("Features", () => {
+  it("reads as one heading, with its second line in the platforms' colours", () => {
+    render(<Features />);
+    const h = screen.getByRole("heading", { level: 2, name: "Ready-made automations. No AI on every video." });
+    expect(h.querySelector(".plat-ink")).toHaveTextContent("No AI on every video.");
+    // TikTok, Instagram, YouTube, Facebook and LinkedIn, each its own brand colour
+    expect(PLATFORM_INKS).toEqual(["#fe2c55", "#e1306c", "#ff0000", "#0866ff", "#0a66c2"]);
+  });
+
   it("shows a silent, described screen recording for every feature", () => {
     const { container } = render(<Features />);
     const videos = Array.from(container.querySelectorAll("video"));

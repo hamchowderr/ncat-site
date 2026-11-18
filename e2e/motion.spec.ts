@@ -251,3 +251,26 @@ test("a file the browser can't open still gets filed, with a plain note", async 
   await expect(page.locator('[data-step="Filed"] .try-detail')).toHaveText("broken.mp4, 1 KB");
   await expect(page.locator(".try-thumbs")).toHaveCount(0);
 });
+
+test("the features heading runs through the platforms' colours, and the lead's words glow in them as they appear", async ({ page }) => {
+  await page.goto("/");
+  const ink = page.locator("#features-title .plat-ink");
+  await expect(ink).toHaveText("No AI on every video.");
+  await expect(ink).toHaveCSS("animation-name", "plat-ink");
+  await expect(ink).toHaveCSS("color", "rgba(0, 0, 0, 0)");
+  const lead = page.locator(".features .sec-lead");
+  // scroll so the lead is part way through appearing, and look for words lit in a platform's colour
+  const seen = new Set<string>();
+  const y0 = await lead.evaluate((el) => el.getBoundingClientRect().top + window.scrollY - window.innerHeight);
+  for (let i = 0; i < 24; i++) {
+    await page.evaluate((y) => window.scrollTo(0, y), y0 + i * 25);
+    await page.waitForTimeout(60);
+    for (const c of await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.map((p) => (p as HTMLElement).style.color)))
+      for (const rgb of ["rgb(254, 44, 85)", "rgb(225, 48, 108)", "rgb(255, 0, 0)", "rgb(8, 102, 255)", "rgb(10, 102, 194)"]) if (c.includes(rgb)) seen.add(rgb);
+  }
+  expect(seen.size).toBeGreaterThanOrEqual(3);
+  // once it has all appeared, the words settle back to plain text
+  await page.evaluate((y) => window.scrollTo(0, y), y0 + 2000);
+  await page.waitForTimeout(400);
+  expect(await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.every((p) => !(p as HTMLElement).style.color))).toBe(true);
+});

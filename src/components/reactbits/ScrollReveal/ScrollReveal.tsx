@@ -40,7 +40,8 @@ interface ScrollRevealProps {
   effect?: RevealEffect;
   mode?: RevealMode;
   duration?: number;
-  highlightColor?: string;
+  /** One colour, or several taken in turn word by word (each word glows in its colour as it reveals). */
+  highlightColor?: string | string[];
   containerClassName?: string;
   textClassName?: string;
   rotationEnd?: string;
@@ -53,7 +54,7 @@ interface RevealLook {
   baseOpacity: number;
   blur: number;
   offset: number;
-  highlightColor: string;
+  highlightColor: string[];
 }
 
 const clampToScroll = (position: string) =>
@@ -68,7 +69,7 @@ const easeBack = (value: number, overshoot: number) => {
 };
 const glowAt = (t: number) => (t <= 0 || t >= 1 ? 0 : t < 0.35 ? smooth(t / 0.35) : 1 - smooth((t - 0.35) / 0.65));
 
-const paintPiece = (piece: HTMLElement, t: number, look: RevealLook) => {
+const paintPiece = (piece: HTMLElement, t: number, look: RevealLook, index = 0) => {
   let reveal = t;
   let fadeIn = t;
   let motion = '';
@@ -89,16 +90,17 @@ const paintPiece = (piece: HTMLElement, t: number, look: RevealLook) => {
     fadeIn = clamp01(t * 1.6);
     if (t < 1) motion = `scale(${(0.35 + 0.65 * reveal).toFixed(4)})`;
   }
-  if (look.highlightColor) fadeIn = Math.max(fadeIn, clamp01(t / 0.35));
+  const hl = look.highlightColor.length ? look.highlightColor[index % look.highlightColor.length] : '';
+  if (hl) fadeIn = Math.max(fadeIn, clamp01(t / 0.35));
   const settle = clamp01(reveal);
   const lift = look.offset * (1 - settle);
   piece.style.opacity = t >= 1 ? '' : (look.baseOpacity + (1 - look.baseOpacity) * fadeIn).toFixed(3);
   piece.style.transform = [lift ? `translateY(${lift.toFixed(2)}px)` : '', motion].filter(Boolean).join(' ');
   piece.style.filter = look.blur && settle < 1 ? `blur(${(look.blur * (1 - settle)).toFixed(2)}px)` : '';
-  if (look.highlightColor) {
+  if (hl) {
     const glow = glowAt(t);
     piece.style.color =
-      glow > 0.002 ? `color-mix(in srgb, ${look.highlightColor} ${(glow * 100).toFixed(1)}%, currentColor)` : '';
+      glow > 0.002 ? `color-mix(in srgb, ${hl} ${(glow * 100).toFixed(1)}%, currentColor)` : '';
   }
 };
 
@@ -122,6 +124,8 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
   rotationEnd = 'bottom bottom',
   wordAnimationEnd = 'bottom bottom'
 }) => {
+  // a string key, so a new array with the same colours does not restart the effect
+  const hlKey = Array.isArray(highlightColor) ? highlightColor.join('|') : highlightColor;
   const containerRef = useRef<HTMLParagraphElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
 
@@ -174,7 +178,7 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
       baseOpacity,
       blur: enableBlur ? blurStrength : 0,
       offset: baseOffset,
-      highlightColor
+      highlightColor: hlKey ? hlKey.split('|') : []
     };
     const mm = gsap.matchMedia();
 
@@ -207,7 +211,7 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
           const t = clamp01((at - order[index] * gap) / span);
           if (t === last[index]) return;
           last[index] = t;
-          paintPiece(piece, t, look);
+          paintPiece(piece, t, look, index);
         });
       };
 
@@ -320,7 +324,7 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
     effect,
     mode,
     duration,
-    highlightColor,
+    hlKey,
     enableBlur,
     baseOpacity,
     baseRotation,

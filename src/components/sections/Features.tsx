@@ -113,13 +113,18 @@ const TILES: { title: string; icon: React.ReactNode; body: string; video: string
   },
 ];
 
+/** The platforms' own brand colours (TikTok, Instagram, YouTube, Facebook, LinkedIn): each word of the lead glows in the next one as it reveals. */
+export const PLATFORM_INKS = ["#fe2c55", "#e1306c", "#ff0000", "#0866ff", "#0a66c2"];
+
 export function Features() {
   return (
     <section className="features" id="features" aria-labelledby="features-title">
       <div className="wrap">
         <Reveal className="sec-head">
-          <h2 id="features-title">Ready-made automations. No AI on every video.</h2>
-          <ScrollReveal baseOpacity={0.15} enableBlur={false} baseRotation={0} containerClassName="sec-lead" textClassName="sec-lead-text">
+          <h2 id="features-title">
+            Ready-made automations. <span className="plat-ink">No AI on every video.</span>
+          </h2>
+          <ScrollReveal baseOpacity={0.15} enableBlur={false} baseRotation={0} highlightColor={PLATFORM_INKS} containerClassName="sec-lead" textClassName="sec-lead-text">
             Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.
           </ScrollReveal>
         </Reveal>
