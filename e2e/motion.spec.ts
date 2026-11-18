@@ -28,9 +28,21 @@ test("one recording splits into clips that each take their platform's shape and 
   for (let i = 1; i < start.length; i++) expect(start[i].x).toBeGreaterThanOrEqual(start[i - 1].x + start[i - 1].width - 1);
   await expect(page.locator(".split-dest").first()).toHaveCSS("opacity", "0");
   await expect(page.locator(".split-steps li.on")).toHaveCount(1);
+  // not approved yet, nothing about editors or tokens yet
+  await expect(page.locator(".split-ok").first()).toHaveCSS("opacity", "0");
+  await expect(page.locator(".split-foot")).toHaveCSS("opacity", "0");
 
-  // at the end each clip has its platform's shape, sits inside the scene, and its logo shows under it
-  await scrollSplit(page, 1);
+  // once transcribed, each piece's words sit under it
+  await scrollSplit(page, 0.12);
+  const saidFirst = page.locator(".split-said").first();
+  await expect(saidFirst).toHaveCSS("opacity", "1");
+  const sb = (await saidFirst.boundingBox())!;
+  const cb = (await clips.first().boundingBox())!;
+  expect(sb.y).toBeGreaterThanOrEqual(cb.y + cb.height);
+  expect(Math.abs(sb.x - cb.x)).toBeLessThan(2);
+
+  // when they are ready, each clip has its platform's shape, sits inside the scene, and its logo shows under it
+  await scrollSplit(page, 0.8);
   const stage = (await page.locator(".split-stage").boundingBox())!;
   for (const c of await clips.all()) {
     const b = (await c.boundingBox())!;
@@ -45,7 +57,28 @@ test("one recording splits into clips that each take their platform's shape and 
     expect(d.y).toBeGreaterThanOrEqual(b.y + b.height);
     expect(d.y + d.height).toBeLessThanOrEqual(stage.y + stage.height + 1);
   }
-  await expect(page.locator(".split-steps li.on")).toHaveCount(4);
+  await expect(page.locator(".split-steps li.on")).toHaveCount(5);
+  for (const ok of await page.locator(".split-ok").all()) await expect(ok).toHaveCSS("opacity", "1");
+  await expect(page.locator(".split-said").first()).toHaveCSS("opacity", "0");
+  // the editor route and the token count sit at the foot, under every logo
+  const foot = (await page.locator(".split-foot").boundingBox())!;
+  expect(foot.y + foot.height).toBeLessThanOrEqual(stage.y + stage.height + 1);
+  for (const d of await page.locator(".split-dest").all()) {
+    const b = (await d.boundingBox())!;
+    expect(b.y + b.height).toBeLessThanOrEqual(foot.y + 2);
+  }
+  await expect(page.locator(".split-tokens b")).toHaveText("0");
+
+  // at the end the next recording slides in along the top, inside the scene, above the clips
+  await scrollSplit(page, 1);
+  const next = (await page.locator(".split-next").boundingBox())!;
+  const st2 = (await page.locator(".split-stage").boundingBox())!;
+  expect(next.x).toBeGreaterThanOrEqual(st2.x);
+  expect(next.x + next.width).toBeLessThanOrEqual(st2.x + st2.width + 1);
+  const firstClip = (await clips.first().boundingBox())!;
+  const top = Math.min(...(await Promise.all((await clips.all()).map(async (c) => (await c.boundingBox())!.y))));
+  expect(next.y + next.height).toBeLessThanOrEqual(top + 1);
+  expect(firstClip.width).toBeGreaterThan(0);
 });
 
 test.describe("with reduced motion, the scroll scene", () => {
@@ -60,7 +93,10 @@ test.describe("with reduced motion, the scroll scene", () => {
       const b = (await c.boundingBox())!;
       expect(b.width / b.height).toBeCloseTo(RATIO[(await c.getAttribute("data-frame"))!], 1);
     }
-    await expect(page.locator(".split-steps li.on")).toHaveCount(4);
+    await expect(page.locator(".split-steps li.on")).toHaveCount(5);
+    await expect(page.locator(".split-foot")).toBeVisible();
+    await expect(page.locator(".split-said").first()).toBeHidden();
+    await expect(page.locator(".split-next")).toBeHidden();
   });
 });
 

@@ -5,7 +5,7 @@ import { HeroStage, STAGE } from "@/components/HeroStage";
 import { SHIFT_PLATFORMS, ShapeShifter } from "@/components/ShapeShifter";
 import { CLIP_SHAPES, fitFrame, formatLimit, frameName } from "@/lib/clipShapes";
 import { formatBytes, formatDuration, planCuts } from "@/lib/tryIt";
-import { SPLIT_CLIPS, SPLIT_STEPS, SplitScene } from "./SplitScene";
+import { SPLIT_CLIPS, SPLIT_EDITORS, SPLIT_STEPS, SplitScene } from "./SplitScene";
 import { TRY_STEPS, TryIt } from "./TryIt";
 
 describe("clip shapes", () => {
@@ -52,6 +52,23 @@ describe("one recording in, a clip for every feed out", () => {
     // the moving picture is decoration; the sentence under the heading says the same in words
     expect(container.querySelector(".split-stage")).toHaveAttribute("aria-hidden", "true");
     expect(container.querySelector(".split-head .sr")).toHaveTextContent("Vertical 9:16 for TikTok");
+  });
+
+  it("shows each piece's words becoming its captions, a Review tick, the editor route, zero AI tokens and the next recording", () => {
+    const { container } = render(<SplitScene />);
+    expect(SPLIT_STEPS.map((s) => s.label)).toEqual(["Filed and transcribed", "Cut at the pauses", "Reshaped and captioned", "Approved in Review", "Ready for every feed"]);
+    // the transcript under each piece is the same words its captions show
+    const said = [...container.querySelectorAll(".split-said")].map((e) => e.textContent);
+    expect(said).toEqual(SPLIT_CLIPS.map((c) => `“${c.caption}”`));
+    expect(container.querySelectorAll(".split-clip .split-ok")).toHaveLength(5);
+    for (const ok of container.querySelectorAll(".split-ok")) expect(ok).toHaveTextContent("Approved");
+    const editors = container.querySelector(".split-editors")!;
+    expect(editors).toHaveTextContent("Finishing by hand? Get a timeline for");
+    expect([...editors.querySelectorAll("[title]")].map((e) => e.getAttribute("title"))).toEqual([...SPLIT_EDITORS]);
+    for (const e of editors.querySelectorAll("[title]")) expect(e.querySelector("svg, img")).not.toBeNull();
+    expect(container.querySelector(".split-tokens")).toHaveTextContent("AI tokens spent on these clips 0");
+    expect(container.querySelector(".split-next")).toHaveTextContent("Next recording came in");
+    expect(container.querySelector(".split-head .sr")).toHaveTextContent("No AI tokens are spent on these clips");
   });
 });
 
