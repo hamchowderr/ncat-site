@@ -4,20 +4,9 @@ import { useEffect, useState } from "react";
 import { FillText } from "@/components/FillText";
 import { HeroIcons } from "@/components/HeroIcons";
 import { HeroStage } from "@/components/HeroStage";
-import { prefillEarlyAccess } from "@/lib/prefill";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 const WORDS = ["clipped", "captioned", "transcribed", "resized"];
-
-/** The ready-made automations the dashboard ships with, by their names in the app. */
-export const PRESETS = [
-  "Clips for social",
-  "Caption every new upload",
-  "Vertical and captioned from a watched folder",
-  "Episode to audio and transcript",
-  "Captioned video with your logo",
-  "Transcribe a link",
-];
 
 export function Hero() {
   const reduce = useReducedMotion();
@@ -58,18 +47,6 @@ export function Hero() {
             See the automations
           </a>
         </div>
-        <p className="presets-lead" id="presets-title">
-          Ready-made automations, ready to switch on
-        </p>
-        <ul className="chips" aria-labelledby="presets-title">
-          {PRESETS.map((name) => (
-            <li key={name}>
-              <button type="button" onClick={() => prefillEarlyAccess(name)}>
-                {name}
-              </button>
-            </li>
-          ))}
-        </ul>
       </div>
       <HeroStage />
     </section>

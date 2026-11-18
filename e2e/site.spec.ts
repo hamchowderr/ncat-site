@@ -77,15 +77,6 @@ async function answerFirstSteps(form: import("@playwright/test").Locator) {
   await form.getByRole("button", { name: "Next" }).click();
 }
 
-test("picking a ready-made automation carries it into the early-access form", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Caption every new upload" }).click();
-  const form = page.locator("#early form");
-  await expect(form).toBeInViewport();
-  await answerFirstSteps(form);
-  await expect(form.getByLabel(/The first automation you’d want/)).toHaveValue("Caption every new upload");
-});
-
 test("early-access form checks each step, then sends", async ({ page }) => {
   await page.goto("/pricing");
   const form = page.locator("#early form");
@@ -228,6 +219,27 @@ test("use-case tabs switch panels", async ({ page }) => {
   await expect(page.getByRole("tabpanel").filter({ hasText: "The call ends. The episode gets to work." })).toBeVisible();
 });
 
+test("each use case shows what goes in and what comes out as styled cards, logos small", async ({ page, isMobile }) => {
+  await page.goto("/");
+  const panel = page.getByRole("tabpanel").filter({ has: page.locator(".case-flow") });
+  await panel.scrollIntoViewIfNeeded();
+  const input = panel.locator(".case-in");
+  // the input is a dark pill, not plain text
+  expect(await input.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toMatch(/rgba?\(0, 0, 0, 0\)|transparent/);
+  const outs = panel.locator(".case-outs li");
+  await expect(outs).toHaveCount(4);
+  // let the cards finish sliding in before measuring them
+  await page.waitForTimeout(1200);
+  const boxes = await Promise.all((await outs.all()).map((o) => o.boundingBox()));
+  // two cards per row on wide screens, one per row on phones
+  const rows = new Set(boxes.map((b) => Math.round(b!.y)));
+  expect(rows.size).toBe(isMobile ? 4 : 2);
+  for (const o of await outs.all()) {
+    expect(await o.evaluate((el) => getComputedStyle(el).display)).toBe("flex");
+    for (const logo of await o.locator(".case-logos svg, .case-logos img").all()) expect((await logo.boundingBox())!.width).toBeLessThanOrEqual(20);
+  }
+});
+
 test("the FAQ opens and closes", async ({ page }) => {
   await page.goto("/");
   const q = page.locator("details").filter({ hasText: "Do I need n8n?" });
@@ -324,7 +336,7 @@ test("big hero icons sit beside the headline, never on it, and move when hovered
       range.selectNodeContents(el);
       for (const r of range.getClientRects()) boxes.push({ x: r.x, y: r.y, width: r.width, height: r.height });
     }
-    for (const el of document.querySelectorAll(".hero-cta .btn, .chips button")) {
+    for (const el of document.querySelectorAll(".hero-cta .btn")) {
       const r = el.getBoundingClientRect();
       boxes.push({ x: r.x, y: r.y, width: r.width, height: r.height });
     }
@@ -337,8 +349,11 @@ test("big hero icons sit beside the headline, never on it, and move when hovered
       expect(overlap).toBe(false);
     }
   }
-  const plane = page.locator(".hi-6 svg");
-  const before = await plane.innerHTML();
-  await plane.hover();
-  await expect.poll(() => plane.innerHTML()).not.toBe(before);
+  await expect(icons).toHaveCount(6);
+  for (const name of ["TikTok", "YouTube", "X", "Instagram", "LinkedIn", "Facebook"]) {
+    const logo = page.locator(`.hi[data-platform="${name}"] svg`);
+    const before = await logo.innerHTML();
+    await logo.hover();
+    await expect.poll(() => logo.innerHTML(), { message: name }).not.toBe(before);
+  }
 });

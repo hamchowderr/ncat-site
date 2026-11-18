@@ -1,9 +1,8 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { HeroStage, STAGE } from "@/components/HeroStage";
-import { PREFILL_EVENT } from "@/lib/prefill";
 import { Features } from "./Features";
-import { Hero, PRESETS } from "./Hero";
+import { Hero } from "./Hero";
 import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
 import { HowItWorks } from "./HowItWorks";
@@ -29,18 +28,13 @@ describe("Hero", () => {
     expect(slogan.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("leads with ready-made automations and hands the picked one to the form", () => {
-    const seen = vi.fn();
-    window.addEventListener(PREFILL_EVENT, (e) => seen((e as CustomEvent).detail));
-    window.HTMLElement.prototype.scrollIntoView = vi.fn();
+  it("keeps the hero to the headline, the line under it and the two buttons, with no list of automations", () => {
     render(<Hero />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Your content, organized and.*automatically/);
     expect(document.querySelector(".hero-sub")).toHaveTextContent(/Pick a ready-made automation and switch it on/);
-    expect(screen.queryByLabelText("Describe an automation")).toBeNull();
-    const presets = within(screen.getByRole("list", { name: /Ready-made automations/ })).getAllByRole("button");
-    expect(presets.map((b) => b.textContent)).toEqual([...PRESETS]);
-    fireEvent.click(screen.getByRole("button", { name: "Caption every new upload" }));
-    expect(seen).toHaveBeenCalledWith("Caption every new upload");
+    expect(screen.queryByText(/ready to switch on/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Caption every new upload" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Get early access" })).toBeInTheDocument();
   });
 });
 
@@ -172,6 +166,11 @@ describe("story and icons", () => {
     const hero = render(<Hero />).container;
     expect(hero.querySelectorAll(".hero-icons .hi .mi svg")).toHaveLength(6);
     expect(hero.querySelector(".hero-icons")).toHaveAttribute("aria-hidden", "true");
+  });
+  it("uses only social platform logos for the big hero icons", () => {
+    const hero = render(<Hero />).container;
+    const names = Array.from(hero.querySelectorAll(".hero-icons .hi")).map((el) => el.getAttribute("data-platform"));
+    expect(names).toEqual(["TikTok", "YouTube", "X", "Instagram", "LinkedIn", "Facebook"]);
   });
   it("gives every how-it-works step and every use case an icon", () => {
     const { container } = render(<HowItWorks />);
