@@ -126,8 +126,10 @@ test("every logo and picture loads", async ({ page }) => {
   }
 });
 
-test("every feature is a dashboard recording, shown whole, the whole app window uncropped, all the same shape", async ({ page, request }) => {
+test("every feature is a dashboard recording, shown whole, the whole app window uncropped, all the same shape", async ({ page, request, isMobile }) => {
   await page.goto("/");
+  // on desktop the stack replaces the plain rows once it has loaded; measure the final ones
+  if (!isMobile) await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
   const shots = page.locator("#features .shot video");
   await expect(shots).toHaveCount(8);
   const ratios: number[] = [];
