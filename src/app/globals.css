@@ -2342,10 +2342,19 @@ fieldset[aria-invalid="true"] .pill span {
 .shift-line b {
   color: var(--accent-ink);
 }
-.shift-note {
+.shift-takes {
   margin-top: 10px;
   font-size: 15px;
   color: var(--soft);
+  min-height: 3em;
+}
+.shift-note {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--mute);
+}
+.shift-note a {
+  color: inherit;
 }
 @media (max-width: 760px) {
   .shift {

@@ -21,6 +21,18 @@ describe("clip shapes", () => {
   });
 });
 
+describe("platform figures", () => {
+  it("give every place a sourced line about what the platform itself takes, from the platform's own site", () => {
+    const hosts = /^https:\/\/(developers\.tiktok\.com|support\.google\.com|docs\.x\.com|developers\.facebook\.com|www\.facebook\.com\/business|www\.linkedin\.com\/help)\//;
+    for (const places of Object.values(CLIP_SHAPES)) {
+      for (const p of places) {
+        expect(p.takes.length).toBeGreaterThan(5);
+        expect(p.source).toMatch(hosts);
+      }
+    }
+  });
+});
+
 describe("one recording in, a clip for every feed out", () => {
   it("cuts one recording into five clips, each in a shape the Clips step makes for its platform", () => {
     const { container } = render(<SplitScene />);
@@ -47,16 +59,19 @@ describe("one clip that changes shape", () => {
   it("shows the shape and longest length the Clips step makes for whichever platform is picked", () => {
     render(<ShapeShifter />);
     expect(screen.getAllByRole("tab").map((t) => t.getAttribute("aria-label"))).toEqual(SHIFT_PLATFORMS);
-    const line = () => document.querySelector(".shift-line")!.textContent;
+    const line = () => document.querySelector(".shift-line")!.textContent!.replace(/\u00a0/g, " ").replace(/\s+/g, " ").replace(" ,", ",");
     expect(line()).toBe("TikTok clips come out Vertical 9:16, up to 3 min each.");
     fireEvent.click(screen.getByRole("tab", { name: "Instagram" }));
     expect(line()).toBe("Instagram Reels clips come out Vertical 9:16, up to 3 min each.");
     fireEvent.click(screen.getByRole("button", { name: "Feed" }));
     expect(line()).toBe("Instagram Feed clips come out Portrait 4:5, up to 3 min each.");
+    // what the platform itself takes, with a link to its own page
+    expect(document.querySelector(".shift-takes")).toHaveTextContent("Instagram itself takes: Feed videos post as Reels, so 3 s to 15 min.");
+    expect(screen.getByRole("link", { name: "Instagram’s own specs" })).toHaveAttribute("href", expect.stringContaining("developers.facebook.com/docs/instagram-platform"));
     expect(document.querySelector(".shift-frame")).toHaveAttribute("data-frame", "4:5");
     fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowRight" });
     expect(screen.getByRole("tab", { name: "LinkedIn" })).toHaveFocus();
-    expect(line()).toBe("LinkedIn clips come out Its own shape, up to 15 min each.");
+    expect(line()).toBe("LinkedIn clips keep their own shape, up to 15 min each.");
   });
 });
 

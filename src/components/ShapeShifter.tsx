@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
-import { CLIP_SHAPES, fitFrame, formatLimit, frameName, type SocialPlatform } from "@/lib/clipShapes";
+import { CHECKED, CLIP_SHAPES, fitFrame, formatLimit, frameName, type SocialPlatform } from "@/lib/clipShapes";
 
 export const SHIFT_PLATFORMS = Object.keys(CLIP_SHAPES) as SocialPlatform[];
 // every platform and place in order, so the cycle is one counter
@@ -127,9 +127,27 @@ export function ShapeShifter() {
             </div>
           )}
           <p className="shift-line" aria-live="polite">
-            {platform === place.place ? platform : `${platform} ${place.place}`} clips come out <b>{frameName(place.frame)}</b>, up to {formatLimit(place.maxSeconds)} each.
+            {platform === place.place ? platform : `${platform} ${place.place}`} {place.frame === "original" ? (
+              <>
+                clips keep <b>their own shape</b>
+              </>
+            ) : (
+              <>
+                clips come out <b>{frameName(place.frame)}</b>
+              </>
+            )}
+            , up to {formatLimit(place.maxSeconds).replace(/ /g, "\u00a0")} each.
           </p>
-          <p className="shift-note">These are the shapes and lengths the Clips step makes. Pick a platform and it handles the rest.</p>
+          <p className="shift-takes">
+            {SHIFT_PLATFORMS[pi]} itself takes: {place.takes}
+          </p>
+          <p className="shift-note">
+            Checked on {CHECKED} against{" "}
+            <a href={place.source} target="_blank" rel="noreferrer">
+              {platform}’s own specs
+            </a>
+            .
+          </p>
         </div>
       </div>
     </div>
