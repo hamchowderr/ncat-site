@@ -1,3 +1,4 @@
+import { Reveal } from "@/components/Reveal";
 export const FAQ: { q: string; a: React.ReactNode }[] = [
   { q: "Is it out yet?", a: "Not yet. The dashboard is working and in testing now. Get on the early access list and you’ll be first to try it." },
   {
@@ -42,10 +43,10 @@ export function Faq() {
   return (
     <section className="faq" id="faq" aria-labelledby="faq-title">
       <div className="wrap faq-in">
-        <header className="sec-head left">
+        <Reveal className="sec-head left">
           <h2 id="faq-title">Got questions?</h2>
           <p>Anything else, message me directly.</p>
-        </header>
+        </Reveal>
         <div className="faq-list">
           {FAQ.map((f, i) => (
             <details key={f.q} open={i === 0}>

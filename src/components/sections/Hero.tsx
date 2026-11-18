@@ -30,6 +30,10 @@ export function Hero() {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="wrap">
+        <p className="slogan">
+          <span className="slogan-dot" aria-hidden="true" />
+          Social Media Ready
+        </p>
         <h1 id="hero-title">
           Your content, organized and{" "}
           <span className="rot" aria-hidden="true">

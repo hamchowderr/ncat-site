@@ -12,6 +12,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@gsap/react": "2.1.2",
+    "gsap": "3.13.0",
+    "lucide-react": "^1.75.0",
+    "motion": "12.23.12",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",

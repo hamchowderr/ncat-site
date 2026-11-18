@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Reveal } from "@/components/Reveal";
 
 const USUAL = [
   ["Transcripts", "per minute"],
@@ -12,7 +13,7 @@ export function NoFees() {
   return (
     <section className="fees" aria-labelledby="fees-title">
       <div className="wrap fees-in">
-        <div className="fees-text">
+        <Reveal className="fees-text">
           <h2 id="fees-title">Stop paying fees to edit your own content</h2>
           <p>
             Clipping apps charge for upload minutes, render credits and seats, every month, just to cut and caption what you already made. The NCA
@@ -26,7 +27,7 @@ export function NoFees() {
           <Link className="btn ghost" href="/pricing">
             See pricing
           </Link>
-        </div>
+        </Reveal>
         <div className="compare" aria-label="How the usual stack is billed compared with the dashboard">
           <div className="compare-col">
             <p className="compare-h">The usual stack</p>

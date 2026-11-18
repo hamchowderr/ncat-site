@@ -11,3 +11,22 @@ vi.mock("next/image", () => ({
   default: (props: { src: string | { src: string }; alt: string; className?: string }) =>
     createElement("img", { src: typeof props.src === "string" ? props.src : props.src.src, alt: props.alt, className: props.className }),
 }));
+
+// jsdom has no matchMedia; the scroll animations (gsap) ask for it when they load.
+if (typeof window !== "undefined" && !window.matchMedia) {
+  window.matchMedia = (query: string) =>
+    ({ matches: false, media: query, onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent: () => false }) as MediaQueryList;
+}
+
+// jsdom has no IntersectionObserver either; the spotlight tiles watch whether they are on screen.
+if (typeof window !== "undefined" && !("IntersectionObserver" in window)) {
+  class NoObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  }
+  Object.assign(window, { IntersectionObserver: NoObserver });
+}

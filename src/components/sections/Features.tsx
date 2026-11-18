@@ -1,11 +1,16 @@
+import { CalendarClock, FolderTree, LayoutTemplate, MessageSquareCheck, Palette, RefreshCw, Scissors, Workflow } from "lucide-react";
+import { FeatureStory, type StoryRow } from "@/components/FeatureStory";
 import { FeatureVideo } from "@/components/FeatureVideo";
+import { Reveal } from "@/components/Reveal";
+import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
+import ScrollReveal from "@/components/reactbits/ScrollReveal/ScrollReveal";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
 
-type Row = { id: string; title: string; body: string; points: string[]; video: string; alt: string; extra?: React.ReactNode };
-
-const ROWS: Row[] = [
+const ROWS: StoryRow[] = [
   {
     id: "templates",
+    step: "Pick",
+    icon: <LayoutTemplate size={18} strokeWidth={2} />,
     title: "Start from a ready-made automation",
     body: "Pick one for clips, captions, transcripts or audio and switch it on. It runs on every new upload with plain editing steps, so no AI tokens are spent on each video. Every step sits on a canvas you can read and change.",
     points: ["Ready-made automations for clips, captions, transcripts and audio", "Steps connect themselves, so there is nothing to wire up", "Need something else? Describe it and the agent builds it once"],
@@ -14,6 +19,8 @@ const ROWS: Row[] = [
   },
   {
     id: "runs",
+    step: "Runs by itself",
+    icon: <Workflow size={18} strokeWidth={2} />,
     title: "Every new recording runs by itself",
     body: "Once it is on, an automation starts on its own when a file is uploaded, lands in a watched folder, a schedule comes round or another tool calls it. Plain editing steps do the work, so nothing is billed per video.",
     points: ["Starts from an upload, a folder, a schedule or a webhook", "Watch each step finish, or come back to a list of what happened", "Comes with its own automation builder, made for content"],
@@ -29,6 +36,8 @@ const ROWS: Row[] = [
   },
   {
     id: "review",
+    step: "Approve",
+    icon: <MessageSquareCheck size={18} strokeWidth={2} />,
     title: "Nothing goes out until someone says yes",
     body: "Add an approval step anywhere. The run pauses, the right people get an alert, and they watch the clip, leave a comment pinned to the exact moment and approve it or ask for changes.",
     points: ["Choose who can approve each step", "Comments pinned to a moment in the clip", "Decide what happens if nobody answers in time"],
@@ -37,6 +46,8 @@ const ROWS: Row[] = [
   },
   {
     id: "editors",
+    step: "Finish",
+    icon: <Scissors size={18} strokeWidth={2} />,
     title: "Finish it in the editor you already use",
     body: "The repeatable work happens automatically. Anything that still needs a human opens in your editing app with every cut adjustable, or goes to your editor already trimmed, captioned and labelled.",
     points: ["Timelines for Premiere Pro, DaVinci Resolve and Final Cut Pro", "CapCut-ready clip packs", "Caption files and the finished clips in one download"],
@@ -61,27 +72,33 @@ const ROWS: Row[] = [
   },
 ];
 
-const TILES: { title: string; body: string; video: string; alt: string }[] = [
+const TILE_SURFACE = { "--spotlight-card-surface": "transparent", "--spotlight-card-border": "transparent", "--spotlight-card-shadow": "none" } as React.CSSProperties;
+
+const TILES: { title: string; icon: React.ReactNode; body: string; video: string; alt: string }[] = [
   {
     title: "Your brand, set once",
+    icon: <Palette size={18} strokeWidth={2} />,
     body: "Logo, colour, font and music are saved in settings and used by every step that needs them. No step ever asks again.",
     video: "brand",
     alt: "Screen recording: the logo, brand colour and theme music are saved in Settings, then the Add a logo step shows it is handled for you.",
   },
   {
     title: "Organized in your own storage",
+    icon: <FolderTree size={18} strokeWidth={2} />,
     body: "Every upload and every output is filed in your bucket, with its length, picture size and the run that made it.",
     video: "files",
     alt: "Screen recording: a new TikTok clips folder is made in the Files screen, a captioned clip is renamed and moved into it.",
   },
   {
     title: "Retries, then an alert",
+    icon: <RefreshCw size={18} strokeWidth={2} />,
     body: "If the toolkit is busy or offline, the step waits and tries again. If it still fails you get an alert saying what went wrong.",
     video: "alerts",
     alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails and the alert says what went wrong. Sped up while it waits.",
   },
   {
     title: "On a schedule, in your time zone",
+    icon: <CalendarClock size={18} strokeWidth={2} />,
     body: "Run it every morning or every Friday at 9. The canvas shows what starts it and when it last ran.",
     video: "schedule",
     alt: "Screen recording: an automation's trigger is changed to a Schedule, every day at 09:00 America/Los_Angeles, and switched on.",
@@ -92,38 +109,30 @@ export function Features() {
   return (
     <section className="features" id="features" aria-labelledby="features-title">
       <div className="wrap">
-        <header className="sec-head">
+        <Reveal className="sec-head">
           <h2 id="features-title">Ready-made automations. No AI on every video.</h2>
-          <p>
-            Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work
-            is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.
-          </p>
-        </header>
-        <div className="rows">
-          {ROWS.map((r, i) => (
-            <article className={i % 2 ? "row flip" : "row"} key={r.id} id={r.id}>
-              <div className="row-text">
-                <h3>{r.title}</h3>
-                <p>{r.body}</p>
-                <ul className="ticks">
-                  {r.points.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
-                </ul>
-                {r.extra}
-              </div>
-              <FeatureVideo name={r.video} label={r.alt} />
-            </article>
-          ))}
-        </div>
-        <h3 className="tiles-title">And the parts you would otherwise do by hand</h3>
+          <ScrollReveal baseOpacity={0.15} enableBlur={false} baseRotation={0} containerClassName="sec-lead" textClassName="sec-lead-text">
+            Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.
+          </ScrollReveal>
+        </Reveal>
+        <FeatureStory rows={ROWS} />
+        <Reveal>
+          <h3 className="tiles-title">And the parts you would otherwise do by hand</h3>
+        </Reveal>
         <div className="tiles">
-          {TILES.map((t) => (
-            <article className="tile" key={t.title}>
-              <FeatureVideo name={t.video} label={t.alt} small />
-              <h4>{t.title}</h4>
-              <p>{t.body}</p>
-            </article>
+          {TILES.map((t, i) => (
+            <Reveal key={t.title} delay={(i % 2) * 0.08}>
+              <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
+                <FeatureVideo name={t.video} label={t.alt} small />
+                <h4>
+                  <span className="tile-icon" aria-hidden="true">
+                    {t.icon}
+                  </span>
+                  {t.title}
+                </h4>
+                <p>{t.body}</p>
+              </SpotlightCard>
+            </Reveal>
           ))}
         </div>
         <p className="screens-note">Every video on this page is a screen recording of the working dashboard, sped up where it waits on the toolkit. The team, people and files in them are demo data.</p>

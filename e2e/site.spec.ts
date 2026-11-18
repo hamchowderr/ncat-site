@@ -240,3 +240,46 @@ test("motion is skipped for people who turn it off", async ({ page }) => {
   await expect(video).toHaveAttribute("controls", "");
   expect(await video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
 });
+
+test("the slogan sits above the headline", async ({ page }) => {
+  await page.goto("/");
+  const slogan = page.locator(".hero .slogan");
+  await expect(slogan).toHaveText("Social Media Ready");
+  const s = (await slogan.boundingBox())!;
+  const h = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
+  expect(s.y + s.height).toBeLessThanOrEqual(h.y);
+});
+
+test("features stack as cards while you scroll on a wide screen", async ({ page, isMobile }) => {
+  test.skip(isMobile, "the stack is for wide screens; phones get plain rows");
+  await page.goto("/");
+  await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
+  await expect(page.locator("#features .story-card")).toHaveCount(4);
+  const first = page.locator("#features .story-card").first();
+  await page.locator("#features .story-card").nth(1).scrollIntoViewIfNeeded();
+  await page.mouse.wheel(0, 600);
+  await page.waitForTimeout(800);
+  // the first card stays pinned near the top while the next one slides over it
+  const top = (await first.boundingBox())!.y;
+  expect(top).toBeGreaterThan(40);
+  expect(top).toBeLessThan(200);
+});
+
+test("sections fade in as they come into view", async ({ page }) => {
+  await page.goto("/");
+  const head = page.locator("#use-cases .sec-head");
+  await head.scrollIntoViewIfNeeded();
+  await expect.poll(() => head.evaluate((el) => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.95);
+});
+
+test.describe("with reduced motion, nothing waits to appear", () => {
+  test.use({ reducedMotion: "reduce" });
+  test("features are plain rows and every section is already visible", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("#features .scroll-stack")).toHaveCount(0);
+    for (const sel of ["#features .sec-head", "#use-cases .sec-head", ".steps .step-in"]) {
+      const el = page.locator(sel).first();
+      expect(await el.evaluate((e) => Number(getComputedStyle(e).opacity)), sel).toBe(1);
+    }
+  });
+});

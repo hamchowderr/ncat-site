@@ -15,6 +15,7 @@ export default function OpengraphImage() {
           NCA Dashboard
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ display: "flex", fontSize: 28, fontWeight: 700, color: "#3d24c4", letterSpacing: 1 }}>SOCIAL MEDIA READY</div>
           <div style={{ fontSize: 80, fontWeight: 700, lineHeight: 1.04, letterSpacing: -2.4, maxWidth: 1000 }}>Your content, organized and clipped automatically</div>
           <div style={{ fontSize: 30, color: "#5c5f6a" }}>Ready-made automations, no AI on every video. Pay once, own it.</div>
         </div>

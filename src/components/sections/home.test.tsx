@@ -6,9 +6,17 @@ import { Features } from "./Features";
 import { Hero, PRESETS } from "./Hero";
 import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
+import { HowItWorks } from "./HowItWorks";
 import { UseCases } from "./UseCases";
 
 describe("Hero", () => {
+  it("carries the Social Media Ready slogan above the headline", () => {
+    const { container } = render(<Hero />);
+    const slogan = screen.getByText("Social Media Ready");
+    const h1 = container.querySelector("h1")!;
+    expect(slogan.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("leads with ready-made automations and hands the picked one to the form", () => {
     const seen = vi.fn();
     window.addEventListener(PREFILL_EVENT, (e) => seen((e as CustomEvent).detail));
@@ -114,5 +122,23 @@ describe("UseCases", () => {
     render(<UseCases />);
     fireEvent.click(screen.getByRole("tab", { name: "Podcast teams" }));
     expect(within(screen.getByRole("tabpanel")).getByRole("heading")).toHaveTextContent("Every episode, handled the same way.");
+  });
+});
+
+describe("story and icons", () => {
+  it("tells the features as numbered steps, each with an icon", () => {
+    const { container } = render(<Features />);
+    const steps = [...container.querySelectorAll(".story-step")].map((s) => s.textContent);
+    expect(steps).toEqual(["Pick", "Runs by itself", "Approve", "Finish"]);
+    for (const s of container.querySelectorAll(".story-step")) expect(s.querySelector("svg")).not.toBeNull();
+    for (const t of container.querySelectorAll(".tile h4")) expect(t.querySelector("svg")).not.toBeNull();
+  });
+  it("gives every how-it-works step and every use case an icon", () => {
+    const { container } = render(<HowItWorks />);
+    const items = container.querySelectorAll(".steps li");
+    expect(items.length).toBe(3);
+    for (const li of items) expect(li.querySelector(".step-icon svg")).not.toBeNull();
+    const cases = render(<UseCases />).container;
+    expect(cases.querySelector(".case-icon svg")).not.toBeNull();
   });
 });

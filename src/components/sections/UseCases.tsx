@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Reveal } from "@/components/Reveal";
+import { Clapperboard, Mic, Music, UsersRound, type LucideIcon } from "lucide-react";
 
 export const CASES = [
   {
@@ -53,16 +55,19 @@ export const CASES = [
   },
 ] as const;
 
+const CASE_ICONS: Record<string, LucideIcon> = { creators: Clapperboard, agencies: UsersRound, podcasts: Mic, music: Music };
+
 export function UseCases() {
   const [active, setActive] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const c = CASES[active];
+  const CaseIcon = CASE_ICONS[c.id] ?? Clapperboard;
   return (
     <section className="cases" id="use-cases" aria-labelledby="cases-title">
       <div className="wrap">
-        <header className="sec-head">
+        <Reveal className="sec-head">
           <h2 id="cases-title">Built for the people who were in the room</h2>
-        </header>
+        </Reveal>
         <div
           className="seg"
           role="tablist"
@@ -94,7 +99,10 @@ export function UseCases() {
           ))}
         </div>
         <div className="case" id="case-panel" role="tabpanel" aria-labelledby={`case-${c.id}`}>
-          <div className="case-text">
+          <div className="case-text" key={c.id}>
+            <span className="case-icon" aria-hidden="true">
+              <CaseIcon size={22} />
+            </span>
             <h3>{c.title}</h3>
             <p>{c.body}</p>
           </div>
