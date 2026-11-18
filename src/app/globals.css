@@ -843,57 +843,6 @@ html {
 }
 
 /* ---------- Platforms ---------- */
-.plat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-.plat-grid li {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--panel);
-  border-radius: var(--r);
-  padding: 18px 20px;
-}
-.plat-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.plat-logo {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #fff;
-  display: grid;
-  place-items: center;
-}
-.plat-logo .bi {
-  width: 24px;
-  height: 24px;
-}
-.plat-name {
-  font-weight: 600;
-}
-.plat-formats {
-  font-size: 14px;
-  color: var(--soft);
-  line-height: 1.4;
-}
-@media (max-width: 1000px) {
-  .plat-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 520px) {
-  .plat-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ---------- Use cases ---------- */
 .seg {
   margin-bottom: 28px;
@@ -2301,6 +2250,18 @@ fieldset[aria-invalid="true"] .pill span {
 }
 .shift-panel {
   margin-top: 20px;
+}
+.shift-formats {
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--ink);
+}
+.shift-formats span {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--soft);
+  margin-bottom: 2px;
 }
 .shift-places {
   display: flex;

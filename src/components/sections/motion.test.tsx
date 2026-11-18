@@ -121,6 +121,20 @@ describe("one clip that changes shape", () => {
     expect(screen.getByRole("tab", { name: "LinkedIn" })).toHaveFocus();
     expect(line()).toBe("LinkedIn clips keep their own shape, up to 15 min each.");
   });
+
+  it("levels podcast episodes to each app's loudness, quoting only what the app itself says", () => {
+    render(<ShapeShifter />);
+    const line = () => document.querySelector(".shift-line")!.textContent!.replace(/\u00a0/g, " ").replace(/\s+/g, " ");
+    fireEvent.click(screen.getByRole("tab", { name: "Apple Podcasts" }));
+    expect(line()).toBe("Apple Podcasts episodes keep their own shape, with the sound levelled to −16 LUFS.");
+    expect(document.querySelector(".shift-takes")).toHaveTextContent("around −16 LKFS (±1 dB)");
+    expect(screen.getByRole("link", { name: "Apple Podcasts’s own specs" })).toHaveAttribute("href", "https://podcasters.apple.com/support/893-audio-requirements");
+    expect(document.querySelector(".shift-formats")).toHaveTextContent("Episodes, chapters, transcripts");
+    fireEvent.click(screen.getByRole("tab", { name: "Spotify" }));
+    expect(line()).toBe("Spotify episodes keep their own shape, with the sound levelled to −14 LUFS.");
+    expect(document.querySelector(".shift-takes")).toHaveTextContent("It gives no loudness target for podcasts");
+    expect(screen.getByRole("link", { name: "Spotify’s own specs" })).toHaveAttribute("href", expect.stringContaining("support.spotify.com"));
+  });
 });
 
 describe("falling logos", () => {

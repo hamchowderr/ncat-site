@@ -82,13 +82,15 @@ describe("logos", () => {
     expect(within(screen.getByRole("list", { name: "Platforms" })).getByText("Apple Podcasts")).toHaveClass("sr");
   });
 
-  it("gives every platform a logo, with its name and formats kept together", () => {
-    render(<PlatformExpert />);
-    const items = screen.getAllByRole("listitem");
-    for (const li of items) {
-      expect(li.querySelector("svg, img")).not.toBeNull();
-      expect(li.querySelector(".plat-text .plat-name")).not.toBeNull();
-      expect(li.querySelector(".plat-text .plat-formats")).not.toBeNull();
+  it("puts every platform in the one shape-changing clip, each with a logo and the formats it knows, and no second grid", () => {
+    const { container } = render(<PlatformExpert />);
+    expect(container.querySelector(".plat-grid")).toBeNull();
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs.map((t) => t.getAttribute("aria-label"))).toEqual(["TikTok", "YouTube", "X", "Instagram", "LinkedIn", "Facebook", "Spotify", "Apple Podcasts"]);
+    for (const t of tabs) {
+      expect(t.querySelector("svg, img")).not.toBeNull();
+      fireEvent.click(t);
+      expect(container.querySelector(".shift-formats")!.textContent).toMatch(/^Formats it knows .{10,}/);
     }
   });
 });

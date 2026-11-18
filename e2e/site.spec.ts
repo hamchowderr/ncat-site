@@ -187,13 +187,20 @@ test("event marks sit on one even row and platform logos are all the same size",
   for (const li of await page.locator(".feeds li").all()) expect((await li.boundingBox())!.width).toBeLessThanOrEqual(34);
 });
 
-test("platform tiles keep the logo centred beside the name and formats", async ({ page }) => {
+test("every platform lives in the shape-changing clip, with no second grid of tiles below it", async ({ page }) => {
   await page.goto("/");
-  for (const li of await page.locator(".plat-grid li").all()) {
-    const logo = (await li.locator(".plat-logo").boundingBox())!;
-    const text = (await li.locator(".plat-text").boundingBox())!;
-    expect(Math.abs(logo.y + logo.height / 2 - (text.y + text.height / 2))).toBeLessThanOrEqual(2);
+  await expect(page.locator(".plat-grid")).toHaveCount(0);
+  const tabs = page.locator(".shift-tabs [role=tab]");
+  await expect(tabs).toHaveCount(8);
+  // all eight logos fit in the panel without spilling out
+  const panel = (await page.locator(".shift-side").boundingBox())!;
+  for (const t of await tabs.all()) {
+    const b = (await t.boundingBox())!;
+    expect(b.x + b.width).toBeLessThanOrEqual(panel.x + panel.width + 1);
   }
+  await page.getByRole("tab", { name: "Apple Podcasts" }).click();
+  await expect(page.locator(".shift-formats")).toContainText("Episodes, chapters, transcripts");
+  await expect(page.locator(".shift-ratio")).toHaveText("−16 LUFS");
 });
 
 test("every tab label fits inside its tab track, with nothing cut off", async ({ page }) => {
