@@ -319,14 +319,14 @@ test("the line under the headline fills in as you scroll", async ({ page, isMobi
   await expect(page.locator(".hero-sub .hl.on")).toHaveCount(4);
 });
 
-test("big hero icons sit beside the headline, never on it, and move when hovered", async ({ page, isMobile }) => {
+test("social logos rain down beside the headline, never across it, and move when hovered", async ({ page, isMobile }) => {
   await page.goto("/");
   const icons = page.locator(".hero-icons .hi");
   if (isMobile) {
     await expect(page.locator(".hero-icons")).toBeHidden();
     return;
   }
-  await expect(icons).toHaveCount(6);
+  await expect(icons).toHaveCount(12);
   await page.waitForTimeout(1500);
   // the boxes of the words themselves, not of the full-width blocks they sit in
   const text = await page.evaluate(() => {
@@ -345,15 +345,23 @@ test("big hero icons sit beside the headline, never on it, and move when hovered
   for (const icon of await icons.all()) {
     const b = (await icon.locator("svg").boundingBox())!;
     for (const t of text) {
-      const overlap = b.x < t.x + t.width && b.x + b.width > t.x && b.y < t.y + t.height && b.y + b.height > t.y;
+      // they fall the whole height, so their lane must stay clear of every line of text
+      const overlap = b.x < t.x + t.width && b.x + b.width > t.x;
       expect(overlap).toBe(false);
     }
   }
-  await expect(icons).toHaveCount(6);
+  await expect(icons).toHaveCount(12);
+  // they keep falling
+  const first = icons.first();
+  const y0 = (await first.boundingBox())!.y;
+  await page.waitForTimeout(800);
+  expect((await first.boundingBox())!.y).toBeGreaterThan(y0);
   for (const name of ["TikTok", "YouTube", "X", "Instagram", "LinkedIn", "Facebook"]) {
-    const logo = page.locator(`.hi[data-platform="${name}"] svg`);
+    const drop = page.locator(`.hi[data-platform="${name}"]`).first();
+    const logo = drop.locator("svg");
     const before = await logo.innerHTML();
-    await logo.hover();
+    // a falling logo may be above or below the visible band right now, so point at it directly
+    await drop.dispatchEvent("pointerenter");
     await expect.poll(() => logo.innerHTML(), { message: name }).not.toBe(before);
   }
 });

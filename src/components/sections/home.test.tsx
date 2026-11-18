@@ -164,13 +164,15 @@ describe("story and icons", () => {
     const { container } = render(<HowItWorks />);
     for (const li of container.querySelectorAll(".steps li")) expect(li.querySelector(".mi svg")).not.toBeNull();
     const hero = render(<Hero />).container;
-    expect(hero.querySelectorAll(".hero-icons .hi .mi svg")).toHaveLength(6);
+    expect(hero.querySelectorAll(".hero-icons .hi .mi svg")).toHaveLength(12);
     expect(hero.querySelector(".hero-icons")).toHaveAttribute("aria-hidden", "true");
   });
   it("uses only social platform logos for the big hero icons", () => {
     const hero = render(<Hero />).container;
     const names = Array.from(hero.querySelectorAll(".hero-icons .hi")).map((el) => el.getAttribute("data-platform"));
-    expect(names).toEqual(["TikTok", "YouTube", "X", "Instagram", "LinkedIn", "Facebook"]);
+    expect(new Set(names)).toEqual(new Set(["TikTok", "YouTube", "X", "Instagram", "LinkedIn", "Facebook"]));
+    // each logo falls once down each side
+    for (const name of new Set(names)) expect(names.filter((n) => n === name)).toHaveLength(2);
   });
   it("gives every how-it-works step and every use case an icon", () => {
     const { container } = render(<HowItWorks />);

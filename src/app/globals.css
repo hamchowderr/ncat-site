@@ -1845,7 +1845,7 @@ fieldset[aria-invalid="true"] .pill span {
 .fill-text .fw.hot.on {
   -webkit-text-fill-color: transparent;
 }
-/* Big moving icons in the hero's side margins (wide screens only, so they never sit on the text). */
+/* Social logos raining down the hero's side margins (wide screens only, so they never cross the text). */
 .hero-top {
   position: relative;
 }
@@ -1857,37 +1857,54 @@ fieldset[aria-invalid="true"] .pill span {
     display: block;
     position: absolute;
     inset: -24px calc(-1 * var(--gutter)) 0;
+    overflow: hidden;
     pointer-events: none;
   }
   .hi {
     position: absolute;
+    top: 0;
     color: #c6c6d0;
     pointer-events: auto;
-    animation: hi-in 0.7s var(--ease) both;
+    animation: hi-fall var(--dur) linear var(--delay) infinite;
     transition: color 0.3s var(--ease);
   }
   .hi:hover {
     color: var(--accent);
+    animation-play-state: paused;
   }
   .hi .mi {
     display: block;
   }
-  .hi-1 { top: 10px; left: 0; rotate: -14deg; }
-  .hi-2 { top: 200px; left: 20px; rotate: 12deg; }
-  .hi-3 { top: 430px; left: 10px; rotate: -8deg; }
-  .hi-4 { top: 0; right: 30px; rotate: 16deg; }
-  .hi-5 { top: 210px; right: 0; rotate: -12deg; }
-  .hi-6 { top: 440px; right: 80px; rotate: 10deg; }
 }
-@keyframes hi-in {
-  from {
+@keyframes hi-fall {
+  0% {
+    translate: 0 -170px;
+    rotate: calc(var(--tilt) - 10deg);
     opacity: 0;
-    scale: 0.6;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    rotate: calc(var(--tilt) + 10deg);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    translate: 0 760px;
+    rotate: calc(var(--tilt) - 6deg);
+    opacity: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .hi {
+    top: var(--top);
+    rotate: var(--tilt);
     animation: none;
+  }
+  .hi-extra {
+    display: none;
   }
   .mi svg {
     pointer-events: none;
