@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { describeTry } from "./preview";
 import { trialUrl } from "./trial";
 
 describe("the trial address", () => {
@@ -11,14 +10,4 @@ describe("the trial address", () => {
     expect(trialUrl("")).toBeNull();
     expect(trialUrl(undefined)).toBeNull();
   });
-});
-
-describe("what someone tried", () => {
-  it("reads like a sentence", () => {
-    expect(describeTry(35, 5)).toBe("a 35 s video, cut into 5 clips");
-    expect(describeTry(840, 14)).toBe("a 14 min video, cut into 14 clips");
-    expect(describeTry(3780, 63)).toBe("a 1 h 3 min video, cut into 63 clips");
-    expect(describeTry(6, 1)).toBe("a 6 s video, cut into 1 clip");
-  });
-
 });

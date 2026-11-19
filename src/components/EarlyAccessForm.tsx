@@ -18,7 +18,7 @@ import {
   type Errors,
   type Field,
 } from "@/lib/early-access";
-import { PREFILL_EVENT } from "@/lib/prefill";
+import { PREFILL_EVENT, type SignedUp } from "@/lib/prefill";
 
 type Option = { readonly value: string; readonly label: string };
 
@@ -42,7 +42,7 @@ const EMPTY: EarlyAccessInput = {
 
 type Status = { kind: "idle" } | { kind: "sending" } | { kind: "sent"; name: string } | { kind: "error"; message: string };
 
-export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: () => void; tried?: string } = {}) {
+export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedUp) => void; tried?: string } = {}) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<EarlyAccessInput>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
@@ -106,7 +106,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: () => void; t
       const res = await fetch("/api/early-access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(tried ? { ...data, tried } : data) });
       if (res.ok) {
         setStatus({ kind: "sent", name: data.name.split(" ")[0] });
-        onSent?.();
+        onSent?.({ name: data.name, email: data.email });
         return;
       }
       const body = (await res.json().catch(() => ({}))) as { errors?: Errors; error?: string };

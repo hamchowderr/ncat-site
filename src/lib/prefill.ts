@@ -3,11 +3,13 @@ export const PREFILL_EVENT = "early-access:prefill";
 /** Event that opens the early-access pop-up. */
 export const OPEN_EVENT = "early-access:open";
 
+export type SignedUp = { name: string; email: string };
+
 export type OpenDetail = {
   /** What they tried in the demo, e.g. "a 35 s video, cut into 5 clips". Marks the sign-up to go first. */
   tried?: string;
-  /** Called once the visitor has signed up, e.g. to save the clip previews they made. */
-  onSent?: () => void;
+  /** Called once the visitor has signed up, with who they are, e.g. to run their video. */
+  onSent?: (who: SignedUp) => void;
 };
 
 /** Opens the early-access pop-up, with `text` written into "In your words" when given. */
