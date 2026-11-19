@@ -191,7 +191,7 @@ describe("try it on your own video", () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
     const { rerender } = render(<WhileItRuns id="run1" k="a/b" emails={false} />);
-    expect(screen.getByText(/10 minutes or more, so you don’t need to wait here/)).toBeInTheDocument();
+    expect(screen.getByText(/can take the toolkit a while, so you don’t need to wait here/)).toBeInTheDocument();
     expect(screen.queryByText(/email/)).toBeNull();
     expect(screen.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=a%2Fb");
     fireEvent.click(screen.getByRole("button", { name: "Copy link" }));

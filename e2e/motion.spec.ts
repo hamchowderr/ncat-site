@@ -305,7 +305,7 @@ test("the section asks for their own first video, and nothing is sent before the
   await expect(page.locator(".try-drop-note")).toHaveText(/^\d+ (KB|MB), 35 s$/);
   await expect(page.getByRole("button", { name: "Sign up and run it" })).toBeVisible();
   // said before they sign up: it takes a while, and they don't have to sit and watch
-  await expect(page.locator(".try-drop-hint")).toHaveText("The toolkit takes 10 minutes or more on it, and you don’t have to wait on this page.");
+  await expect(page.locator(".try-drop-hint")).toHaveText("The toolkit can take a while on it, and you don’t have to wait on this page.");
   // every step waits: nothing has run, and nothing pretends to
   await expect(page.locator(".try-step.wait")).toHaveCount(5);
   expect(sent).toEqual([]);
@@ -330,6 +330,13 @@ test("signing up uploads the video to the real toolkit, shows its real steps, th
   await expect(wait.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=key1");
   const steps = (await page.locator(".try-run").boundingBox())!;
   expect((await wait.boundingBox())!.y).toBeGreaterThanOrEqual(steps.y + steps.height - 1);
+  // centred in its box, not pushed to the left
+  const box = (await wait.boundingBox())!;
+  const lead = (await wait.locator(".try-next-lead").boundingBox())!;
+  expect(Math.abs(lead.x - box.x - (box.x + box.width - lead.x - lead.width))).toBeLessThan(4);
+  const first = (await wait.getByRole("link", { name: "Your clips link" }).boundingBox())!;
+  const last = (await wait.getByRole("button", { name: "Copy link" }).boundingBox())!;
+  expect(Math.abs(first.x - box.x - (box.x + box.width - last.x - last.width))).toBeLessThan(4);
   // the toolkit's own answers, step by step
   await expect(page.locator('[data-step="Read by the toolkit"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
   await expect(page.locator(".try-step.done")).toHaveCount(5, { timeout: 15_000 });

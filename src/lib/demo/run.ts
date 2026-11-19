@@ -81,6 +81,8 @@ export function startRun(demo: Demo, source: string, sourceUrl: string, now: num
     probe: [
       job(`${demo.id}-meta`, "/v1/media/metadata", { media_url: sourceUrl }),
       job(`${demo.id}-pauses`, "/v1/media/silence", { media_url: sourceUrl, duration: 0.4, noise: "-30dB" }),
+      // The words, timed and styled for a 1080 × 1920 clip, so each cut burns its captions in.
+      job(`${demo.id}-words`, "/v1/media/generate/ass", { media_url: sourceUrl, canvas_width: 1080, canvas_height: 1920, settings: DEMO_CAPTION_LOOK }),
     ],
   };
 }
@@ -199,7 +201,7 @@ export async function advance(demo: Demo, toolkit: Toolkit, hookUrl: string, now
 /** Adds the next stage's jobs once a stage is finished. Returns the run when it has ended. */
 function nextStage(d: Demo): Demo | null {
   if (settled(d.probe) && d.cuts.length === 0) {
-    const [meta, pauses] = d.probe;
+    const [meta, pauses, words] = d.probe;
     const duration = meta.state === "done" ? durationOf(meta.result) : null;
     if (duration === null) return fail(d, "The toolkit couldn’t read that video. Try another file, such as an MP4 or MOV.");
     if (duration > MAX_SECONDS + 1) return fail(d, `That video is ${formatDuration(duration)} long. The demo takes videos up to 10 minutes.`);
@@ -208,8 +210,19 @@ function nextStage(d: Demo): Demo | null {
     const plan = planClips(duration, pauses.state === "done" ? parseSilences(pauses.result) : [], CLIP_SECONDS);
     d.plannedClips = plan.length;
     const sourceUrl = String(meta.body.media_url);
-    d.cuts = plan.slice(0, MAX_CLIPS).map((clip, i) => job(`${d.id}-cut-${i + 1}`, "/v1/ffmpeg/compose", verticalClipRequest(sourceUrl, clip)));
+    // Without the words the clips are still made, just without captions.
+    const captionsUrl = words?.state === "done" ? collectUrls(words.result)[0] : undefined;
+    d.cuts = plan
+      .slice(0, MAX_CLIPS)
+      .map((clip, i) => job(`${d.id}-cut-${i + 1}`, "/v1/ffmpeg/compose", verticalClipRequest(sourceUrl, clip, captionsUrl)));
   }
+  if (settled(d.cuts) && captionedInCut(d)) {
+    const made = d.cuts.filter((j) => j.state === "done" && collectUrls(j.result)[0]);
+    if (made.length === 0) return fail(d, d.cuts.find((j) => j.error)?.error ?? "The toolkit couldn’t cut the clips.");
+    d.clips = made.map((j) => ({ url: collectUrls(j.result)[0], captioned: burnsCaptions(j) }));
+    return { ...d, stage: "done" };
+  }
+  // Runs started before captions were burned in during the cut caption each clip afterwards.
   if (settled(d.cuts) && d.captions.length === 0) {
     const made = d.cuts.filter((j) => j.state === "done" && collectUrls(j.result)[0]);
     if (made.length === 0) return fail(d, d.cuts.find((j) => j.error)?.error ?? "The toolkit couldn’t cut the clips.");
@@ -226,6 +239,12 @@ function nextStage(d: Demo): Demo | null {
   }
   return null;
 }
+
+/** Whether a cut's request burns captions in. */
+const burnsCaptions = (j: Job) => JSON.stringify(j.body.filters ?? "").includes("ass='");
+
+/** Whether this run burns the captions in while cutting (every run since the words job). */
+const captionedInCut = (d: Demo) => d.probe.length > 2;
 
 export type StepView = { label: string; state: "wait" | "doing" | "done" | "failed"; detail?: string };
 export type DemoView = { stage: Demo["stage"]; steps: StepView[]; clips: Demo["clips"]; error?: string; partial?: string };
@@ -256,7 +275,7 @@ export function viewOf(d: Demo): DemoView {
         : `${n} ${n === 1 ? "clip" : "clips"}, up to a minute each, 1080 × 1920.`
       : undefined,
   };
-  const captioned: StepView = { label: "Captioned", state: stateOf(d.captions), detail: d.captions.length ? "Every word transcribed and burned in." : undefined };
+  const captioned: StepView = captionedInCut(d) ? captionedStep(d) : { label: "Captioned", state: stateOf(d.captions), detail: d.captions.length ? "Every word transcribed and burned in." : undefined };
   const ready: StepView = { label: "Ready to download", state: d.stage === "done" ? "done" : "wait" };
   const missed = d.stage === "done" ? d.clips.filter((c) => !c.captioned).length : 0;
   return {
@@ -266,4 +285,14 @@ export function viewOf(d: Demo): DemoView {
     ...(d.error ? { error: d.error } : {}),
     ...(missed ? { partial: `${missed === d.clips.length ? "The captions" : `Captions on ${missed} ${missed === 1 ? "clip" : "clips"}`} didn’t finish, so ${missed === 1 ? "that clip is" : "those clips are"} shown without them.` } : {}),
   };
+}
+
+/** The captions step when they are burned in during the cut: the words first, then the cut. */
+function captionedStep(d: Demo): StepView {
+  const words = d.probe[2];
+  const label = "Captioned";
+  if (words.state === "failed") return { label, state: d.stage === "running" && !d.cuts.length ? "doing" : "failed" };
+  if (words.state !== "done") return { label, state: "doing", detail: "Transcribing every word." };
+  if (d.stage === "done") return { label, state: "done", detail: "Every word transcribed and burned in." };
+  return { label, state: d.stage === "failed" ? "failed" : "doing", detail: "Every word transcribed, now burning them in." };
 }

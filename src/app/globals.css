@@ -2385,6 +2385,16 @@ fieldset[aria-invalid="true"] .pill span {
   max-width: 34ch;
   margin: 14px auto 0;
 }
+/* The "don't wait here" note sits centred under both columns, like the section heading */
+.try-wait {
+  text-align: center;
+}
+.try-wait .try-next-lead {
+  margin-inline: auto;
+}
+.try-wait .try-next-actions {
+  justify-content: center;
+}
 .try-next-actions .btn.ghost {
   background: #fff;
 }
