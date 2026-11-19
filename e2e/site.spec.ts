@@ -252,6 +252,27 @@ test("the FAQ opens and closes", async ({ page }) => {
   const q = page.locator("details").filter({ hasText: "Do I need n8n?" });
   await q.locator("summary").click();
   await expect(q.getByText("Automations run inside the dashboard")).toBeVisible();
+  await expect(q).toHaveAttribute("open", "");
+  await q.locator("summary").click();
+  await expect(q).not.toHaveAttribute("open", "");
+});
+
+test("the FAQ is one centred column with no boxes, and the footer has nothing under it", async ({ page }) => {
+  await page.goto("/");
+  const list = page.locator(".faq-list");
+  await list.scrollIntoViewIfNeeded();
+  const box = (await list.boundingBox())!;
+  const vw = page.viewportSize()!.width;
+  expect(Math.abs(box.x + box.width / 2 - vw / 2)).toBeLessThan(4);
+  const first = list.locator("details").first();
+  await expect(first).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  const q = (await first.locator("summary").boundingBox())!;
+  expect(q.height).toBeGreaterThanOrEqual(56);
+  const foot = page.locator("footer.foot");
+  await expect(foot.locator(".legal")).toHaveCount(0);
+  await expect(foot).not.toContainText("demo data");
+  await expect(foot.getByRole("link", { name: "Instagram" })).toBeVisible();
+  expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
 });
 
 test("motion is skipped for people who turn it off", async ({ page }) => {
@@ -399,5 +420,19 @@ test("the newer features each show a whole-window recording that plays on screen
     expect(b.height).toBeGreaterThan(14);
   }
   await expect(section.getByRole("list", { name: "Also in the dashboard" }).getByRole("listitem")).toHaveCount(5);
+  // the meeting apps sit side by side, Microsoft Teams next to Google Meet, each chip only as wide as its name
+  const meet = section.getByRole("list", { name: /Meeting recordings.*: apps/ });
+  const chips = await Promise.all(["Zoom", "Google Meet", "Microsoft Teams"].map((n) => meet.getByRole("listitem").filter({ hasText: n }).boundingBox()));
+  if ((page.viewportSize()?.width ?? 0) >= 900) {
+    expect(Math.abs(chips[2]!.y - chips[1]!.y)).toBeLessThan(2);
+    expect(chips[2]!.x).toBeGreaterThan(chips[1]!.x + chips[1]!.width);
+  }
+  expect(chips[0]!.width).toBeLessThan(chips[2]!.width);
+  // the AI apps sit in one row too
+  const ai = section.getByRole("list", { name: /AI apps you already use: apps/ }).getByRole("listitem");
+  if ((page.viewportSize()?.width ?? 0) >= 900) {
+    const ys = await ai.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+    expect(new Set(ys).size).toBe(1);
+  }
   expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
 });

@@ -8,6 +8,8 @@ import CameraIcon from "@/components/itshover/camera-icon";
 import UsersGroupIcon from "@/components/itshover/users-group-icon";
 import Volume2Icon from "@/components/itshover/volume-2-icon";
 import VinylIcon from "@/components/itshover/vinyl-icon";
+import UsersIcon from "@/components/itshover/users-icon";
+import PlayerIcon from "@/components/itshover/player-icon";
 import { Logo } from "@/components/brand/Logo";
 
 type LogoName = Parameters<typeof Logo>[0]["name"];
@@ -70,6 +72,34 @@ export const CASES: { id: string; tab: string; icon: typeof CameraIcon; title: s
       { label: "Vertical short for every feed", shape: "tall", logos: ["tiktok", "instagram", "youtube"] },
       { label: "Lyric video from your lyrics", shape: "wide", logos: ["youtube"] },
       { label: "Spotify Canvas loop", shape: "tall", logos: ["spotify"] },
+    ],
+  },
+  {
+    id: "coaches",
+    tab: "Coaches",
+    icon: UsersIcon,
+    title: "Teach the session. The replay builds itself.",
+    body: "Connect Zoom, Google Meet or Microsoft Teams once and every recorded session comes in on its own. It is split into chapters, the strongest moments become clips, and the notes are written for the replay, so your next lesson is the only thing you prepare.",
+    input: "A recorded coaching call or class",
+    outputs: [
+      { label: "Chapters and notes for the replay", shape: "doc" },
+      { label: "Best moments as vertical clips", shape: "tall", logos: ["tiktok", "instagram", "youtube"] },
+      { label: "Full replay for your course", shape: "wide", logos: ["youtube"] },
+      { label: "Searchable by what was said", shape: "doc" },
+    ],
+  },
+  {
+    id: "webinars",
+    tab: "Webinars",
+    icon: PlayerIcon,
+    title: "The stream ends. The week of posts is planned.",
+    body: "The recording arrives by itself and gets chapters and show notes ready for YouTube. Wide shots of a panel become tall clips that keep whoever is talking in frame, and the posts go onto your content calendar for the days ahead.",
+    input: "The webinar or live show recording",
+    outputs: [
+      { label: "Chapters and show notes for YouTube", shape: "wide", logos: ["youtube"] },
+      { label: "Clips that follow the speaker", shape: "tall", logos: ["tiktok", "instagram", "linkedin"] },
+      { label: "Posts planned on the calendar", shape: "approve" },
+      { label: "Timeline for your editor", shape: "edit", logos: ["premiere", "resolve", "finalcut"] },
     ],
   },
 ];

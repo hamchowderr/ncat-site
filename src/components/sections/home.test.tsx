@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { HeroStage, STAGE } from "@/components/HeroStage";
-import { Features, PLATFORM_INKS } from "./Features";
+import { Features, LEAD } from "./Features";
 import { Hero } from "./Hero";
 import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
@@ -100,8 +100,31 @@ describe("Features", () => {
     render(<Features />);
     const h = screen.getByRole("heading", { level: 2, name: "Ready-made automations. No AI on every video." });
     expect(h.querySelector(".plat-ink")).toHaveTextContent("No AI on every video.");
-    // TikTok, Instagram, YouTube, Facebook and LinkedIn, each its own brand colour
-    expect(PLATFORM_INKS).toEqual(["#fe2c55", "#e1306c", "#ff0000", "#0866ff", "#0a66c2"]);
+  });
+
+  it("reads the lead one platform at a time, each with its real logo beside it, on alternating sides", () => {
+    const { container } = render(<Features />);
+    const lead = container.querySelector(".pl-lead")!;
+    expect(lead).toHaveTextContent(
+      "Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.",
+    );
+    const phrases = Array.from(lead.querySelectorAll<HTMLElement>(".pl-phrase"));
+    expect(phrases.map((p) => p.dataset.platform)).toEqual(["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]);
+    expect(LEAD).toHaveLength(6);
+    phrases.forEach((p, i) => {
+      const logo = p.querySelector(".pl-logo")!;
+      expect(logo.getAttribute("aria-hidden")).toBe("true");
+      expect(logo.getAttribute("data-platform")).toBe(p.dataset.platform);
+      // logos alternate: before the words, then after them, so they run down both sides
+      const before = i % 2 === 0;
+      expect(p.dataset.side).toBe(before ? "before" : "after");
+      expect(before ? p.firstElementChild : p.lastElementChild).toBe(logo);
+    });
+    // drawn in the platforms' own colours, not one ink
+    expect(lead.querySelector('[data-platform="youtube"] path[fill="#ff0000"]')).not.toBeNull();
+    expect(lead.querySelector('[data-platform="facebook"] path[fill="#0866ff"]')).not.toBeNull();
+    expect(lead.querySelector('[data-platform="tiktok"] path[fill="#25f4ee"]')).not.toBeNull();
+    expect(lead.querySelector('[data-platform="instagram"] radialGradient')).not.toBeNull();
   });
 
   it("shows a silent, described screen recording for every feature", () => {
@@ -150,7 +173,7 @@ describe("UseCases", () => {
   it("shows what goes in and what comes out for each team, and every tab has an icon", () => {
     render(<UseCases />);
     for (const tab of screen.getAllByRole("tab")) expect(tab.querySelector("svg")).not.toBeNull();
-    for (const name of ["Creators", "Editing agencies", "Podcast teams", "Music video teams"]) {
+    for (const name of ["Creators", "Editing agencies", "Podcast teams", "Music video teams", "Coaches", "Webinars"]) {
       fireEvent.click(screen.getByRole("tab", { name }));
       const panel = screen.getByRole("tabpanel");
       expect(panel.querySelector(".case-in")?.textContent).toMatch(/^In.+/);
@@ -191,5 +214,19 @@ describe("story and icons", () => {
     for (const li of items) expect(li.querySelector(".step-icon svg")).not.toBeNull();
     const cases = render(<UseCases />).container;
     expect(cases.querySelector(".case-icon svg")).not.toBeNull();
+  });
+});
+
+describe("use cases from the newer features", () => {
+  it("adds coaches and webinars, built on meeting recordings, chapters, best moments, follow the speaker and the calendar", () => {
+    render(<UseCases />);
+    fireEvent.click(screen.getByRole("tab", { name: "Coaches" }));
+    let panel = screen.getByRole("tabpanel");
+    expect(panel).toHaveTextContent("Zoom, Google Meet or Microsoft Teams");
+    expect(panel).toHaveTextContent("Best moments as vertical clips");
+    fireEvent.click(screen.getByRole("tab", { name: "Webinars" }));
+    panel = screen.getByRole("tabpanel");
+    expect(panel).toHaveTextContent("Clips that follow the speaker");
+    expect(panel).toHaveTextContent("Posts planned on the calendar");
   });
 });

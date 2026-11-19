@@ -266,27 +266,32 @@ test("a file the browser can't open still gets filed, with a plain note", async 
   await expect(page.locator(".try-thumbs")).toHaveCount(0);
 });
 
-test("the features heading runs through the platforms' colours, and the lead's words glow in them as they appear", async ({ page }) => {
+test("the features lead lights up one platform at a time in its own colour, with its logo beside it on alternating sides", async ({ page }) => {
   await page.goto("/");
   const ink = page.locator("#features-title .plat-ink");
   await expect(ink).toHaveText("No AI on every video.");
-  await expect(ink).toHaveCSS("animation-name", "plat-ink");
-  await expect(ink).toHaveCSS("color", "rgba(0, 0, 0, 0)");
-  const lead = page.locator(".features .sec-lead");
-  // scroll so the lead is part way through appearing, and look for words lit in a platform's colour
-  const seen = new Set<string>();
-  const y0 = await lead.evaluate((el) => el.getBoundingClientRect().top + window.scrollY - window.innerHeight);
-  for (let i = 0; i < 24; i++) {
-    await page.evaluate((y) => window.scrollTo(0, y), y0 + i * 25);
-    await page.waitForTimeout(60);
-    for (const c of await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.map((p) => (p as HTMLElement).style.color)))
-      for (const rgb of ["rgb(254, 44, 85)", "rgb(225, 48, 108)", "rgb(255, 0, 0)", "rgb(8, 102, 255)", "rgb(10, 102, 194)"]) if (c.includes(rgb)) seen.add(rgb);
+  const lead = page.locator(".features .pl-lead");
+  const phrase = (p: string) => lead.locator(`.pl-phrase[data-platform="${p}"]`);
+  // before it scrolls in, it waits in grey with the logos tucked away
+  await expect(phrase("youtube").locator(".pl-words")).toHaveCSS("opacity", "0.3");
+  await lead.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, 300));
+  const colours: Record<string, string> = { youtube: "rgb(255, 0, 0)", facebook: "rgb(8, 102, 255)", linkedin: "rgb(10, 102, 194)", tiktok: "rgb(0, 0, 0)", x: "rgb(0, 0, 0)" };
+  for (const [p, rgb] of Object.entries(colours)) {
+    await expect(phrase(p)).toHaveClass(/is-on/);
+    await expect(phrase(p).locator(".pl-words")).toHaveCSS("color", rgb);
+    await expect(phrase(p).locator(".pl-words")).toHaveCSS("opacity", "1");
   }
-  expect(seen.size).toBeGreaterThanOrEqual(3);
-  // once it has all appeared, every word keeps its platform's colour, taken in turn
-  await page.evaluate((y) => window.scrollTo(0, y), y0 + 2000);
-  await page.waitForTimeout(400);
-  const colours = await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.map((p) => getComputedStyle(p).color));
-  const inks = ["rgb(254, 44, 85)", "rgb(225, 48, 108)", "rgb(255, 0, 0)", "rgb(8, 102, 255)", "rgb(10, 102, 194)"];
-  colours.forEach((c, i) => expect(c).toBe(inks[i % inks.length]));
+  await expect(phrase("instagram").locator(".pl-words")).toHaveCSS("background-clip", "text");
+  // every logo is shown and big enough to recognise, and they sit on both sides of their words
+  const sides = new Set<string>();
+  for (const p of ["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]) {
+    const logo = phrase(p).locator(".pl-logo");
+    await expect(logo).toHaveCSS("opacity", "1");
+    const box = (await logo.boundingBox())!;
+    expect(box.width).toBeGreaterThan(18);
+    const words = (await phrase(p).locator(".pl-words").boundingBox())!;
+    sides.add(box.x < words.x ? "left" : "right");
+  }
+  expect([...sides].sort()).toEqual(["left", "right"]);
 });

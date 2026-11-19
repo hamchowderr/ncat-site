@@ -43,15 +43,23 @@ export function Faq() {
   return (
     <section className="faq" id="faq" aria-labelledby="faq-title">
       <div className="wrap faq-in">
-        <Reveal className="sec-head left">
+        <Reveal className="sec-head">
           <h2 id="faq-title">Got questions?</h2>
-          <p>Anything else, message me directly.</p>
+          <p>
+            Anything else, message me on <a href="https://www.instagram.com/hamchowderr">Instagram</a>,{" "}
+            <a href="https://www.linkedin.com/in/tylanmiller">LinkedIn</a> or <a href="https://x.com/hamchowderr">X</a>.
+          </p>
         </Reveal>
         <div className="faq-list">
           {FAQ.map((f, i) => (
             <details key={f.q} open={i === 0}>
-              <summary>{f.q}</summary>
-              <div className="faq-a">{typeof f.a === "string" ? <p>{f.a}</p> : <p>{f.a}</p>}</div>
+              <summary>
+                <span>{f.q}</span>
+                <span className="faq-plus" aria-hidden="true" />
+              </summary>
+              <div className="faq-a">
+                <p>{f.a}</p>
+              </div>
             </details>
           ))}
         </div>
