@@ -839,6 +839,137 @@ html {
   }
 }
 
+/* Five ways to use the free engine: one rail from "you do the work" to "it runs by itself" */
+.ways {
+  margin-top: clamp(56px, 8vw, 96px);
+}
+.ways-title {
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  text-align: center;
+}
+.ways-scale {
+  display: flex;
+  justify-content: space-between;
+  margin: 28px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mute);
+}
+.ways-scale span:last-child {
+  color: var(--accent-ink);
+}
+.ways-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 24px);
+  position: relative;
+}
+.ways-list::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 7px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--panel-2), var(--accent));
+}
+.ways-list li {
+  position: relative;
+  padding-top: 34px;
+}
+.ways-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 0 0 3px var(--panel-2);
+}
+.ways-list li:nth-child(2) .ways-dot { box-shadow: inset 0 0 0 3px #cfc7f8; }
+.ways-list li:nth-child(3) .ways-dot { box-shadow: inset 0 0 0 3px #b2a4f6; }
+.ways-list li:nth-child(4) .ways-dot { box-shadow: inset 0 0 0 3px #8f7cf5; }
+.ways-list li.ours .ways-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 5px var(--accent-soft);
+}
+.ways-list h4 {
+  font-size: 17px;
+  line-height: 1.25;
+}
+.ways-how {
+  margin-top: 8px;
+  color: var(--soft);
+  font-size: 15px;
+}
+.ways-leaves {
+  margin-top: 12px;
+  font-size: 15px;
+  color: var(--ink);
+}
+.ways-k {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--mute);
+}
+.ways-list li.ours {
+  background: var(--accent-soft);
+  border-radius: var(--r);
+  padding: 34px 18px 20px;
+  margin-top: -14px;
+  padding-top: 48px;
+}
+.ways-list li.ours .ways-dot {
+  top: 14px;
+  left: 18px;
+}
+.ways-list li.ours h4,
+.ways-list li.ours .ways-k {
+  color: var(--accent-ink);
+}
+@media (max-width: 900px) {
+  .ways-scale {
+    display: none;
+  }
+  .ways-list {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding-left: 30px;
+    margin-top: 28px;
+  }
+  .ways-list::before {
+    left: 7px;
+    right: auto;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    height: auto;
+    background: linear-gradient(180deg, var(--panel-2), var(--accent));
+  }
+  .ways-list li {
+    padding-top: 0;
+  }
+  .ways-dot {
+    left: -30px;
+    top: 2px;
+  }
+  .ways-list li.ours {
+    margin: 0 0 0 -12px;
+    padding: 16px 16px 18px 12px;
+  }
+  .ways-list li.ours .ways-dot {
+    left: -18px;
+    top: 18px;
+  }
+}
+
 /* ---------- Platforms ---------- */
 /* ---------- Use cases ---------- */
 .seg {
@@ -859,6 +990,18 @@ html {
 .case-text p {
   margin-top: 14px;
   color: var(--soft);
+}
+.case-text p.case-without {
+  margin-top: 18px;
+  font-size: 15px;
+  color: var(--ink);
+}
+.case-without span {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--mute);
 }
 .case-line {
   display: grid;

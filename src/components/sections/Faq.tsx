@@ -2,6 +2,18 @@ import { Reveal } from "@/components/Reveal";
 export const FAQ: { q: string; a: React.ReactNode }[] = [
   { q: "Is it out yet?", a: "Not yet. The dashboard is working and in testing now. Get on the early access list and you’ll be first to try it." },
   {
+    q: "If the NCA Toolkit is free, what am I paying for?",
+    a: "The shell around it. The toolkit is a free, open-source engine: it cuts, captions, transcribes and reframes video through an API, but it has no screens and nothing that runs on its own. We built the fine-tuned shell that makes it run your content: ready-made automations, an agent that sets up new ones, recordings that come in from Zoom, Google Meet and Microsoft Teams, a library of everything you’ve recorded, approvals, your brand on every clip and hand-off to your editor. You never pay for the processing itself.",
+  },
+  {
+    q: "Can’t I just edit with an AI agent and the toolkit?",
+    a: "You can, and it works while you sit with it. Every session uses your plan’s limits or API credits, starts from scratch, and stops when you close the laptop. Here you describe the edit once, the agent sets it up and tests it, and plain editing runs it on every new recording with nobody there and no AI used per video. You can still drive it from your own agent through the MCP server, which works with many MCP clients.",
+  },
+  {
+    q: "Doesn’t the toolkit come with n8n?",
+    a: "It does, and many people never set it up. n8n can string toolkit jobs together, but you wire each request and type the expressions yourself, and there is no library, review step or brand settings. Automations here run inside the shell, so you don’t need n8n. If you already use it, it works alongside.",
+  },
+  {
     q: "How is this different from Opus Clip and other clipping apps?",
     a: "Those apps sell AI editing one video at a time and charge per minute or credit for it. Most of that work is plain editing that doesn’t need AI. Here you set the job up once on a canvas you can read, your content stays organized in your own storage, and every new upload is handled the same way with no fee per video. Anything left over goes to your editing app or your editor. And you own it.",
   },
@@ -32,10 +44,10 @@ export const FAQ: { q: string; a: React.ReactNode }[] = [
     a: "Yes. An Export for editors step makes timelines for Premiere Pro, DaVinci Resolve and Final Cut Pro with every cut adjustable, plus CapCut-ready clip packs, because CapCut can’t import a timeline. Caption files come with them.",
   },
   { q: "Does it make AI avatars, dubbing or text-to-video?", a: "No, and it is not planned. It works on real footage and audio you recorded." },
-  { q: "Do I need n8n?", a: "No. Automations run inside the dashboard. If you already use n8n, it can still start an automation with a webhook." },
+  { q: "Do I need n8n?", a: "No. Automations run inside the shell itself. n8n comes with the toolkit, and if you already use it, it can still start an automation." },
   {
     q: "Is this the official NCA Toolkit?",
-    a: "No. The NCA Toolkit is a free, open-source project by Stephen G. Pope. The dashboard is a separate product by Otaku Solutions that works with it.",
+    a: "No. The NCA Toolkit is a free, open-source project by Stephen G. Pope. The shell around it is a separate product by Otaku Solutions.",
   },
 ];
 
