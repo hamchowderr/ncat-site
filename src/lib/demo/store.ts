@@ -60,7 +60,8 @@ async function writeJson(pathname: string, value: unknown, etag: string | null):
       ...(etag ? { allowOverwrite: true, ifMatch: etag } : { allowOverwrite: false }),
     });
     return true;
-  } catch {
+  } catch (e) {
+    console.warn(`blob write ${pathname} refused: ${e instanceof Error ? e.message : String(e)}`);
     return false;
   }
 }

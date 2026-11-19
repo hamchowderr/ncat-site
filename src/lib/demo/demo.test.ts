@@ -159,6 +159,50 @@ describe("a real run of the visitor's video", () => {
   });
 });
 
+describe("never flooding the toolkit", () => {
+  it("sends each job once, however many people look at the same moment", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    await startDemo(id, key, s.deps);
+    s.tk.finish(`${id}-meta`, { duration: 150 });
+    s.tk.finish(`${id}-pauses`, []);
+    s.later(5000);
+    await Promise.all(Array.from({ length: 6 }, () => demoStatus(id, key, s.deps)));
+    s.later(5000);
+    await Promise.all(Array.from({ length: 6 }, () => demoStatus(id, key, s.deps)));
+    const cuts = s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose").map((j) => j.id);
+    expect(cuts).toEqual([...new Set(cuts)]);
+    expect(cuts).toHaveLength(3);
+  });
+
+  it("sends nothing when the run can't be saved, so a broken store can't flood the toolkit", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    await startDemo(id, key, s.deps);
+    s.tk.finish(`${id}-meta`, { duration: 150 });
+    s.tk.finish(`${id}-pauses`, []);
+    s.deps.store.save = async () => false;
+    for (let i = 0; i < 10; i++) {
+      s.later(5000);
+      await demoStatus(id, key, s.deps);
+    }
+    expect(s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose")).toHaveLength(0);
+  });
+
+  it("hands a job over at most a few times when its answer keeps getting lost", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    let sends = 0;
+    s.deps.toolkit = { send: async () => (sends++, new Promise(() => {})), status: async () => ({ state: "working" }) };
+    void startDemo(id, key, s.deps);
+    for (let i = 0; i < 20; i++) {
+      s.later(3 * 60_000);
+      await Promise.race([demoStatus(id, key, s.deps), new Promise((r) => setTimeout(r, 5))]);
+    }
+    expect(sends).toBeLessThanOrEqual(2 * 4);
+  });
+});
+
 describe("limits", () => {
   it("one run per email, a daily cap, files up to 1 GB and 10 minutes", async () => {
     const s = setUp();
@@ -235,6 +279,8 @@ describe("talking to the toolkit", () => {
     let view = await demoStatus(id, key, s.deps);
     expect(view.ok && view.view.stage).toBe("running");
     s.later(6 * 60_000);
+    await demoStatus(id, key, s.deps);
+    s.later(5000);
     view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
     expect(view.view.stage).toBe("failed");

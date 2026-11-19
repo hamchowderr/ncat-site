@@ -1,4 +1,4 @@
-import { advance, type Demo, type DemoView, MAX_BYTES, MAX_SECONDS, newDemo, recordResult, startRun, viewOf } from "./run";
+import { type Demo, type DemoView, type Job, look, MAX_BYTES, MAX_SECONDS, newDemo, recordResult, send, sent, startRun, viewOf } from "./run";
 import { type DemoStore, keyFor, keyMatches, sourcePath } from "./store";
 import { readEnvelope, type Toolkit } from "./toolkit";
 
@@ -68,26 +68,52 @@ async function settle(id: string, change: (demo: Demo) => Promise<Demo | null>, 
     const next = await change(found.demo);
     if (!next) return found.demo;
     if (await deps.store.save(next, found.version)) return next;
+    console.warn(`demo ${id}: save refused for version ${found.version} (try ${tries + 1})`);
   }
   return (await deps.store.load(id))?.demo ?? null;
+}
+
+/**
+ * Changes the run (`change` answers null to leave it), then looks at it and moves it on. Jobs
+ * are claimed in a saved run before they are sent, and only the look whose claims were saved
+ * sends them, so a job can't go to the toolkit twice however many people look at once.
+ */
+async function moveOn(id: string, deps: DemoDeps, change: (demo: Demo) => Promise<Demo | null>): Promise<Demo | null> {
+  const toolkit = deps.toolkit;
+  const now = deps.now();
+  let claimed: Job[] = [];
+  const demo = await settle(
+    id,
+    async (d) => {
+      claimed = [];
+      const changed = await change(d);
+      const base = changed ?? d;
+      if (!toolkit || base.stage !== "running") return changed;
+      const looked = await look(base, toolkit, now);
+      claimed = looked.claimed;
+      return looked.demo;
+    },
+    deps,
+  );
+  if (!demo || !toolkit) return demo;
+  // Only claims that made it into the saved run are ours to send.
+  const mine = claimed.filter((c) => [...demo.probe, ...demo.cuts, ...demo.captions].some((j) => j.id === c.id && j.state === "sending" && j.claimedAt === c.claimedAt));
+  if (mine.length === 0) return demo;
+  const outcomes = await send(mine, toolkit, hookUrl(deps, id));
+  return (await settle(id, async (d) => (sent(d, outcomes, deps.now()) ? d : null), deps)) ?? demo;
 }
 
 /** The upload is in: hand it to the toolkit. */
 export async function startDemo(id: string, key: unknown, deps: DemoDeps): Promise<{ ok: true; view: DemoView } | Fail> {
   if (!keyMatches(id, key, deps.secret)) return no(404, "That run is not here.");
   if (!deps.toolkit) return no(503, "Real runs aren’t switched on yet.");
-  const toolkit = deps.toolkit;
-  const demo = await settle(
-    id,
-    async (d) => {
-      if (d.stage !== "upload") return null;
-      const path = sourcePath(id, d.fileName);
-      if (!(await deps.store.exists(path))) return null;
-      const now = deps.now();
-      return advance(startRun(d, path, await deps.store.readLink(path, now), now), toolkit, hookUrl(deps, id), now);
-    },
-    deps,
-  );
+  const demo = await moveOn(id, deps, async (d) => {
+    if (d.stage !== "upload") return null;
+    const path = sourcePath(id, d.fileName);
+    if (!(await deps.store.exists(path))) return null;
+    const now = deps.now();
+    return startRun(d, path, await deps.store.readLink(path, now), now);
+  });
   if (!demo) return no(404, "That run is not here.");
   if (demo.stage === "upload") return no(409, "The video hasn’t finished uploading.");
   return { ok: true, view: viewOf(demo) };
@@ -96,8 +122,7 @@ export async function startDemo(id: string, key: unknown, deps: DemoDeps): Promi
 /** Moves the run on and says where it is. Emails the visitor once it is done. */
 export async function demoStatus(id: string, key: unknown, deps: DemoDeps): Promise<{ ok: true; view: DemoView } | Fail> {
   if (!keyMatches(id, key, deps.secret)) return no(404, "That run is not here.");
-  const toolkit = deps.toolkit;
-  const demo = await settle(id, async (d) => (d.stage === "running" && toolkit ? advance(d, toolkit, hookUrl(deps, id), deps.now()) : null), deps);
+  const demo = await moveOn(id, deps, async () => null);
   if (!demo) return no(404, "That run is not here.");
   await emailWhenDone(demo, deps);
   return { ok: true, view: viewOf(demo) };
@@ -106,17 +131,13 @@ export async function demoStatus(id: string, key: unknown, deps: DemoDeps): Prom
 /** A result the toolkit posted back. */
 export async function demoHook(id: string, key: unknown, jobId: string, envelope: unknown, deps: DemoDeps): Promise<boolean> {
   if (!keyMatches(id, key, deps.secret)) return false;
-  const toolkit = deps.toolkit;
-  const demo = await settle(
-    id,
-    async (d) => {
-      if (d.stage !== "running" || !recordResult(d, jobId, readEnvelope(envelope), deps.now())) return null;
-      return toolkit ? advance(d, toolkit, hookUrl(deps, id), deps.now()) : d;
-    },
-    deps,
-  );
-  if (demo) await emailWhenDone(demo, deps);
-  return !!demo;
+  let known = false;
+  const demo = await moveOn(id, deps, async (d) => {
+    known = d.stage === "running" && recordResult(d, jobId, readEnvelope(envelope), deps.now());
+    return known ? d : null;
+  });
+  if (demo && known) await emailWhenDone(demo, deps);
+  return !!demo && known;
 }
 
 async function emailWhenDone(demo: Demo, deps: DemoDeps) {
