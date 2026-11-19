@@ -330,6 +330,13 @@ test("signing up uploads the video to the real toolkit, shows its real steps, th
   await expect(wait.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=key1");
   const steps = (await page.locator(".try-run").boundingBox())!;
   expect((await wait.boundingBox())!.y).toBeGreaterThanOrEqual(steps.y + steps.height - 1);
+  // centred in its box, not pushed to the left
+  const box = (await wait.boundingBox())!;
+  const lead = (await wait.locator(".try-next-lead").boundingBox())!;
+  expect(Math.abs(lead.x - box.x - (box.x + box.width - lead.x - lead.width))).toBeLessThan(4);
+  const first = (await wait.getByRole("link", { name: "Your clips link" }).boundingBox())!;
+  const last = (await wait.getByRole("button", { name: "Copy link" }).boundingBox())!;
+  expect(Math.abs(first.x - box.x - (box.x + box.width - last.x - last.width))).toBeLessThan(4);
   // the toolkit's own answers, step by step
   await expect(page.locator('[data-step="Read by the toolkit"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
   await expect(page.locator(".try-step.done")).toHaveCount(5, { timeout: 15_000 });
