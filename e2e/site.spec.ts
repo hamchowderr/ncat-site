@@ -288,7 +288,7 @@ test("the FAQ opens and closes", async ({ page }) => {
   await page.goto("/");
   const q = page.locator("details").filter({ hasText: "Do I need n8n?" });
   await q.locator("summary").click();
-  await expect(q.getByText("Automations run inside the dashboard")).toBeVisible();
+  await expect(q.getByText(/Automations run inside the shell itself/)).toBeVisible();
   await expect(q).toHaveAttribute("open", "");
   await q.locator("summary").click();
   await expect(q).not.toHaveAttribute("open", "");
@@ -472,4 +472,44 @@ test("the newer features each show a whole-window recording that plays on screen
     expect(new Set(ys).size).toBe(1);
   }
   expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
+});
+
+test("the engine section lays the five ways on one rail, ending on the shell, with nothing overflowing", async ({ page, isMobile }) => {
+  await page.goto("/");
+  const ways = page.locator(".ways");
+  await ways.scrollIntoViewIfNeeded();
+  await expect(page.getByRole("heading", { name: "Free engine. Fine-tuned shell." })).toBeVisible();
+  const items = ways.locator(".ways-list > li");
+  await expect(items).toHaveCount(5);
+  await expect(items.last()).toHaveClass(/ours/);
+  await expect(items.last()).toContainText("Kontifi, the fine-tuned shell");
+  const boxes = await Promise.all((await items.all()).map((i) => i.boundingBox()));
+  if (isMobile) {
+    // one under another on a phone
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.y).toBeGreaterThan(boxes[i - 1]!.y);
+  } else {
+    // side by side on a wide screen, left to right
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.x).toBeGreaterThan(boxes[i - 1]!.x);
+  }
+  for (const item of await items.all()) expect(await item.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
+});
+
+test("the Editing with AI tab says what it costs today and what changes", async ({ page }) => {
+  await page.goto("/");
+  const tab = page.getByRole("tab", { name: "Editing with AI" });
+  await tab.scrollIntoViewIfNeeded();
+  await tab.click();
+  const panel = page.locator("#case-panel");
+  await expect(panel).toContainText("Stop spending your AI limits on the same edit.");
+  await expect(panel.locator(".case-without")).toContainText("Without the shell");
+  await expect(panel.locator(".case-outs li")).toHaveCount(4);
+});
+
+test("the FAQ answers what you pay for when the toolkit is free", async ({ page }) => {
+  await page.goto("/");
+  const q = page.getByText("If the NCA Toolkit is free, what am I paying for?");
+  await q.scrollIntoViewIfNeeded();
+  await q.click();
+  await expect(page.getByText(/You never pay for the processing itself/)).toBeVisible();
 });

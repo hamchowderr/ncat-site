@@ -17,7 +17,7 @@ export function NoFees() {
           <h2 id="fees-title">Stop paying fees to edit your own content</h2>
           <p>
             Clipping apps charge for upload minutes, render credits and seats, every month, just to cut and caption what you already made. The NCA
-            Toolkit does that editing for free, and you buy the dashboard once.
+            Toolkit engine does that editing for free. You pay once for the shell around it, never for the processing.
           </p>
           <ul className="ticks">
             <li>Self-host it on your own toolkit for unlimited runs with no meter</li>
@@ -28,7 +28,7 @@ export function NoFees() {
             See pricing
           </Link>
         </Reveal>
-        <div className="compare" aria-label="How the usual stack is billed compared with the dashboard">
+        <div className="compare" aria-label="How the usual stack is billed compared with the free engine and our shell">
           <div className="compare-col">
             <p className="compare-h">The usual stack</p>
             <ul>

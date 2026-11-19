@@ -5,7 +5,8 @@ export function PricingHero() {
         <h1 id="pricing-title">Pay once. Own your version.</h1>
         <p className="hero-sub">
           After every talk I heard the same thing: creators don’t want to rent one more tool. So this is a one-time purchase, not a subscription. The
-          price will be announced at launch.
+          engine underneath is free and open source, so you never pay for processing, only for the fine-tuned shell that runs it. The price will be
+          announced at launch.
         </p>
       </div>
     </section>
