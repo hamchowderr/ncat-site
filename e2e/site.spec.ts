@@ -377,14 +377,16 @@ test("social logos rain down beside the headline, never across it, and move when
 test("the early-access form asks a flood from one address to wait", async ({ page }) => {
   await page.goto("/");
   // Six quick sign-ups from one browser, through the real route: the sixth waits.
-  const statuses = await page.evaluate(async () => {
+  // Each run is its own visitor, so the desktop, phone and retry runs don't share an allowance.
+  const address = `198.51.100.${Math.floor(Math.random() * 250) + 1}-${Date.now()}`;
+  const statuses = await page.evaluate(async (from) => {
     const seen: number[] = [];
     for (let i = 0; i < 6; i++) {
-      const res = await fetch("/api/early-access", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      const res = await fetch("/api/early-access", { method: "POST", headers: { "content-type": "application/json", "x-real-ip": from }, body: "{}" });
       seen.push(res.status);
     }
     return seen;
-  });
+  }, address);
   expect(statuses.slice(0, 5).every((status) => status !== 429)).toBe(true);
   expect(statuses[5]).toBe(429);
 });
