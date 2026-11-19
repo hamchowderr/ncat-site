@@ -106,23 +106,25 @@ export function AroundTheClip() {
           {AROUND_TILES.map((t, i) => (
             <Reveal key={t.id} delay={(i % 2) * 0.08}>
               <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
-                <FeatureVideo name={t.video} label={t.alt} small />
-                <div className="tile-head">
-                  <span className="tile-icon" aria-hidden="true">
-                    {t.icon}
-                  </span>
-                  <h3>{t.title}</h3>
+                <FeatureVideo name={t.video} label={t.alt} />
+                <div className="tile-text">
+                  <div className="tile-head">
+                    <span className="tile-icon" aria-hidden="true">
+                      {t.icon}
+                    </span>
+                    <h3>{t.title}</h3>
+                  </div>
+                  <p>{t.body}</p>
+                  {t.logos && (
+                    <ul className="logo-chips" aria-label={`${t.title}: apps`}>
+                      {t.logos.map((l) => (
+                        <li key={l.name}>
+                          {l.mark} {l.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <p>{t.body}</p>
-                {t.logos && (
-                  <ul className="logo-chips" aria-label={`${t.title}: apps`}>
-                    {t.logos.map((l) => (
-                      <li key={l.name}>
-                        {l.mark} {l.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </SpotlightCard>
             </Reveal>
           ))}

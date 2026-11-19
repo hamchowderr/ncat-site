@@ -249,10 +249,10 @@ test("a video you choose is read in the browser and never sent anywhere", async 
   page.on("request", (r) => {
     if (r.method() !== "GET" && r.method() !== "HEAD") sent.push(`${r.method()} ${r.url()}`);
   });
-  await page.locator('.try input[type="file"]').setInputFiles("public/media/features/review.mp4");
+  await page.locator('.try input[type="file"]').setInputFiles("public/media/sample-recording.mp4");
   await expect(page.locator(".try-step.done")).toHaveCount(6, { timeout: 15_000 });
-  await expect(page.locator('[data-step="Filed"] .try-detail')).toHaveText(/^review\.mp4, \d+ KB$/);
-  await expect(page.locator('[data-step="Details read"] .try-detail')).toHaveText("34 s long, 1280 × 800");
+  await expect(page.locator('[data-step="Filed"] .try-detail')).toHaveText(/^sample-recording\.mp4, \d+ KB$/);
+  await expect(page.locator('[data-step="Details read"] .try-detail')).toHaveText("35 s long, 1440 × 900");
   expect(await page.locator(".try-thumbs canvas").first().evaluate(drawn)).toBe(true);
   expect(sent).toEqual([]);
 });
