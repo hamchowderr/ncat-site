@@ -224,10 +224,22 @@ const drawn = (c: HTMLCanvasElement) => {
   return lit > 50;
 };
 
-test("trying the sample walks every step and makes real vertical frames from the video", async ({ page }) => {
+/** Picks a real recording the way a visitor would, under the name a visitor's file might have. */
+async function dropRecording(page: import("@playwright/test").Page) {
+  const buffer = await (await import("node:fs/promises")).readFile("public/media/live-run.mp4");
+  await page.locator('.try input[type="file"]').setInputFiles({ name: "sample-recording.mp4", mimeType: "video/mp4", buffer });
+}
+
+test("there is no sample to try: the section asks for their own first video", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#try-it h2")).toHaveText("Drop in your first video, get early access sooner");
+  await expect(page.locator("#try-it").getByRole("button", { name: /sample/i })).toHaveCount(0);
+});
+
+test("trying a recording walks every step and makes real vertical frames from the video", async ({ page }) => {
   await page.goto("/");
   await page.locator("#try-it").scrollIntoViewIfNeeded();
-  await page.getByRole("button", { name: "Use a sample" }).click();
+  await dropRecording(page);
   await expect(page.locator(".try-step.done")).toHaveCount(6, { timeout: 15_000 });
   await expect(page.locator('[data-step="Filed"] .try-detail')).toHaveText(/^sample-recording\.mp4, \d+ KB$/);
   await expect(page.locator('[data-step="Details read"] .try-detail')).toHaveText("35 s long, 1440 × 900");
@@ -265,14 +277,14 @@ test("after the preview, signing up once opens early access with what they tried
     if (r.method() === "POST") posted.push({ url: r.url(), body: r.postData() ?? "" });
   });
   await page.route("**/api/early-access", (r) => r.fulfill({ json: { ok: true } }));
-  await page.getByRole("button", { name: "Use a sample" }).click();
+  await dropRecording(page);
   const next = page.locator(".try-next");
   await expect(next).toContainText("That was a 35 s video, cut into 5 clips.", { timeout: 15_000 });
   // In the page's flow: nothing lies over the steps above it.
   const run = (await page.locator(".try-run").boundingBox())!;
   const box = (await next.boundingBox())!;
   expect(box.y).toBeGreaterThanOrEqual(run.y + run.height - 1);
-  await next.getByRole("button", { name: "Get early access" }).click();
+  await next.getByRole("button", { name: "Get early access first" }).click();
   const dialog = page.locator("dialog[open]");
   await expect(dialog.getByRole("heading", { name: "Get early access" })).toBeVisible();
   // The page stays where it was behind the pop-up.
@@ -303,7 +315,11 @@ test("after the preview, signing up once opens early access with what they tried
   await expect(next.getByRole("status")).toHaveText("Your clip previews are in your downloads folder.");
   expect(posted.map((p) => new URL(p.url).pathname)).toEqual(["/api/early-access"]);
   expect(posted[0].body).not.toContain("data:");
-  expect(JSON.parse(posted[0].body)).toMatchObject({ email: "ava@studio.co", details: "I tried the preview on a 35 s video, cut into 5 clips." });
+  expect(JSON.parse(posted[0].body)).toMatchObject({
+    email: "ava@studio.co",
+    details: "I tried the preview on a 35 s video, cut into 5 clips.",
+    tried: "a 35 s video, cut into 5 clips",
+  });
 });
 
 test("every Get early access button opens the pop-up, and Escape closes it", async ({ page, isMobile }) => {

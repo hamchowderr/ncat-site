@@ -25,9 +25,11 @@ describe("after the preview runs", () => {
     const heard = listen();
     render(<TryNext seconds={840} clips={14} canSave onSave={() => {}} />);
     expect(screen.getByText(/That was a 14 min video, cut into 14 clips\./)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Get early access" }));
+    fireEvent.click(screen.getByRole("button", { name: "Get early access first" }));
     expect(heard.prefilled).toEqual(["I tried the preview on a 14 min video, cut into 14 clips."]);
     expect(heard.opened).toHaveLength(1);
+    expect(heard.opened[0].tried).toBe("a 14 min video, cut into 14 clips");
+    expect(screen.getByText(/at the front of the list/)).toBeTruthy();
     heard.stop();
   });
 
@@ -37,7 +39,7 @@ describe("after the preview runs", () => {
     render(<TryNext seconds={60} clips={5} canSave onSave={onSave} />);
     expect(screen.getByText("Your clip previews save to your computer when you sign up.")).toBeTruthy();
     expect(screen.queryByRole("textbox")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Get early access" }));
+    fireEvent.click(screen.getByRole("button", { name: "Get early access first" }));
     expect(onSave).not.toHaveBeenCalled();
     act(() => heard.opened[0].onSent?.());
     expect(onSave).toHaveBeenCalledTimes(1);
@@ -49,7 +51,7 @@ describe("after the preview runs", () => {
     const heard = listen();
     render(<TryNext seconds={60} clips={5} canSave={false} onSave={() => {}} />);
     expect(screen.queryByText(/clip previews/)).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Get early access" }));
+    fireEvent.click(screen.getByRole("button", { name: "Get early access first" }));
     expect(heard.opened[0].onSent).toBeUndefined();
     heard.stop();
   });

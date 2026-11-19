@@ -182,10 +182,12 @@ describe("try it on your own video", () => {
     expect(formatDuration(724)).toBe("12 min 4 s");
     expect(formatDuration(3780)).toBe("1 h 3 min");
   });
-  it("offers a file picker for videos and a sample, with every step waiting", () => {
+  it("asks for their own first video (no sample), promising early access sooner, with every step waiting", () => {
     const { container } = render(<TryIt />);
     expect(screen.getByLabelText("Choose a video")).toHaveAttribute("accept", "video/*");
-    expect(screen.getByRole("button", { name: "Use a sample" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /sample/i })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Drop in your first video, get early access sooner" })).toBeInTheDocument();
+    expect(screen.getByText(/moves to the front of the early-access list/)).toBeInTheDocument();
     expect(screen.getByText(/nothing is uploaded/)).toBeInTheDocument();
     const steps = within(screen.getByRole("list", { name: "What the automation does" })).getAllByRole("listitem");
     expect(steps.map((s) => s.getAttribute("data-step"))).toEqual([...TRY_STEPS]);

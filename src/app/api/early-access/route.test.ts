@@ -132,4 +132,20 @@ describe("POST /api/early-access", () => {
     expect((await post(valid)).status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+  it("puts people who tried the demo first: tagged in the subject and kept with the sign-up", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
+    blob.put.mockResolvedValue({ pathname: "x" });
+    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    await post({ ...valid, tried: "a 35 s video, cut into 5 clips" });
+    const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(sent.subject).toBe("[Tried the demo · Editing agency · 6 to 20 · A rented server] Dashboard early access: Ava");
+    expect(sent.text).toContain("On: a 35 s video, cut into 5 clips");
+    expect(JSON.parse(blob.put.mock.calls[0][1])).toMatchObject({ tried: "a 35 s video, cut into 5 clips" });
+  });
+
+  it("leaves the tag off for everyone else", async () => {
+    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    await post(valid);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).subject).not.toContain("Tried the demo");
+  });
 });

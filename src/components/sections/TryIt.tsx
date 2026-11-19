@@ -8,7 +8,6 @@ import { describeTry } from "@/lib/preview";
 import { TRIAL_LABEL, TRIAL_NOTE, trialUrl } from "@/lib/trial";
 import { formatBytes, formatDuration, planCuts } from "@/lib/tryIt";
 
-const SAMPLE = { url: "/media/live-run.mp4", name: "sample-recording.mp4" };
 const SHOWN_CLIPS = 6;
 const STEP_PAUSE = 650;
 /** Each saved preview, at a size worth keeping: a quarter of 1080 × 1920. */
@@ -16,7 +15,7 @@ const SAVE_W = 270;
 const SAVE_H = 480;
 const TRIAL = trialUrl();
 
-type Source = { url: string; name: string; size: number | null; local: boolean };
+type Source = { url: string; name: string; size: number; local: boolean };
 type Details = { duration: number; width: number; height: number } | null;
 
 export const TRY_STEPS = ["Filed", "Details read", "Cut into clips", "Made vertical", "Captioned", "Waiting in Review"] as const;
@@ -77,7 +76,7 @@ function seek(video: HTMLVideoElement, t: number) {
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Drop in a video (or use the sample) and watch what a ready-made automation does with it, step by
+ * Drop in a video and watch what a ready-made automation does with it, step by
  * step. It all happens in the browser: the file is read here and never uploaded. The size, length,
  * picture size and the vertical frames are real; captions are written on the toolkit, so the
  * preview says so instead of making any up.
@@ -137,12 +136,6 @@ export function TryIt() {
         setStep(1);
         return;
       }
-      if (source.size === null) {
-        // the sample: ask the server how big it is
-        const res = await fetch(source.url, { method: "HEAD" }).catch(() => null);
-        const len = Number(res?.headers.get("content-length"));
-        if (live() && len) setSource((s) => (s ? { ...s, size: len } : s));
-      }
       const d = { duration: v.duration, width: v.videoWidth, height: v.videoHeight };
       setDetails(d);
       await wait(STEP_PAUSE);
@@ -185,7 +178,7 @@ export function TryIt() {
     if (!source) return "";
     switch (i) {
       case 0:
-        return source.size ? `${source.name}, ${formatBytes(source.size)}` : source.name;
+        return `${source.name}, ${formatBytes(source.size)}`;
       case 1:
         return unreadable
           ? "This browser can’t open that file to preview it. The toolkit reads far more formats, so it would still go through."
@@ -207,8 +200,11 @@ export function TryIt() {
     <section className="try" id="try-it" aria-labelledby="try-title">
       <div className="wrap">
         <div className="sec-head">
-          <h2 id="try-title">Try it on one of your own videos</h2>
-          <p>Drop a video here and watch what a ready-made automation does with it. It all happens in your browser, so nothing is uploaded.</p>
+          <h2 id="try-title">Drop in your first video, get early access sooner</h2>
+          <p>
+            Watch what a ready-made automation does with one of your own videos. It all happens in your browser, so nothing is uploaded, and
+            everyone who tries it moves to the front of the early-access list.
+          </p>
         </div>
         <div className="try-in">
           <div
@@ -232,9 +228,6 @@ export function TryIt() {
             <div className="try-drop-actions">
               <button type="button" className="btn primary" onClick={() => input.current?.click()}>
                 Choose a video
-              </button>
-              <button type="button" className="btn ghost" onClick={() => start({ ...SAMPLE, size: null, local: false })}>
-                Use a sample
               </button>
             </div>
             <input ref={input} className="sr" type="file" accept="video/*" aria-label="Choose a video" tabIndex={-1} onChange={(e) => takeFile(e.target.files?.[0])} />
@@ -299,6 +292,7 @@ export function TryNext({ seconds, clips, canSave, onSave }: { seconds: number; 
   const tried = describeTry(Math.round(seconds), clips);
   const signUp = () =>
     openEarlyAccess(`I tried the preview on ${tried}.`, {
+      tried,
       onSent: canSave
         ? () => {
             onSave();
@@ -310,7 +304,8 @@ export function TryNext({ seconds, clips, canSave, onSave }: { seconds: number; 
   return (
     <div className="try-next" aria-live="polite">
       <p className="try-next-lead">
-        That was {tried}. On the dashboard it runs by itself every time a video comes in, cut at the pauses and captioned.
+        That was {tried}. On the dashboard it runs by itself every time a video comes in, cut at the pauses and captioned. Sign up now and
+        you’re at the front of the list.
       </p>
       <div className="try-next-actions">
         {TRIAL ? (
@@ -319,13 +314,13 @@ export function TryNext({ seconds, clips, canSave, onSave }: { seconds: number; 
               {TRIAL_LABEL}
             </a>
             <button type="button" className="btn ghost" onClick={signUp}>
-              Get early access
+              Get early access first
             </button>
             <span className="try-next-note">{TRIAL_NOTE}</span>
           </>
         ) : (
           <button type="button" className="btn primary" onClick={signUp}>
-            Get early access
+            Get early access first
           </button>
         )}
         {canSave && !saved && <span className="try-next-note">Your clip previews save to your computer when you sign up.</span>}

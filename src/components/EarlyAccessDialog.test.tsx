@@ -73,7 +73,8 @@ describe("early access as a pop-up", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response('{"ok":true}', { status: 200 })));
     const onSent = vi.fn();
     render(<EarlyAccessDialog />);
-    act(() => openEarlyAccess("I tried the preview on a 35 s video, cut into 5 clips.", { onSent }));
+    const fetchMock = vi.mocked(fetch);
+    act(() => openEarlyAccess("I tried the preview on a 35 s video, cut into 5 clips.", { onSent, tried: "a 35 s video, cut into 5 clips" }));
     const form = dialog().querySelector("form")!;
     const fill = (label: RegExp | string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
     fill("Your name", "Ava");
@@ -91,6 +92,7 @@ describe("early access as a pop-up", () => {
       fireEvent.submit(form);
     });
     expect(onSent).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body))).toMatchObject({ tried: "a 35 s video, cut into 5 clips" });
     expect(screen.getByRole("status").textContent).toContain("You’re on the list");
   });
 });

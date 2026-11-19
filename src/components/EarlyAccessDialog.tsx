@@ -12,6 +12,7 @@ import { OPEN_EVENT, type OpenDetail, isEarlyAccessLink } from "@/lib/prefill";
 export function EarlyAccessDialog() {
   const dialog = useRef<HTMLDialogElement>(null);
   const after = useRef<OpenDetail["onSent"]>(undefined);
+  const [tried, setTried] = useState("");
   // A fresh form after a finished sign-up is closed; a half-filled one keeps its answers.
   const [round, setRound] = useState(0);
   const sent = useRef(false);
@@ -21,6 +22,7 @@ export function EarlyAccessDialog() {
       const d = dialog.current;
       if (!d) return;
       after.current = detail?.onSent;
+      if (detail?.tried) setTried(detail.tried);
       if (!d.open) d.showModal();
     };
     const onOpen = (e: Event) => open((e as CustomEvent<OpenDetail>).detail);
@@ -71,6 +73,7 @@ export function EarlyAccessDialog() {
         </header>
         <EarlyAccessForm
           key={round}
+          tried={tried}
           onSent={() => {
             sent.current = true;
             after.current?.();

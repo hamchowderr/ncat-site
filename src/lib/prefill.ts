@@ -4,6 +4,8 @@ export const PREFILL_EVENT = "early-access:prefill";
 export const OPEN_EVENT = "early-access:open";
 
 export type OpenDetail = {
+  /** What they tried in the demo, e.g. "a 35 s video, cut into 5 clips". Marks the sign-up to go first. */
+  tried?: string;
   /** Called once the visitor has signed up, e.g. to save the clip previews they made. */
   onSent?: () => void;
 };
