@@ -61,42 +61,46 @@ describe("cutting like the dashboard does", () => {
 });
 
 describe("a real run of the visitor's video", () => {
-  it("reads the video, cuts it at the pauses into vertical clips, captions each, then emails the link once", async () => {
+  it("reads the video, finds the pauses and the words, cuts captioned vertical clips in one pass, then emails the link once", async () => {
     const s = setUp();
     const { id, key } = await booked(s);
     const started = await startDemo(id, key, s.deps);
     expect(started.ok).toBe(true);
-    // first the toolkit reads it and finds the pauses, from a private link that lasts a day
-    expect(s.tk.sent.map((j) => j.endpoint)).toEqual(["/v1/media/metadata", "/v1/media/silence"]);
+    // first the toolkit reads it, finds the pauses and times every word, from a private link that lasts a day
+    expect(s.tk.sent.map((j) => j.endpoint)).toEqual(["/v1/media/metadata", "/v1/media/silence", "/v1/media/generate/ass"]);
     expect(s.tk.sent[0].body.media_url).toBe(`https://blob.example/demos/${id}/source.mp4?signed=1`);
     expect(s.tk.sent[0].webhookUrl).toBe(`https://site.example/api/demo/hook?id=${id}&k=${key}&job=${id}-meta`);
+    expect(s.tk.sent[2].body).toMatchObject({ canvas_width: 1080, canvas_height: 1920, settings: { style: "highlight", all_caps: true } });
 
     s.tk.finish(`${id}-meta`, { duration: 150, width: 1920, height: 1080 });
     s.tk.finish(`${id}-pauses`, [{ start: 49, end: 50 }, { start: 101, end: 102 }]);
     s.later(5000);
     let view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
-    expect(view.view.steps[1]).toMatchObject({ label: "Read by the toolkit", state: "done", detail: "2 min 30 s long, 1920 × 1080" });
-    const cuts = s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose");
-    expect(cuts).toHaveLength(3);
-    expect(view.view.steps[2]).toMatchObject({ state: "doing", detail: "3 clips, up to a minute each, 1080 × 1920." });
+    // the cuts wait for the words, so each one burns its captions in
+    expect(s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose")).toHaveLength(0);
+    expect(view.view.steps[3]).toMatchObject({ label: "Captioned", state: "doing", detail: "Transcribing every word." });
 
-    cuts.forEach((c, i) => s.tk.finish(c.id, [{ file_url: `https://media.example/cut-${i + 1}.mp4` }]));
-    s.later(5000);
-    await demoStatus(id, key, s.deps);
-    const captions = s.tk.sent.filter((j) => j.endpoint === "/v1/video/caption");
-    expect(captions.map((c) => c.body.video_url)).toEqual(["https://media.example/cut-1.mp4", "https://media.example/cut-2.mp4", "https://media.example/cut-3.mp4"]);
-    expect(captions[0].body.settings).toMatchObject({ style: "highlight", all_caps: true });
-
-    // the toolkit posts two results back, and the third is found by asking
-    await demoHook(id, key, captions[0].id, { code: 200, response: "https://media.example/cap-1.mp4" }, s.deps);
-    await demoHook(id, key, captions[1].id, { code: 200, response: "https://media.example/cap-2.mp4" }, s.deps);
-    s.tk.finish(captions[2].id, "https://media.example/cap-3.mp4");
+    s.tk.finish(`${id}-words`, "https://media.example/words.ass");
     s.later(5000);
     view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
+    expect(view.view.steps[1]).toMatchObject({ label: "Read by the toolkit", state: "done", detail: "2 min 30 s long, 1920 × 1080" });
+    const cuts = s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose");
+    expect(cuts).toHaveLength(3);
+    expect((cuts[1].body.filters as { filter: string }[])[0].filter).toContain(",setpts=PTS+49.5/TB,ass='https://media.example/words.ass',setpts=PTS-STARTPTS[v]");
+    expect(view.view.steps[2]).toMatchObject({ state: "doing", detail: "3 clips, up to a minute each, 1080 × 1920." });
+
+    // the toolkit posts two results back, and the third is found by asking; no second caption pass
+    await demoHook(id, key, cuts[0].id, { code: 200, response: [{ file_url: "https://media.example/cut-1.mp4" }] }, s.deps);
+    await demoHook(id, key, cuts[1].id, { code: 200, response: [{ file_url: "https://media.example/cut-2.mp4" }] }, s.deps);
+    s.tk.finish(cuts[2].id, [{ file_url: "https://media.example/cut-3.mp4" }]);
+    s.later(5000);
+    view = await demoStatus(id, key, s.deps);
+    if (!view.ok) throw new Error();
+    expect(s.tk.sent.some((j) => j.endpoint === "/v1/video/caption")).toBe(false);
     expect(view.view.stage).toBe("done");
-    expect(view.view.clips).toEqual([1, 2, 3].map((n) => ({ url: `https://media.example/cap-${n}.mp4`, captioned: true })));
+    expect(view.view.clips).toEqual([1, 2, 3].map((n) => ({ url: `https://media.example/cut-${n}.mp4`, captioned: true })));
     expect(view.view.steps.every((step) => step.state === "done")).toBe(true);
     await demoStatus(id, key, s.deps);
     expect(s.sendReady).toHaveBeenCalledTimes(1);
@@ -109,6 +113,7 @@ describe("a real run of the visitor's video", () => {
     await startDemo(id, key, s.deps);
     s.tk.finish(`${id}-meta`, { duration: 590 });
     s.tk.finish(`${id}-pauses`, []);
+    s.tk.finish(`${id}-words`, "https://media.example/words.ass");
     s.later(5000);
     const view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
@@ -116,18 +121,18 @@ describe("a real run of the visitor's video", () => {
     expect(view.view.steps[2].detail).toBe("The first 3 of 10 clips, up to a minute each. On the dashboard every clip is made.");
   });
 
-  it("shows clips without captions, and says so, when captioning fails", async () => {
+  it("shows clips without captions, and says so, when the words can't be found", async () => {
     const s = setUp();
     const { id, key } = await booked(s);
     await startDemo(id, key, s.deps);
     s.tk.finish(`${id}-meta`, { duration: 40 });
     s.tk.finish(`${id}-pauses`, []);
+    s.tk.fail(`${id}-words`, "no speech");
     s.later(5000);
     await demoStatus(id, key, s.deps);
+    const cut = s.tk.sent.find((j) => j.endpoint === "/v1/ffmpeg/compose")!;
+    expect(JSON.stringify(cut.body)).not.toContain("ass=");
     s.tk.finish(`${id}-cut-1`, { outputs: [{ file_url: "https://media.example/cut-1.mp4" }] });
-    s.later(5000);
-    await demoStatus(id, key, s.deps);
-    s.tk.fail(`${id}-captions-1`, "no speech");
     s.later(5000);
     const view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
@@ -136,12 +141,27 @@ describe("a real run of the visitor's video", () => {
     expect(view.view.steps[3].state).toBe("failed");
   });
 
+  it("still finishes a run saved before captions moved into the cut", async () => {
+    let d = startRun(newDemo("old", who, { name: "a.mp4", size: 1 }, 0), "demos/old/source.mp4", "https://blob.example/a", 0);
+    d = { ...d, probe: d.probe.slice(0, 2) };
+    const done: Toolkit = {
+      send: async (endpoint, _b, _w, jid) => ({ kind: "answered", ok: true, result: endpoint === "/v1/media/metadata" ? { duration: 30 } : endpoint === "/v1/media/silence" ? [] : `https://media.example/${jid}.mp4` }),
+      status: async () => ({ state: "working" }),
+    };
+    d = await advance(d, done, "https://site.example/hook?id=old", 0);
+    d = await advance(d, done, "https://site.example/hook?id=old", 1);
+    d = await advance(d, done, "https://site.example/hook?id=old", 2);
+    expect(d.captions).toHaveLength(1);
+    expect(viewOf(d)).toMatchObject({ stage: "done", clips: [{ url: "https://media.example/old-captions-1.mp4", captioned: true }] });
+  });
+
   it("stops with a plain reason when the video is over 10 minutes or can't be read", async () => {
     const s = setUp();
     const { id, key } = await booked(s);
     await startDemo(id, key, s.deps);
     s.tk.finish(`${id}-meta`, { duration: 900 });
     s.tk.finish(`${id}-pauses`, []);
+    s.tk.finish(`${id}-words`, "https://media.example/words.ass");
     s.later(5000);
     const view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
@@ -167,6 +187,7 @@ describe("never flooding the toolkit", () => {
     await startDemo(id, key, s.deps);
     s.tk.finish(`${id}-meta`, { duration: 150 });
     s.tk.finish(`${id}-pauses`, []);
+    s.tk.finish(`${id}-words`, "https://media.example/words.ass");
     s.later(5000);
     await Promise.all(Array.from({ length: 6 }, () => demoStatus(id, key, s.deps)));
     s.later(5000);
@@ -200,7 +221,7 @@ describe("never flooding the toolkit", () => {
       s.later(3 * 60_000);
       await Promise.race([demoStatus(id, key, s.deps), new Promise((r) => setTimeout(r, 5))]);
     }
-    expect(sends).toBeLessThanOrEqual(2 * 4);
+    expect(sends).toBeLessThanOrEqual(3 * 4);
   });
 });
 

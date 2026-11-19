@@ -72,8 +72,12 @@ export function planClips(duration: number, silences: Silence[], maxSeconds: num
 type Option = { option: string; argument?: string | number };
 const opt = (option: string, argument?: string | number): Option => (argument === undefined ? { option } : { option, argument });
 
-/** The request for the toolkit's /v1/ffmpeg/compose that makes one vertical 1080 × 1920 clip. */
-export function verticalClipRequest(fileUrl: string, clip: ClipPlan): Record<string, unknown> {
+/**
+ * The request for the toolkit's /v1/ffmpeg/compose that makes one vertical 1080 × 1920 clip.
+ * With `captionsUrl` (an ASS file the toolkit made for the whole video at 1080 × 1920) the
+ * captions are burned in by the same encode, instead of a second slow pass over the clip.
+ */
+export function verticalClipRequest(fileUrl: string, clip: ClipPlan, captionsUrl?: string): Record<string, unknown> {
   const width = 1080, height = 1920;
   const filter =
     "[0:v]split=2[bg][fg];" +
@@ -81,7 +85,11 @@ export function verticalClipRequest(fileUrl: string, clip: ClipPlan): Record<str
     // halves the encode time, which matters on a toolkit shared with other work.
     `[bg]scale=${width / 4}:${height / 4}:force_original_aspect_ratio=increase,crop=${width / 4}:${height / 4},boxblur=10:2,scale=${width}:${height}[blurred];` +
     `[fg]scale=${width}:${height}:force_original_aspect_ratio=decrease[sharp];` +
-    "[blurred][sharp]overlay=(W-w)/2:(H-h)/2,setsar=1[v]";
+    "[blurred][sharp]overlay=(W-w)/2:(H-h)/2,setsar=1" +
+    // The clip starts at 0 but the captions are timed for the whole video, so shift the
+    // frames back to where they came from for the captions, then return them to 0.
+    (captionsUrl ? `,setpts=PTS+${clip.start}/TB,ass='${captionsUrl}',setpts=PTS-STARTPTS` : "") +
+    "[v]";
   return {
     inputs: [{ file_url: fileUrl, options: [opt("-ss", clip.start), opt("-t", clip.seconds)] }],
     filters: [{ filter }],
