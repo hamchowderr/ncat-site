@@ -257,6 +257,45 @@ test("a video you choose is read in the browser and never sent anywhere", async 
   expect(sent).toEqual([]);
 });
 
+test("after the preview, the next step is right there, and the previews save for an email without the video being sent", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#try-it").scrollIntoViewIfNeeded();
+  const posted: { url: string; body: string }[] = [];
+  await page.route("**/api/preview", async (route) => {
+    posted.push({ url: route.request().url(), body: route.request().postData() ?? "" });
+    await route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
+  });
+  await page.getByRole("button", { name: "Use a sample" }).click();
+  const next = page.locator(".try-next");
+  await expect(next).toContainText("That was a 35 s video, cut into 5 clips.", { timeout: 15_000 });
+  // In the page's flow: nothing lies over the steps above it.
+  const run = (await page.locator(".try-run").boundingBox())!;
+  const box = (await next.boundingBox())!;
+  expect(box.y).toBeGreaterThanOrEqual(run.y + run.height - 1);
+  await next.getByRole("button", { name: "Save these previews" }).click();
+  await page.getByLabel(/Your email/).fill("ava@studio.co");
+  const download = page.waitForEvent("download");
+  await next.getByRole("button", { name: "Save previews" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("sample-recording clip previews.png");
+  await expect(next.getByRole("status")).toHaveText("Saved. Look in your downloads folder.");
+  expect(posted).toHaveLength(1);
+  expect(JSON.parse(posted[0].body)).toEqual({ email: "ava@studio.co", seconds: 35, clips: 5, website: "" });
+  const png = await (await import("node:fs/promises")).readFile((await file.path())!);
+  // PNG header: width and height at bytes 16 to 24. Five 270 × 480 previews with 24 px gaps.
+  expect(png.readUInt32BE(16)).toBe(5 * 270 + 6 * 24);
+  expect(png.readUInt32BE(20)).toBe(480 + 48);
+});
+
+test("after the preview, early access is one press away", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#try-it").scrollIntoViewIfNeeded();
+  await page.getByRole("button", { name: "Use a sample" }).click();
+  await page.locator(".try-next").getByRole("button", { name: "Get early access" }).click({ timeout: 15_000 });
+  await expect(page).toHaveURL(/#early$/);
+  await expect(page.locator("#early")).toBeInViewport();
+});
+
 test("a file the browser can't open still gets filed, with a plain note", async ({ page }) => {
   await page.goto("/");
   await page.locator("#try-it").scrollIntoViewIfNeeded();

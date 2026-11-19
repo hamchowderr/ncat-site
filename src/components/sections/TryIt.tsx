@@ -3,11 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MovingIcon } from "@/components/MovingIcon";
 import UploadIcon from "@/components/itshover/upload-icon";
+import { prefillEarlyAccess } from "@/lib/prefill";
+import { describeTry } from "@/lib/preview";
+import { TRIAL_LABEL, TRIAL_NOTE, trialUrl } from "@/lib/trial";
 import { formatBytes, formatDuration, planCuts } from "@/lib/tryIt";
 
 const SAMPLE = { url: "/media/live-run.mp4", name: "sample-recording.mp4" };
 const SHOWN_CLIPS = 6;
 const STEP_PAUSE = 650;
+/** Each saved preview, at a size worth keeping: a quarter of 1080 × 1920. */
+const SAVE_W = 270;
+const SAVE_H = 480;
+const TRIAL = trialUrl();
 
 type Source = { url: string; name: string; size: number | null; local: boolean };
 type Details = { duration: number; width: number; height: number } | null;
@@ -29,6 +36,31 @@ function drawVertical(video: HTMLVideoElement, canvas: HTMLCanvasElement) {
   ctx.restore();
   const fit = Math.min(W / vw, H / vh);
   ctx.drawImage(video, (W - vw * fit) / 2, (H - vh * fit) / 2, vw * fit, vh * fit);
+}
+
+/** Lays the saved previews side by side on one picture and hands it to the browser to save. */
+function savePreviews(frames: HTMLCanvasElement[], name: string) {
+  if (!frames.length) return;
+  const gap = 24;
+  const sheet = document.createElement("canvas");
+  sheet.width = frames.length * SAVE_W + (frames.length + 1) * gap;
+  sheet.height = SAVE_H + gap * 2;
+  const ctx = sheet.getContext("2d");
+  if (!ctx) return;
+  ctx.fillStyle = "#f4f3f8";
+  ctx.fillRect(0, 0, sheet.width, sheet.height);
+  frames.forEach((f, i) => ctx.drawImage(f, gap + i * (SAVE_W + gap), gap, SAVE_W, SAVE_H));
+  sheet.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name.replace(/\.[^.]+$/, "") || "video"} clip previews.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, "image/png");
 }
 
 function seek(video: HTMLVideoElement, t: number) {
@@ -61,6 +93,7 @@ export function TryIt() {
   const canvases = useRef<(HTMLCanvasElement | null)[]>([]);
   const input = useRef<HTMLInputElement>(null);
   const run = useRef(0);
+  const saved = useRef<HTMLCanvasElement[]>([]);
 
   const start = useCallback((next: Source) => {
     run.current += 1;
@@ -71,6 +104,7 @@ export function TryIt() {
     setDetails(null);
     setUnreadable(false);
     setThumbs(0);
+    saved.current = [];
     setStep(0);
   }, []);
 
@@ -126,6 +160,11 @@ export function TryIt() {
         if (!live()) return;
         const c = canvases.current[i];
         if (c) drawVertical(v, c);
+        const keep = document.createElement("canvas");
+        keep.width = SAVE_W;
+        keep.height = SAVE_H;
+        drawVertical(v, keep);
+        saved.current[i] = keep;
         setThumbs(i + 1);
         await wait(160);
       }
@@ -234,9 +273,108 @@ export function TryIt() {
             })}
           </ol>
         </div>
+        {source && step >= TRY_STEPS.length && details && (
+          <TryNext
+            key={source.url}
+            seconds={details.duration}
+            clips={cuts.length}
+            canSave={!unreadable && thumbs > 0}
+            onSave={() => savePreviews(saved.current.slice(0, thumbs), source.name)}
+          />
+        )}
         {/* the preview reads the file with a hidden player; nothing is sent anywhere */}
         {source && <video ref={video} key={source.url} src={source.url} muted playsInline preload="auto" className="try-video" aria-hidden="true" />}
       </div>
     </section>
+  );
+}
+
+type SaveState = { kind: "closed" } | { kind: "open" } | { kind: "sending" } | { kind: "saved" } | { kind: "error"; message: string };
+
+/**
+ * What to do once the preview has run: start the trial (or ask for early access, with what
+ * they tried already written in), or leave an email to save the previews. Only the email
+ * and the video's length and clip count are sent; the video itself never leaves.
+ */
+export function TryNext({ seconds, clips, canSave, onSave }: { seconds: number; clips: number; canSave: boolean; onSave: () => void }) {
+  const [save, setSave] = useState<SaveState>({ kind: "closed" });
+  const [email, setEmail] = useState("");
+  const [bot, setBot] = useState("");
+  const field = useRef<HTMLInputElement>(null);
+  const tried = describeTry(Math.round(seconds), clips);
+
+  useEffect(() => {
+    if (save.kind === "open") field.current?.focus();
+  }, [save.kind]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSave({ kind: "sending" });
+    const res = await fetch("/api/preview", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email, seconds: Math.round(seconds), clips, website: bot }),
+    }).catch(() => null);
+    if (res?.status === 422) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setSave({ kind: "error", message: body.error ?? "That email address doesn’t look right." });
+      return;
+    }
+    // Saved on their computer whatever the server said: the previews are theirs.
+    onSave();
+    setSave({ kind: "saved" });
+  };
+
+  return (
+    <div className="try-next" aria-live="polite">
+      <p className="try-next-lead">
+        That was {tried}. On the dashboard it runs by itself every time a video comes in, cut at the pauses and captioned.
+      </p>
+      <div className="try-next-actions">
+        {TRIAL ? (
+          <a className="btn primary" href={TRIAL}>
+            {TRIAL_LABEL}
+          </a>
+        ) : (
+          <button type="button" className="btn primary" onClick={() => prefillEarlyAccess(`I tried the preview on ${tried}.`)}>
+            Get early access
+          </button>
+        )}
+        {canSave && save.kind === "closed" && (
+          <button type="button" className="btn ghost" onClick={() => setSave({ kind: "open" })}>
+            Save these previews
+          </button>
+        )}
+        {TRIAL && <span className="try-next-note">{TRIAL_NOTE}</span>}
+      </div>
+      {canSave && (save.kind === "open" || save.kind === "sending" || save.kind === "error") && (
+        <form className="try-save" onSubmit={submit} noValidate>
+          <label htmlFor="try-save-email">Your email, and the previews save to your computer</label>
+          <div className="try-save-row">
+            <input
+              ref={field}
+              id="try-save-email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={save.kind === "error" || undefined}
+              aria-describedby={save.kind === "error" ? "try-save-err" : undefined}
+            />
+            <button type="submit" className="btn primary" disabled={save.kind === "sending"}>
+              {save.kind === "sending" ? "Saving" : "Save previews"}
+            </button>
+          </div>
+          <input className="sr" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={bot} onChange={(e) => setBot(e.target.value)} />
+          {save.kind === "error" && (
+            <p className="ea-err" id="try-save-err">
+              {save.message}
+            </p>
+          )}
+        </form>
+      )}
+      {save.kind === "saved" && <p className="try-next-note" role="status">Saved. Look in your downloads folder.</p>}
+    </div>
   );
 }
