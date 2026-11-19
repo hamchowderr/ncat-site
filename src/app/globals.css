@@ -2724,7 +2724,7 @@ fieldset[aria-invalid="true"] .pill span {
   padding: 0;
   border: 0;
   border-radius: var(--r-lg);
-  background: var(--bg);
+  background: var(--panel);
   color: var(--ink);
   box-shadow: var(--shadow-lg);
   overflow: auto;
@@ -2745,6 +2745,12 @@ fieldset[aria-invalid="true"] .pill span {
 .ea-dialog-in {
   padding: clamp(20px, 3vw, 32px);
 }
+/* the form sits straight on the pop-up, not in a second box */
+.ea-dialog .ea {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+}
 .ea-dialog-head {
   display: flex;
   align-items: center;
@@ -2762,12 +2768,12 @@ fieldset[aria-invalid="true"] .pill span {
   height: 40px;
   border: 0;
   border-radius: 999px;
-  background: var(--panel);
+  background: var(--panel-2);
   color: var(--ink);
   cursor: pointer;
 }
 .ea-dialog-x:hover {
-  background: var(--panel-2);
+  background: var(--line);
 }
 .ea-dialog-x svg {
   width: 20px;
