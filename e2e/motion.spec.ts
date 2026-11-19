@@ -326,6 +326,8 @@ test("signing up uploads the video to the real toolkit, shows its real steps, th
   await expect(page.locator(".try-step.done")).toHaveCount(5, { timeout: 15_000 });
   const next = page.locator(".try-next");
   await expect(next).toContainText("Here are your clips, made by the toolkit.");
+  // No email is promised while the site has no way to send one (toSend is not set up here).
+  await expect(next).not.toContainText("in your email");
   // in the page's flow, under the steps, never over them
   const run = (await page.locator(".try-run").boundingBox())!;
   expect((await next.boundingBox())!.y).toBeGreaterThanOrEqual(run.y + run.height - 1);
