@@ -526,11 +526,19 @@ html {
   color: var(--mute);
 }
 .venues {
-  display: flex;
-  justify-content: center;
+  /* middle event on the page's centre line, the other two pressed up against it with the same gap
+     on each side: the spaces between logos are equal and the row reads as centred, whatever each one's width */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: clamp(40px, 7vw, 96px);
+  column-gap: clamp(56px, 6vw, 88px);
   margin-top: 24px;
+}
+.venues li:first-child {
+  justify-self: end;
+}
+.venues li:last-child {
+  justify-self: start;
 }
 .venues li {
   display: flex;
@@ -554,12 +562,18 @@ html {
   height: 26px;
 }
 .mark.kinn {
-  height: 24px;
+  /* a bare wordmark next to two logo-plus-name pairs: a little taller so it carries the same weight */
+  height: 30px;
 }
-@media (max-width: 760px) {
+@media (max-width: 980px) {
   .venues {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 18px;
+  }
+  .venues li,
+  .venues li:first-child,
+  .venues li:last-child {
+    justify-self: center;
   }
 }
 .feeds-lead {

@@ -200,6 +200,16 @@ test("event marks sit on one even row and platform logos are all the same size",
   const boxes = await Promise.all(venues.map(async (v) => (await v.boundingBox())!));
   if (!isMobile) {
     for (const b of boxes) expect(Math.abs(b.y + b.height / 2 - (boxes[0].y + boxes[0].height / 2))).toBeLessThanOrEqual(1);
+    // evenly spread: the middle event sits on the page's centre line and the gaps either side of it are equal
+    const vw = page.viewportSize()!.width;
+    expect(Math.abs(boxes[1].x + boxes[1].width / 2 - vw / 2)).toBeLessThanOrEqual(2);
+    const gapLeft = boxes[1].x - (boxes[0].x + boxes[0].width);
+    const gapRight = boxes[2].x - (boxes[1].x + boxes[1].width);
+    expect(Math.abs(gapLeft - gapRight)).toBeLessThanOrEqual(2);
+    expect(boxes[0].x).toBeGreaterThanOrEqual(0);
+  } else {
+    // stacked on a phone: every event centred under the heading
+    for (const b of boxes) expect(Math.abs(b.x + b.width / 2 - page.viewportSize()!.width / 2)).toBeLessThanOrEqual(2);
   }
   for (const b of boxes) expect(b.height).toBeLessThanOrEqual(34);
   const logos = await page.locator(".feeds li").locator("svg, img").all();
