@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { HeroIcons } from "@/components/HeroIcons";
 import { HeroStage, STAGE } from "@/components/HeroStage";
 import { SHIFT_PLATFORMS, ShapeShifter } from "@/components/ShapeShifter";
@@ -9,7 +9,7 @@ import { CLIP_SHAPES, fitFrame, formatLimit, frameName } from "@/lib/clipShapes"
 import { formatBytes, formatDuration } from "@/lib/tryIt";
 import { DEMO_STEPS } from "@/components/DemoRun";
 import { SPLIT_CLIPS, SPLIT_EDITORS, SPLIT_RECORDING, SPLIT_STEPS, SplitScene } from "./SplitScene";
-import { TryIt, tooBig } from "./TryIt";
+import { TryIt, WhileItRuns, tooBig } from "./TryIt";
 
 describe("clip shapes", () => {
   it("fits each shape inside a box and writes lengths the way the dashboard does", () => {
@@ -186,6 +186,19 @@ describe("try it on your own video", () => {
     const steps = within(screen.getByRole("list", { name: "What the toolkit does with your video" })).getAllByRole("listitem");
     expect(steps.map((s) => s.getAttribute("data-step"))).toEqual([...DEMO_STEPS]);
     expect(container.querySelectorAll(".try-step.wait")).toHaveLength(DEMO_STEPS.length);
+  });
+  it("while the toolkit works, says not to wait and hands over the clips link", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    const { rerender } = render(<WhileItRuns id="run1" k="a/b" emails={false} />);
+    expect(screen.getByText(/10 minutes or more, so you don’t need to wait here/)).toBeInTheDocument();
+    expect(screen.queryByText(/email/)).toBeNull();
+    expect(screen.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=a%2Fb");
+    fireEvent.click(screen.getByRole("button", { name: "Copy link" }));
+    expect(await screen.findByRole("button", { name: "Copied" })).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/clips/run1?k=a%2Fb`);
+    rerender(<WhileItRuns id="run1" k="a/b" emails />);
+    expect(screen.getByText(/We’ll email you when your clips are ready/)).toBeInTheDocument();
   });
   it("is left out until the site has a toolkit to run on", () => {
     const { container } = render(<TryIt enabled={false} />);

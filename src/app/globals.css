@@ -2379,6 +2379,15 @@ fieldset[aria-invalid="true"] .pill span {
   gap: 10px;
   margin-top: 22px;
 }
+.try-drop-hint {
+  color: var(--soft);
+  font-size: 14px;
+  max-width: 34ch;
+  margin: 14px auto 0;
+}
+.try-next-actions .btn.ghost {
+  background: #fff;
+}
 .try-drop-actions .btn.ghost {
   background: #fff;
 }

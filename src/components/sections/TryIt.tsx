@@ -189,6 +189,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
                     Pick another
                   </button>
                 </div>
+                <p className="try-drop-hint">The toolkit takes 10 minutes or more on it, and you don’t have to wait on this page.</p>
               </>
             ) : (
               <>
@@ -223,6 +224,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
           </div>
           <DemoSteps steps={steps} uploadPercent={phase.kind === "uploading" ? phase.percent : null} />
         </div>
+        {run && !finished && !failed && <WhileItRuns id={run.id} k={run.k} emails={emails} />}
         {finished && view && (
           <div className="try-next" aria-live="polite">
             <p className="try-next-lead">
@@ -251,5 +253,39 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * Shown while the toolkit works. A run takes 10 minutes or more, so nobody should sit and watch:
+ * they get their own clips link to keep (and an email, once the site can send one).
+ */
+export function WhileItRuns({ id, k, emails }: { id: string; k: string; emails: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const path = `/clips/${id}?k=${encodeURIComponent(k)}`;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(new URL(path, window.location.origin).toString());
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
+  return (
+    <div className="try-next try-wait" aria-live="polite">
+      <p className="try-next-lead">
+        This takes the toolkit 10 minutes or more, so you don’t need to wait here.
+        {emails ? " We’ll email you when your clips are ready." : ""} Keep your clips link to come back any time in the next 7 days. This
+        page also picks up where it left off on this device.
+      </p>
+      <div className="try-next-actions">
+        <a className="btn primary" href={path}>
+          Your clips link
+        </a>
+        <button type="button" className="btn ghost" onClick={copy}>
+          {copied ? "Copied" : "Copy link"}
+        </button>
+      </div>
+    </div>
   );
 }
