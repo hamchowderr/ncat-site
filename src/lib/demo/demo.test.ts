@@ -54,7 +54,8 @@ describe("cutting like the dashboard does", () => {
   it("makes each clip vertical, the whole picture over a blurred copy", () => {
     const req = verticalClipRequest("https://f/a.mp4", { start: 3, seconds: 20 }) as { inputs: { options: unknown[] }[]; filters: { filter: string }[] };
     expect(req.inputs[0].options).toEqual([{ option: "-ss", argument: 3 }, { option: "-t", argument: 20 }]);
-    expect(req.filters[0].filter).toContain("crop=1080:1920");
+    expect(req.filters[0].filter).toContain("crop=270:480");
+    expect(req.filters[0].filter).toContain("overlay=(W-w)/2:(H-h)/2");
     expect(req.filters[0].filter).toContain("boxblur");
   });
 });

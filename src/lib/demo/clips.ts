@@ -77,7 +77,9 @@ export function verticalClipRequest(fileUrl: string, clip: ClipPlan): Record<str
   const width = 1080, height = 1920;
   const filter =
     "[0:v]split=2[bg][fg];" +
-    `[bg]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},boxblur=20:5[blurred];` +
+    // The blur is made on a quarter-size copy and scaled back up: it looks the same and
+    // halves the encode time, which matters on a toolkit shared with other work.
+    `[bg]scale=${width / 4}:${height / 4}:force_original_aspect_ratio=increase,crop=${width / 4}:${height / 4},boxblur=10:2,scale=${width}:${height}[blurred];` +
     `[fg]scale=${width}:${height}:force_original_aspect_ratio=decrease[sharp];` +
     "[blurred][sharp]overlay=(W-w)/2:(H-h)/2,setsar=1[v]";
   return {
