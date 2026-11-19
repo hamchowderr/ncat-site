@@ -42,7 +42,7 @@ const EMPTY: EarlyAccessInput = {
 
 type Status = { kind: "idle" } | { kind: "sending" } | { kind: "sent"; name: string } | { kind: "error"; message: string };
 
-export function EarlyAccessForm() {
+export function EarlyAccessForm({ onSent }: { onSent?: () => void } = {}) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<EarlyAccessInput>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
@@ -106,6 +106,7 @@ export function EarlyAccessForm() {
       const res = await fetch("/api/early-access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
       if (res.ok) {
         setStatus({ kind: "sent", name: data.name.split(" ")[0] });
+        onSent?.();
         return;
       }
       const body = (await res.json().catch(() => ({}))) as { errors?: Errors; error?: string };

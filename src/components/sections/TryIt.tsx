@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MovingIcon } from "@/components/MovingIcon";
 import UploadIcon from "@/components/itshover/upload-icon";
-import { prefillEarlyAccess } from "@/lib/prefill";
+import { openEarlyAccess } from "@/lib/prefill";
 import { describeTry } from "@/lib/preview";
 import { TRIAL_LABEL, TRIAL_NOTE, trialUrl } from "@/lib/trial";
 import { formatBytes, formatDuration, planCuts } from "@/lib/tryIt";
@@ -289,41 +289,23 @@ export function TryIt() {
   );
 }
 
-type SaveState = { kind: "closed" } | { kind: "open" } | { kind: "sending" } | { kind: "saved" } | { kind: "error"; message: string };
-
 /**
- * What to do once the preview has run: start the trial (or ask for early access, with what
- * they tried already written in), or leave an email to save the previews. Only the email
- * and the video's length and clip count are sent; the video itself never leaves.
+ * What to do once the preview has run: start the trial, or open early access with what they
+ * tried already written in. Signing up also saves the clip previews to their computer, so
+ * the email is asked for once. The video itself never leaves.
  */
 export function TryNext({ seconds, clips, canSave, onSave }: { seconds: number; clips: number; canSave: boolean; onSave: () => void }) {
-  const [save, setSave] = useState<SaveState>({ kind: "closed" });
-  const [email, setEmail] = useState("");
-  const [bot, setBot] = useState("");
-  const field = useRef<HTMLInputElement>(null);
+  const [saved, setSaved] = useState(false);
   const tried = describeTry(Math.round(seconds), clips);
-
-  useEffect(() => {
-    if (save.kind === "open") field.current?.focus();
-  }, [save.kind]);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSave({ kind: "sending" });
-    const res = await fetch("/api/preview", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, seconds: Math.round(seconds), clips, website: bot }),
-    }).catch(() => null);
-    if (res?.status === 422) {
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      setSave({ kind: "error", message: body.error ?? "That email address doesn’t look right." });
-      return;
-    }
-    // Saved on their computer whatever the server said: the previews are theirs.
-    onSave();
-    setSave({ kind: "saved" });
-  };
+  const signUp = () =>
+    openEarlyAccess(`I tried the preview on ${tried}.`, {
+      onSent: canSave
+        ? () => {
+            onSave();
+            setSaved(true);
+          }
+        : undefined,
+    });
 
   return (
     <div className="try-next" aria-live="polite">
@@ -332,49 +314,27 @@ export function TryNext({ seconds, clips, canSave, onSave }: { seconds: number; 
       </p>
       <div className="try-next-actions">
         {TRIAL ? (
-          <a className="btn primary" href={TRIAL}>
-            {TRIAL_LABEL}
-          </a>
+          <>
+            <a className="btn primary" href={TRIAL}>
+              {TRIAL_LABEL}
+            </a>
+            <button type="button" className="btn ghost" onClick={signUp}>
+              Get early access
+            </button>
+            <span className="try-next-note">{TRIAL_NOTE}</span>
+          </>
         ) : (
-          <button type="button" className="btn primary" onClick={() => prefillEarlyAccess(`I tried the preview on ${tried}.`)}>
+          <button type="button" className="btn primary" onClick={signUp}>
             Get early access
           </button>
         )}
-        {canSave && save.kind === "closed" && (
-          <button type="button" className="btn ghost" onClick={() => setSave({ kind: "open" })}>
-            Save these previews
-          </button>
+        {canSave && !saved && <span className="try-next-note">Your clip previews save to your computer when you sign up.</span>}
+        {saved && (
+          <span className="try-next-note" role="status">
+            Your clip previews are in your downloads folder.
+          </span>
         )}
-        {TRIAL && <span className="try-next-note">{TRIAL_NOTE}</span>}
       </div>
-      {canSave && (save.kind === "open" || save.kind === "sending" || save.kind === "error") && (
-        <form className="try-save" onSubmit={submit} noValidate>
-          <label htmlFor="try-save-email">Your email, and the previews save to your computer</label>
-          <div className="try-save-row">
-            <input
-              ref={field}
-              id="try-save-email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={save.kind === "error" || undefined}
-              aria-describedby={save.kind === "error" ? "try-save-err" : undefined}
-            />
-            <button type="submit" className="btn primary" disabled={save.kind === "sending"}>
-              {save.kind === "sending" ? "Saving" : "Save previews"}
-            </button>
-          </div>
-          <input className="sr" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={bot} onChange={(e) => setBot(e.target.value)} />
-          {save.kind === "error" && (
-            <p className="ea-err" id="try-save-err">
-              {save.message}
-            </p>
-          )}
-        </form>
-      )}
-      {save.kind === "saved" && <p className="try-next-note" role="status">Saved. Look in your downloads folder.</p>}
     </div>
   );
 }

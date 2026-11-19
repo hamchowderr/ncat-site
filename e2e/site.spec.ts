@@ -12,7 +12,7 @@ for (const { path, h1 } of pages) {
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(h1);
-    await expect(page.locator("#early form")).toBeVisible();
+    await expect(page.locator(".early-cta a")).toBeVisible();
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
     expect(errors).toEqual([]);
@@ -79,7 +79,8 @@ async function answerFirstSteps(form: import("@playwright/test").Locator) {
 
 test("early-access form checks each step, then sends", async ({ page }) => {
   await page.goto("/pricing");
-  const form = page.locator("#early form");
+  await page.locator(".early-cta").getByRole("link", { name: "Get early access" }).click();
+  const form = page.locator("dialog[open] form");
   await form.getByRole("button", { name: "Next" }).click();
   await expect(form.getByText("Add your name.")).toBeVisible();
   await expect(form.getByRole("heading", { name: /About you/ })).toBeVisible();

@@ -1,12 +1,24 @@
 /** Event the ask bars fire so the early-access form can pick up what the visitor typed. */
 export const PREFILL_EVENT = "early-access:prefill";
+/** Event that opens the early-access pop-up. */
+export const OPEN_EVENT = "early-access:open";
 
-/** Hand typed text to the early-access form and scroll to it. */
-export function prefillEarlyAccess(text: string) {
-  const t = text.trim();
+export type OpenDetail = {
+  /** Called once the visitor has signed up, e.g. to save the clip previews they made. */
+  onSent?: () => void;
+};
+
+/** Opens the early-access pop-up, with `text` written into "In your words" when given. */
+export function openEarlyAccess(text?: string, detail: OpenDetail = {}) {
+  const t = text?.trim();
   if (t) window.dispatchEvent(new CustomEvent<string>(PREFILL_EVENT, { detail: t }));
-  const target = document.getElementById("early");
-  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-  target?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-  history.replaceState(null, "", "#early");
+  window.dispatchEvent(new CustomEvent<OpenDetail>(OPEN_EVENT, { detail }));
+}
+
+/** Kept for the ask bars: hand typed text to the form and open it. */
+export const prefillEarlyAccess = (text: string) => openEarlyAccess(text);
+
+/** Whether a link is one of the site's "Get early access" links. */
+export function isEarlyAccessLink(href: string | null): boolean {
+  return !!href && /^\/?#early$/.test(href);
 }

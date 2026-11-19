@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkPreviewLead, describeTry } from "./preview";
+import { describeTry } from "./preview";
 import { trialUrl } from "./trial";
 
 describe("the trial address", () => {
@@ -21,10 +21,4 @@ describe("what someone tried", () => {
     expect(describeTry(6, 1)).toBe("a 6 s video, cut into 1 clip");
   });
 
-  it("keeps only an email, a name and two numbers in range", () => {
-    const r = checkPreviewLead({ email: " ava@studio.co ", seconds: -4, clips: 999, extra: "x" });
-    expect(r).toEqual({ ok: true, value: { email: "ava@studio.co", name: "", seconds: 0, clips: 100, website: "" } });
-    expect(checkPreviewLead({ email: "a@b" }).ok).toBe(false);
-    expect(checkPreviewLead(null).ok).toBe(false);
-  });
 });

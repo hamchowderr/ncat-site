@@ -257,14 +257,14 @@ test("a video you choose is read in the browser and never sent anywhere", async 
   expect(sent).toEqual([]);
 });
 
-test("after the preview, the next step is right there, and the previews save for an email without the video being sent", async ({ page }) => {
+test("after the preview, signing up once opens early access with what they tried and saves the previews; the video is never sent", async ({ page }) => {
   await page.goto("/");
   await page.locator("#try-it").scrollIntoViewIfNeeded();
   const posted: { url: string; body: string }[] = [];
-  await page.route("**/api/preview", async (route) => {
-    posted.push({ url: route.request().url(), body: route.request().postData() ?? "" });
-    await route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
+  page.on("request", (r) => {
+    if (r.method() === "POST") posted.push({ url: r.url(), body: r.postData() ?? "" });
   });
+  await page.route("**/api/early-access", (r) => r.fulfill({ json: { ok: true } }));
   await page.getByRole("button", { name: "Use a sample" }).click();
   const next = page.locator(".try-next");
   await expect(next).toContainText("That was a 35 s video, cut into 5 clips.", { timeout: 15_000 });
@@ -272,28 +272,58 @@ test("after the preview, the next step is right there, and the previews save for
   const run = (await page.locator(".try-run").boundingBox())!;
   const box = (await next.boundingBox())!;
   expect(box.y).toBeGreaterThanOrEqual(run.y + run.height - 1);
-  await next.getByRole("button", { name: "Save these previews" }).click();
-  await page.getByLabel(/Your email/).fill("ava@studio.co");
+  await next.getByRole("button", { name: "Get early access" }).click();
+  const dialog = page.locator("dialog[open]");
+  await expect(dialog.getByRole("heading", { name: "Get early access" })).toBeVisible();
+  // The page stays where it was behind the pop-up.
+  await expect(next).toBeInViewport();
+  const form = dialog.locator("form");
+  await form.getByLabel("Your name").fill("Ava");
+  await form.getByLabel("Email").fill("ava@studio.co");
+  await form.getByLabel("Editing agency", { exact: true }).check();
+  await form.getByLabel("2 to 5", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await form.getByLabel("Podcasts", { exact: true }).check();
+  await form.getByLabel("1 to 5 hours", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await form.getByLabel("A rented server", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await expect(form.getByLabel(/in your words/i)).toHaveValue("I tried the preview on a 35 s video, cut into 5 clips.");
   const download = page.waitForEvent("download");
-  await next.getByRole("button", { name: "Save previews" }).click();
+  await form.getByRole("button", { name: "Join early access" }).click();
   const file = await download;
   expect(file.suggestedFilename()).toBe("sample-recording clip previews.png");
-  await expect(next.getByRole("status")).toHaveText("Saved. Look in your downloads folder.");
-  expect(posted).toHaveLength(1);
-  expect(JSON.parse(posted[0].body)).toEqual({ email: "ava@studio.co", seconds: 35, clips: 5, website: "" });
   const png = await (await import("node:fs/promises")).readFile((await file.path())!);
   // PNG header: width and height at bytes 16 to 24. Five 270 × 480 previews with 24 px gaps.
   expect(png.readUInt32BE(16)).toBe(5 * 270 + 6 * 24);
   expect(png.readUInt32BE(20)).toBe(480 + 48);
+  await expect(dialog.getByRole("status")).toContainText("You’re on the list");
+  await dialog.getByRole("button", { name: "Close" }).click();
+  await expect(page.locator("dialog[open]")).toHaveCount(0);
+  await expect(next.getByRole("status")).toHaveText("Your clip previews are in your downloads folder.");
+  expect(posted.map((p) => new URL(p.url).pathname)).toEqual(["/api/early-access"]);
+  expect(posted[0].body).not.toContain("data:");
+  expect(JSON.parse(posted[0].body)).toMatchObject({ email: "ava@studio.co", details: "I tried the preview on a 35 s video, cut into 5 clips." });
 });
 
-test("after the preview, early access is one press away", async ({ page }) => {
+test("every Get early access button opens the pop-up, and Escape closes it", async ({ page, isMobile }) => {
   await page.goto("/");
-  await page.locator("#try-it").scrollIntoViewIfNeeded();
-  await page.getByRole("button", { name: "Use a sample" }).click();
-  await page.locator(".try-next").getByRole("button", { name: "Get early access" }).click({ timeout: 15_000 });
-  await expect(page).toHaveURL(/#early$/);
-  await expect(page.locator("#early")).toBeInViewport();
+  if (!isMobile) {
+    await page.locator(".nav-r").getByRole("link", { name: "Get early access" }).click();
+    await expect(page.locator("dialog[open]")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("dialog[open]")).toHaveCount(0);
+  }
+  await page.locator(".hero-cta").getByRole("link", { name: "Get early access" }).click();
+  await expect(page.locator("dialog[open] form")).toBeVisible();
+  const box = (await page.locator("dialog[open]").boundingBox())!;
+  const vp = page.viewportSize()!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
+  expect(box.height).toBeLessThanOrEqual(vp.height);
+  await page.keyboard.press("Escape");
+  await page.goto("/pricing#early");
+  await expect(page.locator("dialog[open] form")).toBeVisible();
 });
 
 test("a file the browser can't open still gets filed, with a plain note", async ({ page }) => {
