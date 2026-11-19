@@ -74,9 +74,9 @@ export function EarlyAccessDialog() {
         <EarlyAccessForm
           key={round}
           tried={tried}
-          onSent={() => {
+          onSent={(who) => {
             sent.current = true;
-            after.current?.();
+            after.current?.(who);
             after.current = undefined;
           }}
         />
