@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkEarlyAccess, earlyAccessEmail } from "@/lib/early-access";
+import { addressOf, looksLikeBot, mayEmail, takeSignUp } from "@/lib/guard";
 import { saveLead } from "@/lib/leads";
 import { earlyAccessThanks, mailSetup, sendMail } from "@/lib/mail";
 import { trialUrl } from "@/lib/trial";
@@ -9,8 +10,21 @@ import { trialUrl } from "@/lib/trial";
  * (see lib/leads.ts), then emailed to Chowderr through toSend, and the visitor gets a
  * short note saying it arrived. Kept or emailed is enough to count as signed up; only when
  * neither is set up does the form say the list is not open yet.
+ *
+ * Kept for people (lib/guard.ts): Vercel BotID turns bots away, one address gets a few
+ * sign-ups in ten minutes, and nobody is emailed twice in a day however often their
+ * address is typed in.
  */
 export async function POST(request: Request) {
+  if (await looksLikeBot()) {
+    return NextResponse.json({ ok: false, error: "That did not come through. Try again." }, { status: 403 });
+  }
+  if (!takeSignUp(addressOf(request))) {
+    return NextResponse.json(
+      { ok: false, error: "That's a lot of sign-ups from here in a few minutes. Try again in a little while." },
+      { status: 429 },
+    );
+  }
   let body: unknown;
   try {
     body = await request.json();
@@ -25,6 +39,8 @@ export async function POST(request: Request) {
 
   const kept = await saveLead("early-access", answers);
   const setup = mailSetup();
+  // The same address again within a day: kept above, but nobody is emailed again.
+  if (setup && kept && !(await mayEmail(checked.value.email))) return NextResponse.json({ ok: true });
   if (!setup) {
     if (kept) return NextResponse.json({ ok: true });
     return NextResponse.json({ ok: false, error: "The list is not open yet. Message Chowderr on any of the links below." }, { status: 503 });

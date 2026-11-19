@@ -373,3 +373,18 @@ test("social logos rain down beside the headline, never across it, and move when
     await expect.poll(() => logo.innerHTML(), { message: name }).not.toBe(before);
   }
 });
+
+test("the early-access form asks a flood from one address to wait", async ({ page }) => {
+  await page.goto("/");
+  // Six quick sign-ups from one browser, through the real route: the sixth waits.
+  const statuses = await page.evaluate(async () => {
+    const seen: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const res = await fetch("/api/early-access", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      seen.push(res.status);
+    }
+    return seen;
+  });
+  expect(statuses.slice(0, 5).every((status) => status !== 429)).toBe(true);
+  expect(statuses[5]).toBe(429);
+});
