@@ -15,6 +15,7 @@ import { checkBotId } from "botid/server";
 const WINDOW = 10 * 60 * 1000;
 const PER_ADDRESS = 5;
 const EVERYONE = 100;
+const DEMO_PER_ADDRESS = 3;
 const MAIL_GAP = 24 * 60 * 60 * 1000;
 
 /** True when Vercel BotID says the request came from a bot. Fails open, so a hiccup never loses a lead. */
@@ -57,7 +58,18 @@ export function takeSignUp(address: string, now = Date.now()): boolean {
   return true;
 }
 
-/** Only for tests: forgets every sign-up counted so far. */
+/**
+ * Takes one real demo run from the address's allowance: three bookings in ten minutes.
+ * The run itself is also held to one per email and a daily cap for everyone (lib/demo).
+ */
+export function takeDemoRun(address: string, now = Date.now()): boolean {
+  const mine = recent(`d:${address}`, now);
+  if (mine.length >= DEMO_PER_ADDRESS) return false;
+  mine.push(now);
+  return true;
+}
+
+/** Only for tests: forgets every sign-up and demo run counted so far. */
 export function forgetSignUps(): void {
   seen.clear();
 }
