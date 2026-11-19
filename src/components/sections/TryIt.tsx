@@ -5,7 +5,7 @@ import { MovingIcon } from "@/components/MovingIcon";
 import UploadIcon from "@/components/itshover/upload-icon";
 import { formatBytes, formatDuration, planCuts } from "@/lib/tryIt";
 
-const SAMPLE = { url: "/media/live-run.mp4", name: "sample-recording.mp4" };
+const SAMPLE = { url: "/media/sample-recording.mp4", name: "sample-recording.mp4" };
 const SHOWN_CLIPS = 6;
 const STEP_PAUSE = 650;
 

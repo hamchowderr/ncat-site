@@ -26,7 +26,7 @@ export const WAYS: { name: string; how: string; leaves: string; ours?: boolean }
     leaves: "Just that one job, without the builder, imports, teams, approvals or the agent.",
   },
   {
-    name: "The fine-tuned shell",
+    name: "Kontifi, the fine-tuned shell",
     how: "Switch on ready-made automations, or describe a new one and the agent sets it up.",
     leaves: "Recordings come in, get processed, wait for your yes and land organized, on brand, with no AI used per video.",
     ours: true,
@@ -53,8 +53,8 @@ export function Engine() {
             </p>
             <p>
               The NCA Toolkit puts FFmpeg and transcription behind an API on your own server. It is free and open source, and it has no screens:
-              no accounts, no schedule, nothing that runs on its own. We built the fine-tuned shell around it, so the engine runs your content by
-              itself. You pay for the shell, never for the processing.
+              no accounts, no schedule, nothing that runs on its own. Kontifi is the fine-tuned shell we built around it, so the engine runs your
+              content by itself. You pay for the shell, never for the processing.
             </p>
           </Reveal>
         </div>

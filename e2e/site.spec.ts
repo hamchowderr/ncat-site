@@ -133,9 +133,13 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
     const left = box.x - frame.x;
     const right = frame.x + frame.width - (box.x + box.width);
     expect(Math.abs(left - right)).toBeLessThanOrEqual(1.5);
-    expect(await img.evaluate((v) => getComputedStyle(v).boxShadow)).toBe("none");
-    // and is a zoomed-in recording, not a shrunk whole screen
-    await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1280, 800]);
+    // no grey mat or padding around it: the recording is the surface
+    expect(Math.abs(box.width - frame.width)).toBeLessThanOrEqual(1.5);
+    expect(await img.locator("..").evaluate((f) => getComputedStyle(f).backgroundColor)).toBe("rgba(0, 0, 0, 0)");
+    // its rounded corners are cut with a clip-path, so no dark hairline shows round it while the story cards tilt
+    expect(await img.evaluate((v) => getComputedStyle(v).clipPath)).toMatch(/^inset\(.*round/);
+    // and is a recording made to be read at this size
+    await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1600, 1000]);
   }
   for (const r of ratios) expect(Math.abs(r - 16 / 10)).toBeLessThan(0.02);
   for (const v of await shots.all()) {
@@ -144,6 +148,29 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
       expect((await request.get(url)).status(), url).toBe(200);
     }
     await expect(v).toHaveAttribute("aria-label", /^Screen recording: /);
+  }
+});
+
+test("each feature recording takes most of its row, alternating sides, so its text is readable", async ({ page, isMobile }) => {
+  await page.goto("/");
+  for (const id of ["#features .tiles", "#around .tiles"]) {
+    const tiles = page.locator(`${id} .tile`);
+    const n = await tiles.count();
+    if (!n) continue;
+    const sides: string[] = [];
+    for (let i = 0; i < n; i++) {
+      const tile = tiles.nth(i);
+      await tile.scrollIntoViewIfNeeded();
+      const t = (await tile.boundingBox())!;
+      const v = (await tile.locator(".shot video").boundingBox())!;
+      if (isMobile) {
+        expect(v.width / t.width).toBeGreaterThan(0.85);
+      } else {
+        expect(v.width / t.width, `${id} tile ${i}`).toBeGreaterThan(0.55);
+        sides.push(v.x - t.x < t.width / 4 ? "left" : "right");
+      }
+    }
+    if (!isMobile) for (let i = 1; i < sides.length; i++) expect(sides[i]).not.toBe(sides[i - 1]);
   }
 });
 
@@ -175,6 +202,16 @@ test("event marks sit on one even row and platform logos are all the same size",
   const boxes = await Promise.all(venues.map(async (v) => (await v.boundingBox())!));
   if (!isMobile) {
     for (const b of boxes) expect(Math.abs(b.y + b.height / 2 - (boxes[0].y + boxes[0].height / 2))).toBeLessThanOrEqual(1);
+    // evenly spread: the middle event sits on the page's centre line and the gaps either side of it are equal
+    const vw = page.viewportSize()!.width;
+    expect(Math.abs(boxes[1].x + boxes[1].width / 2 - vw / 2)).toBeLessThanOrEqual(2);
+    const gapLeft = boxes[1].x - (boxes[0].x + boxes[0].width);
+    const gapRight = boxes[2].x - (boxes[1].x + boxes[1].width);
+    expect(Math.abs(gapLeft - gapRight)).toBeLessThanOrEqual(2);
+    expect(boxes[0].x).toBeGreaterThanOrEqual(0);
+  } else {
+    // stacked on a phone: every event centred under the heading
+    for (const b of boxes) expect(Math.abs(b.x + b.width / 2 - page.viewportSize()!.width / 2)).toBeLessThanOrEqual(2);
   }
   for (const b of boxes) expect(b.height).toBeLessThanOrEqual(34);
   const logos = await page.locator(".feeds li").locator("svg, img").all();
@@ -401,7 +438,7 @@ test("the newer features each show a whole-window recording that plays on screen
   await expect(shots).toHaveCount(6);
   for (const v of await shots.all()) {
     await v.scrollIntoViewIfNeeded();
-    await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1280, 800]);
+    await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
     const box = (await v.boundingBox())!;
     expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
     for (const attr of ["src", "poster"]) {
@@ -445,7 +482,7 @@ test("the engine section lays the five ways on one rail, ending on the shell, wi
   const items = ways.locator(".ways-list > li");
   await expect(items).toHaveCount(5);
   await expect(items.last()).toHaveClass(/ours/);
-  await expect(items.last()).toContainText("The fine-tuned shell");
+  await expect(items.last()).toContainText("Kontifi, the fine-tuned shell");
   const boxes = await Promise.all((await items.all()).map((i) => i.boundingBox()));
   if (isMobile) {
     // one under another on a phone

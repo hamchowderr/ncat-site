@@ -90,7 +90,7 @@ export function PricingPlans() {
                   <span className="sr">Feature</span>
                 </th>
                 <th scope="col">Typical clipping app</th>
-                <th scope="col">NCA Dashboard</th>
+                <th scope="col">Kontifi</th>
               </tr>
             </thead>
             <tbody>

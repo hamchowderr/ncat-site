@@ -26,7 +26,7 @@ describe("Engine and shell", () => {
       "An AI agent on your computer",
       "n8n with the engine",
       "social-clips, our free version",
-      "The fine-tuned shell",
+      "Kontifi, the fine-tuned shell",
     ]);
     expect(items.filter((li) => li.classList.contains("ours"))).toEqual([items[4]]);
     expect(WAYS.filter((w) => w.ours)).toHaveLength(1);

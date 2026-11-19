@@ -141,14 +141,16 @@ export function Features() {
           {TILES.map((t, i) => (
             <Reveal key={t.title} delay={(i % 2) * 0.08}>
               <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
-                <FeatureVideo name={t.video} label={t.alt} small />
-                <div className="tile-head">
-                  <span className="tile-icon" aria-hidden="true">
-                    {t.icon}
-                  </span>
-                  <h4>{t.title}</h4>
+                <FeatureVideo name={t.video} label={t.alt} />
+                <div className="tile-text">
+                  <div className="tile-head">
+                    <span className="tile-icon" aria-hidden="true">
+                      {t.icon}
+                    </span>
+                    <h4>{t.title}</h4>
+                  </div>
+                  <p>{t.body}</p>
                 </div>
-                <p>{t.body}</p>
               </SpotlightCard>
             </Reveal>
           ))}

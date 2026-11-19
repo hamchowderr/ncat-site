@@ -43,7 +43,7 @@ export function Footer() {
       <div className="wrap foot-row">
         <div className="foot-about">
           <Link className="brand" href="/">
-            <BrandMark /> NCA Dashboard
+            <BrandMark /> Kontifi
           </Link>
           <p>Your content organized and clipped automatically, by Otaku Solutions.</p>
           <ul className="foot-social" aria-label="Follow">
