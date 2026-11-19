@@ -47,16 +47,20 @@ export function httpToolkit(setup: { baseUrl: string; apiKey: string }, doFetch:
         return { kind: "busy" };
       }
       const text = await res.text();
-      // Busy, restarting or its queue is full: try again on the next look.
-      if (res.status === 429 || res.status >= 500) return { kind: "busy" };
-      if (!res.ok) return { kind: "refused", error: `The toolkit refused the job (HTTP ${res.status}). ${text.slice(0, 200)}` };
-      let json: { code?: number; job_id?: string; response?: unknown } | null = null;
+      let json: { code?: number; endpoint?: unknown; job_id?: string; response?: unknown } | null = null;
       try {
         json = JSON.parse(text);
       } catch {
         json = null;
       }
-      if (json?.code === 200 && json.response !== undefined) return { kind: "answered", ...readEnvelope(json) };
+      // A step the toolkit runs straight away answers with its result, or with why it failed
+      // (an unreadable video comes back as a 500 that names the step).
+      if (json && typeof json.endpoint === "string" && ((json.code === 200 && json.response !== undefined) || (typeof json.code === "number" && json.code >= 400))) {
+        return { kind: "answered", ...readEnvelope(json) };
+      }
+      // Busy, restarting or its queue is full: try again on the next look.
+      if (res.status === 429 || res.status >= 500) return { kind: "busy" };
+      if (!res.ok) return { kind: "refused", error: `The toolkit refused the job (HTTP ${res.status}). ${text.slice(0, 200)}` };
       return { kind: "queued", toolkitJobId: json?.job_id ?? null };
     },
     async status(toolkitJobId) {

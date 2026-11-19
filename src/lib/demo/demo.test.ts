@@ -217,4 +217,26 @@ describe("talking to the toolkit", () => {
     expect(await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, answer(429)).send("/x", {}, "h", "i")).toEqual({ kind: "busy" });
     expect((await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, answer(400)).send("/x", {}, "h", "i")).kind).toBe("refused");
   });
+
+  it("takes a step the toolkit ran straight away and could not do as failed, not as busy", async () => {
+    const failed = (async () =>
+      new Response(JSON.stringify({ endpoint: "/v1/media/metadata", code: 500, job_id: "j", response: null, message: "ffprobe error: " }), { status: 500 })) as unknown as typeof fetch;
+    expect(await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, failed).send("/v1/media/metadata", {}, "h", "i")).toEqual({ kind: "answered", ok: false, error: "ffprobe error: " });
+    const queued = (async () => new Response(JSON.stringify({ endpoint: "/v1/media/silence", code: 202, job_id: "j2" }), { status: 202 })) as unknown as typeof fetch;
+    expect(await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, queued).send("/v1/media/silence", {}, "h", "i")).toEqual({ kind: "queued", toolkitJobId: "j2" });
+  });
+
+  it("stops asking a toolkit that stays too busy, and says so", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    s.deps.toolkit = { send: async () => ({ kind: "busy" }), status: async () => ({ state: "working" }) };
+    await startDemo(id, key, s.deps);
+    s.later(5 * 60_000);
+    let view = await demoStatus(id, key, s.deps);
+    expect(view.ok && view.view.stage).toBe("running");
+    s.later(6 * 60_000);
+    view = await demoStatus(id, key, s.deps);
+    if (!view.ok) throw new Error();
+    expect(view.view.stage).toBe("failed");
+  });
 });

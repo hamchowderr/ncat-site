@@ -23,6 +23,8 @@ const ASK_EVERY_MS = 4_000;
 const LOST_AFTER_MS = 5 * 60_000;
 /** A job that never comes back gives up after this. */
 const GIVE_UP_MS = 30 * 60_000;
+/** A job the toolkit keeps saying it is too busy to take gives up after this. */
+const BUSY_GIVE_UP_MS = 10 * 60_000;
 
 export type Job = {
   id: string;
@@ -32,6 +34,8 @@ export type Job = {
   toolkitJobId?: string | null;
   sentAt?: number;
   askedAt?: number;
+  /** When the toolkit first said it was too busy to take this job. */
+  busySince?: number;
   result?: unknown;
   error?: string;
 };
@@ -124,7 +128,11 @@ export async function advance(demo: Demo, toolkit: Toolkit, hookUrl: string, now
     for (const j of all()) {
       if (j.state !== "pending") continue;
       const sent = await toolkit.send(j.endpoint, j.body, `${hookUrl}&job=${encodeURIComponent(j.id)}`, j.id).catch(() => ({ kind: "busy" as const }));
-      if (sent.kind === "busy") continue;
+      if (sent.kind === "busy") {
+        j.busySince ??= now;
+        if (now - j.busySince > BUSY_GIVE_UP_MS) Object.assign(j, { state: "failed", error: "The toolkit was too busy to take this video." });
+        continue;
+      }
       if (sent.kind === "refused") Object.assign(j, { state: "failed", error: sent.error });
       else if (sent.kind === "answered") Object.assign(j, sent.ok ? { state: "done", result: sent.result } : { state: "failed", error: sent.error });
       else Object.assign(j, { state: "running", toolkitJobId: sent.toolkitJobId, sentAt: now });
