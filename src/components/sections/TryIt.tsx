@@ -189,7 +189,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
                     Pick another
                   </button>
                 </div>
-                <p className="try-drop-hint">The toolkit takes 10 minutes or more on it, and you don’t have to wait on this page.</p>
+                <p className="try-drop-hint">The toolkit can take a while on it, and you don’t have to wait on this page.</p>
               </>
             ) : (
               <>
@@ -257,7 +257,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
 }
 
 /**
- * Shown while the toolkit works. A run takes 10 minutes or more, so nobody should sit and watch:
+ * Shown while the toolkit works. A run can take many minutes, so nobody should sit and watch:
  * they get their own clips link to keep (and an email, once the site can send one).
  */
 export function WhileItRuns({ id, k, emails }: { id: string; k: string; emails: boolean }) {
@@ -274,7 +274,7 @@ export function WhileItRuns({ id, k, emails }: { id: string; k: string; emails: 
   return (
     <div className="try-next try-wait" aria-live="polite">
       <p className="try-next-lead">
-        This takes the toolkit 10 minutes or more, so you don’t need to wait here.
+        This can take the toolkit a while, so you don’t need to wait here.
         {emails ? " We’ll email you when your clips are ready." : ""} Keep your clips link to come back any time in the next 7 days. This
         page also picks up where it left off on this device.
       </p>
