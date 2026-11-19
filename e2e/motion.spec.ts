@@ -304,6 +304,8 @@ test("the section asks for their own first video, and nothing is sent before the
   await expect(page.locator(".try-drop-title")).toHaveText("my-first-video.mp4");
   await expect(page.locator(".try-drop-note")).toHaveText(/^\d+ (KB|MB), 35 s$/);
   await expect(page.getByRole("button", { name: "Sign up and run it" })).toBeVisible();
+  // said before they sign up: it takes a while, and they don't have to sit and watch
+  await expect(page.locator(".try-drop-hint")).toHaveText("The toolkit takes 10 minutes or more on it, and you don’t have to wait on this page.");
   // every step waits: nothing has run, and nothing pretends to
   await expect(page.locator(".try-step.wait")).toHaveCount(5);
   expect(sent).toEqual([]);
@@ -321,11 +323,19 @@ test("signing up uploads the video to the real toolkit, shows its real steps, th
   expect(calls.find((c) => c.path === "/api/demo")!.body).toMatchObject({ name: "Ava Reyes", email: "ava@studio.co", fileName: "my-first-video.mp4" });
   expect(calls.find((c) => c.path === "blob PUT")!.body).toBe("demos/run1/source.mp4");
   expect(calls.find((c) => c.path === "/api/demo/start")!.body).toEqual({ id: "run1", key: "key1" });
+  // while it works: told not to wait, and given their own clips link to come back to
+  const wait = page.locator(".try-wait");
+  await expect(wait).toContainText("you don’t need to wait here");
+  await expect(wait).not.toContainText("email");
+  await expect(wait.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=key1");
+  const steps = (await page.locator(".try-run").boundingBox())!;
+  expect((await wait.boundingBox())!.y).toBeGreaterThanOrEqual(steps.y + steps.height - 1);
   // the toolkit's own answers, step by step
   await expect(page.locator('[data-step="Read by the toolkit"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
   await expect(page.locator(".try-step.done")).toHaveCount(5, { timeout: 15_000 });
   const next = page.locator(".try-next");
   await expect(next).toContainText("Here are your clips, made by the toolkit.");
+  await expect(wait).toHaveCount(0);
   // No email is promised while the site has no way to send one (toSend is not set up here).
   await expect(next).not.toContainText("in your email");
   // in the page's flow, under the steps, never over them
