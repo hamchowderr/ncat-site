@@ -59,7 +59,8 @@ const remember = (value: { id: string; k: string; fileName: string } | null) => 
  * it: read, cut at the pauses into vertical clips, captioned. Every step shown is the
  * toolkit's own answer, and the clips at the end are the files it made.
  */
-export function TryIt({ enabled = true }: { enabled?: boolean }) {
+/** `emails`: whether the site can email the visitor their link (set up once toSend is). */
+export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; emails?: boolean }) {
   const [chosen, setChosen] = useState<Chosen | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
@@ -225,8 +226,8 @@ export function TryIt({ enabled = true }: { enabled?: boolean }) {
         {finished && view && (
           <div className="try-next" aria-live="polite">
             <p className="try-next-lead">
-              Here are your clips, made by the toolkit. They’re in your email too. On the dashboard this runs by itself every time a new video
-              comes in.
+              Here are your clips, made by the toolkit.{emails ? " They’re in your email too." : ""} On the dashboard this runs by itself every
+              time a new video comes in.
             </p>
             {view.partial && <p className="try-next-note">{view.partial}</p>}
             <DemoClips clips={view.clips} fileName={fileName ?? undefined} />

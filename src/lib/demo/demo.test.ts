@@ -54,7 +54,8 @@ describe("cutting like the dashboard does", () => {
   it("makes each clip vertical, the whole picture over a blurred copy", () => {
     const req = verticalClipRequest("https://f/a.mp4", { start: 3, seconds: 20 }) as { inputs: { options: unknown[] }[]; filters: { filter: string }[] };
     expect(req.inputs[0].options).toEqual([{ option: "-ss", argument: 3 }, { option: "-t", argument: 20 }]);
-    expect(req.filters[0].filter).toContain("crop=1080:1920");
+    expect(req.filters[0].filter).toContain("crop=270:480");
+    expect(req.filters[0].filter).toContain("overlay=(W-w)/2:(H-h)/2");
     expect(req.filters[0].filter).toContain("boxblur");
   });
 });
@@ -159,6 +160,50 @@ describe("a real run of the visitor's video", () => {
   });
 });
 
+describe("never flooding the toolkit", () => {
+  it("sends each job once, however many people look at the same moment", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    await startDemo(id, key, s.deps);
+    s.tk.finish(`${id}-meta`, { duration: 150 });
+    s.tk.finish(`${id}-pauses`, []);
+    s.later(5000);
+    await Promise.all(Array.from({ length: 6 }, () => demoStatus(id, key, s.deps)));
+    s.later(5000);
+    await Promise.all(Array.from({ length: 6 }, () => demoStatus(id, key, s.deps)));
+    const cuts = s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose").map((j) => j.id);
+    expect(cuts).toEqual([...new Set(cuts)]);
+    expect(cuts).toHaveLength(3);
+  });
+
+  it("sends nothing when the run can't be saved, so a broken store can't flood the toolkit", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    await startDemo(id, key, s.deps);
+    s.tk.finish(`${id}-meta`, { duration: 150 });
+    s.tk.finish(`${id}-pauses`, []);
+    s.deps.store.save = async () => false;
+    for (let i = 0; i < 10; i++) {
+      s.later(5000);
+      await demoStatus(id, key, s.deps);
+    }
+    expect(s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose")).toHaveLength(0);
+  });
+
+  it("hands a job over at most a few times when its answer keeps getting lost", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    let sends = 0;
+    s.deps.toolkit = { send: async () => (sends++, new Promise(() => {})), status: async () => ({ state: "working" }) };
+    void startDemo(id, key, s.deps);
+    for (let i = 0; i < 20; i++) {
+      s.later(3 * 60_000);
+      await Promise.race([demoStatus(id, key, s.deps), new Promise((r) => setTimeout(r, 5))]);
+    }
+    expect(sends).toBeLessThanOrEqual(2 * 4);
+  });
+});
+
 describe("limits", () => {
   it("one run per email, a daily cap, files up to 1 GB and 10 minutes", async () => {
     const s = setUp();
@@ -216,5 +261,29 @@ describe("talking to the toolkit", () => {
     const answer = (status: number) => (async () => new Response("nope", { status })) as unknown as typeof fetch;
     expect(await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, answer(429)).send("/x", {}, "h", "i")).toEqual({ kind: "busy" });
     expect((await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, answer(400)).send("/x", {}, "h", "i")).kind).toBe("refused");
+  });
+
+  it("takes a step the toolkit ran straight away and could not do as failed, not as busy", async () => {
+    const failed = (async () =>
+      new Response(JSON.stringify({ endpoint: "/v1/media/metadata", code: 500, job_id: "j", response: null, message: "ffprobe error: " }), { status: 500 })) as unknown as typeof fetch;
+    expect(await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, failed).send("/v1/media/metadata", {}, "h", "i")).toEqual({ kind: "answered", ok: false, error: "ffprobe error: " });
+    const queued = (async () => new Response(JSON.stringify({ endpoint: "/v1/media/silence", code: 202, job_id: "j2" }), { status: 202 })) as unknown as typeof fetch;
+    expect(await httpToolkit({ baseUrl: "https://m", apiKey: "k" }, queued).send("/v1/media/silence", {}, "h", "i")).toEqual({ kind: "queued", toolkitJobId: "j2" });
+  });
+
+  it("stops asking a toolkit that stays too busy, and says so", async () => {
+    const s = setUp();
+    const { id, key } = await booked(s);
+    s.deps.toolkit = { send: async () => ({ kind: "busy" }), status: async () => ({ state: "working" }) };
+    await startDemo(id, key, s.deps);
+    s.later(5 * 60_000);
+    let view = await demoStatus(id, key, s.deps);
+    expect(view.ok && view.view.stage).toBe("running");
+    s.later(6 * 60_000);
+    await demoStatus(id, key, s.deps);
+    s.later(5000);
+    view = await demoStatus(id, key, s.deps);
+    if (!view.ok) throw new Error();
+    expect(view.view.stage).toBe("failed");
   });
 });

@@ -45,10 +45,12 @@ export const sourcePath = (id: string, fileName: string) => {
 };
 
 async function readJson<T>(pathname: string): Promise<{ value: T; etag: string } | null> {
-  const found = await get(pathname, { access: "private", useCache: false }).catch(() => null);
+  // Asked for uncompressed: a compressed answer carries a weak ETag (W/"…"), which a
+  // conditional write never matches, so every save after the first would be refused.
+  const found = await get(pathname, { access: "private", useCache: false, headers: { "accept-encoding": "identity" } }).catch(() => null);
   if (!found || found.statusCode !== 200 || !found.stream) return null;
   const text = await new Response(found.stream).text();
-  return { value: JSON.parse(text) as T, etag: found.blob.etag };
+  return { value: JSON.parse(text) as T, etag: found.blob.etag.replace(/^W\//, "") };
 }
 
 async function writeJson(pathname: string, value: unknown, etag: string | null): Promise<boolean> {
@@ -60,7 +62,8 @@ async function writeJson(pathname: string, value: unknown, etag: string | null):
       ...(etag ? { allowOverwrite: true, ifMatch: etag } : { allowOverwrite: false }),
     });
     return true;
-  } catch {
+  } catch (e) {
+    console.warn(`blob write ${pathname} refused: ${e instanceof Error ? e.message : String(e)}`);
     return false;
   }
 }

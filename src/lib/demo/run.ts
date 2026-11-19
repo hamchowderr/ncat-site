@@ -1,5 +1,5 @@
 import { collectUrls, DEMO_CAPTION_LOOK, durationOf, parseSilences, planClips, sizeOf, verticalClipRequest } from "./clips";
-import type { Toolkit } from "./toolkit";
+import type { Sent, Toolkit } from "./toolkit";
 import { formatBytes, formatDuration } from "@/lib/tryIt";
 
 /**
@@ -23,15 +23,22 @@ const ASK_EVERY_MS = 4_000;
 const LOST_AFTER_MS = 5 * 60_000;
 /** A job that never comes back gives up after this. */
 const GIVE_UP_MS = 30 * 60_000;
+/** A job the toolkit keeps saying it is too busy to take gives up after this. */
+const BUSY_GIVE_UP_MS = 10 * 60_000;
 
 export type Job = {
   id: string;
   endpoint: string;
   body: Record<string, unknown>;
-  state: "pending" | "running" | "done" | "failed";
+  state: "pending" | "sending" | "running" | "done" | "failed";
   toolkitJobId?: string | null;
   sentAt?: number;
   askedAt?: number;
+  /** When this job was last claimed for sending, and how many times it has been handed over. */
+  claimedAt?: number;
+  tries?: number;
+  /** When the toolkit first said it was too busy to take this job. */
+  busySince?: number;
   result?: unknown;
   error?: string;
 };
@@ -94,14 +101,25 @@ export function recordResult(demo: Demo, jobId: string, outcome: { ok: boolean; 
   return false;
 }
 
-/** Moves the run on as far as it can go right now. */
-export async function advance(demo: Demo, toolkit: Toolkit, hookUrl: string, now: number): Promise<Demo> {
-  if (demo.stage !== "running") return demo;
-  const d: Demo = structuredClone(demo);
-  const all = () => [...d.probe, ...d.cuts, ...d.captions];
+/** A job claimed for sending that never got its answer recorded is offered again after this. */
+const RESEND_AFTER_MS = 2 * 60_000;
+/** Each job is handed to the toolkit at most this many times, so a run can never flood it. */
+export const MAX_TRIES = 4;
 
-  // Find out about jobs that are out with the toolkit.
-  for (const j of all()) {
+const jobsOf = (d: Demo) => [...d.probe, ...d.cuts, ...d.captions];
+
+/**
+ * Looks at the run without sending anything: asks the toolkit about jobs it has, starts the
+ * next stage when one is finished, and claims the jobs that should go out now. The run must be
+ * saved with the claims before they are sent (see `sent`), so two people looking at once, or a
+ * save that loses a race, never hand the toolkit the same job twice.
+ */
+export async function look(demo: Demo, toolkit: Toolkit, now: number): Promise<{ demo: Demo; claimed: Job[] }> {
+  if (demo.stage !== "running") return { demo, claimed: [] };
+  const d: Demo = structuredClone(demo);
+
+  for (const j of jobsOf(d)) {
+    if (j.state === "sending" && now - (j.claimedAt ?? 0) > RESEND_AFTER_MS) j.state = "pending";
     if (j.state !== "running") continue;
     if (j.toolkitJobId && now - (j.askedAt ?? j.sentAt ?? 0) >= ASK_EVERY_MS) {
       j.askedAt = now;
@@ -116,22 +134,66 @@ export async function advance(demo: Demo, toolkit: Toolkit, hookUrl: string, now
     }
   }
 
-  // A step the toolkit answers at once can let the run move on again, so go round a few times.
-  for (let round = 0; round < 4; round++) {
-    const before = JSON.stringify(all().map((j) => j.state));
-    const moved = nextStage(d);
-    if (moved) return { ...moved, updatedAt: now };
-    for (const j of all()) {
-      if (j.state !== "pending") continue;
-      const sent = await toolkit.send(j.endpoint, j.body, `${hookUrl}&job=${encodeURIComponent(j.id)}`, j.id).catch(() => ({ kind: "busy" as const }));
-      if (sent.kind === "busy") continue;
-      if (sent.kind === "refused") Object.assign(j, { state: "failed", error: sent.error });
-      else if (sent.kind === "answered") Object.assign(j, sent.ok ? { state: "done", result: sent.result } : { state: "failed", error: sent.error });
-      else Object.assign(j, { state: "running", toolkitJobId: sent.toolkitJobId, sentAt: now });
+  const moved = nextStage(d);
+  if (moved) return { demo: { ...moved, updatedAt: now }, claimed: [] };
+
+  const claimed: Job[] = [];
+  for (const j of jobsOf(d)) {
+    if (j.state !== "pending") continue;
+    if ((j.tries ?? 0) >= MAX_TRIES) {
+      Object.assign(j, { state: "failed", error: j.error ?? "The toolkit didn’t take this step." });
+      continue;
     }
-    if (JSON.stringify(all().map((j) => j.state)) === before) break;
+    Object.assign(j, { state: "sending", claimedAt: now, tries: (j.tries ?? 0) + 1 });
+    claimed.push(structuredClone(j));
   }
-  return { ...d, updatedAt: now };
+  return { demo: { ...d, updatedAt: now }, claimed };
+}
+
+export type SendOutcome = { id: string; claimedAt: number; sent: Sent | { kind: "busy" } };
+
+/** Hands the claimed jobs to the toolkit. Nothing here touches the saved run. */
+export async function send(claimed: Job[], toolkit: Toolkit, hookUrl: string): Promise<SendOutcome[]> {
+  return Promise.all(
+    claimed.map(async (j) => ({
+      id: j.id,
+      claimedAt: j.claimedAt ?? 0,
+      sent: await toolkit.send(j.endpoint, j.body, `${hookUrl}&job=${encodeURIComponent(j.id)}`, j.id).catch(() => ({ kind: "busy" as const })),
+    })),
+  );
+}
+
+/** Records what the toolkit said to each claimed job. Answers false when nothing changed. */
+export function sent(demo: Demo, outcomes: SendOutcome[], now: number): boolean {
+  let changed = false;
+  for (const o of outcomes) {
+    const j = jobsOf(demo).find((x) => x.id === o.id);
+    // Already answered by a post-back, or claimed again since: leave it.
+    if (!j || j.state !== "sending" || j.claimedAt !== o.claimedAt) continue;
+    changed = true;
+    const r = o.sent;
+    if (r.kind === "busy") {
+      j.busySince ??= now;
+      if (now - j.busySince > BUSY_GIVE_UP_MS) Object.assign(j, { state: "failed", error: "The toolkit was too busy to take this video." });
+      else Object.assign(j, { state: "pending", tries: Math.max(0, (j.tries ?? 1) - 1) });
+    } else if (r.kind === "refused") Object.assign(j, { state: "failed", error: r.error });
+    else if (r.kind === "answered") Object.assign(j, r.ok ? { state: "done", result: r.result } : { state: "failed", error: r.error });
+    else Object.assign(j, { state: "running", toolkitJobId: r.toolkitJobId, sentAt: now });
+  }
+  if (changed) demo.updatedAt = now;
+  return changed;
+}
+
+/** Looks, sends and records in one go, for a run held in memory. */
+export async function advance(demo: Demo, toolkit: Toolkit, hookUrl: string, now: number): Promise<Demo> {
+  let d = demo;
+  for (let round = 0; round < 4; round++) {
+    const looked = await look(d, toolkit, now);
+    d = looked.demo;
+    if (looked.claimed.length === 0) break;
+    sent(d, await send(looked.claimed, toolkit, hookUrl), now);
+  }
+  return d;
 }
 
 /** Adds the next stage's jobs once a stage is finished. Returns the run when it has ended. */
