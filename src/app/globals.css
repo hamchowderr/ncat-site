@@ -603,6 +603,7 @@ html {
 
 /* ---------- Section scaffolding ---------- */
 .features,
+.around,
 .try,
 .how,
 .platforms,
@@ -740,6 +741,7 @@ html {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(28px, 4vw, 48px) clamp(20px, 3vw, 36px);
 }
+.tile h3,
 .tile h4 {
   font-size: 1.25rem;
   margin-top: 18px;
@@ -1609,6 +1611,7 @@ fieldset[aria-invalid="true"] .pill span {
   gap: 12px;
   margin-top: 18px;
 }
+.tile-head h3,
 .tile-head h4 {
   margin-top: 0;
 }
@@ -2679,4 +2682,33 @@ fieldset[aria-invalid="true"] .pill span {
   .plat-ink {
     animation: none;
   }
+}
+
+/* ---------- Everything around the clip ---------- */
+.tile .logo-chips {
+  margin-top: 16px;
+}
+.also {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(24px, 3vw, 36px) clamp(20px, 3vw, 36px);
+}
+.also h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+}
+.also-logos {
+  display: inline-flex;
+  gap: 6px;
+}
+.also-logos .bi {
+  width: 20px;
+  height: 20px;
+}
+.also p {
+  margin-top: 6px;
+  color: var(--soft);
+  max-width: 46ch;
 }

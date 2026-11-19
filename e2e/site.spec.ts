@@ -372,3 +372,32 @@ test("social logos rain down beside the headline, never across it, and move when
     await expect.poll(() => logo.innerHTML(), { message: name }).not.toBe(before);
   }
 });
+
+test("the newer features each show a whole-window recording that plays on screen, with real app logos", async ({ page, request }) => {
+  await page.goto("/");
+  const section = page.getByRole("region", { name: "Everything around the clip, too" });
+  const shots = section.locator(".shot video");
+  await expect(shots).toHaveCount(6);
+  for (const v of await shots.all()) {
+    await v.scrollIntoViewIfNeeded();
+    await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1280, 800]);
+    const box = (await v.boundingBox())!;
+    expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
+    for (const attr of ["src", "poster"]) {
+      const url = (await v.getAttribute(attr))!;
+      expect((await request.get(url)).status(), url).toBe(200);
+    }
+    await expect(v).toHaveAttribute("aria-label", /^Screen recording: /);
+  }
+  const zoom = section.locator(".shot video").first();
+  await zoom.scrollIntoViewIfNeeded();
+  await expect.poll(() => zoom.evaluate((x: HTMLVideoElement) => !x.paused && x.currentTime > 0), { timeout: 15_000 }).toBe(true);
+  // every app chip carries a drawn mark, and none renders at zero size
+  for (const mark of await section.locator(".logo-chips li .bi, .logo-chips li .fl, .also-logos .bi").all()) {
+    const b = (await mark.boundingBox())!;
+    expect(b.width).toBeGreaterThan(14);
+    expect(b.height).toBeGreaterThan(14);
+  }
+  await expect(section.getByRole("list", { name: "Also in the dashboard" }).getByRole("listitem")).toHaveCount(5);
+  expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
+});

@@ -54,7 +54,7 @@ describe.skipIf(!hasFfmpeg)("hero recordings", () => {
 });
 
 describe.skipIf(!hasFfmpeg)("feature recordings", () => {
-  for (const name of ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule"]) {
+  for (const name of ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule", "zoom", "library", "calendar", "moments", "follow", "mcp"]) {
     it(`${name} never shows a blank page or a misplaced frame`, () => {
       const all = frames(`features/${name}`);
       expect(all.length).toBeGreaterThan(100);
@@ -73,7 +73,7 @@ describe.skipIf(!hasFfmpeg)("recording sizes", () => {
       .toString()
       .trim();
   it("shows the whole app window, 16:10, in every recording", () => {
-    for (const name of ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule"]) expect(size(`features/${name}`), name).toBe("1280,800");
+    for (const name of ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule", "zoom", "library", "calendar", "moments", "follow", "mcp"]) expect(size(`features/${name}`), name).toBe("1280,800");
     for (const name of ["live-run", "review", "outputs", "agent-builds"]) expect(size(name), name).toBe("1440,900");
   });
 });
