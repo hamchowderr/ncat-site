@@ -136,6 +136,8 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
     // no grey mat or padding around it: the recording is the surface
     expect(Math.abs(box.width - frame.width)).toBeLessThanOrEqual(1.5);
     expect(await img.locator("..").evaluate((f) => getComputedStyle(f).backgroundColor)).toBe("rgba(0, 0, 0, 0)");
+    // its rounded corners are cut with a clip-path, so no dark hairline shows round it while the story cards tilt
+    expect(await img.evaluate((v) => getComputedStyle(v).clipPath)).toMatch(/^inset\(.*round/);
     // and is a recording made to be read at this size
     await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1600, 1000]);
   }

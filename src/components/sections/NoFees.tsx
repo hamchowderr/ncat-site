@@ -42,7 +42,7 @@ export function NoFees() {
             <p className="compare-f">Billed every month</p>
           </div>
           <div className="compare-col ours">
-            <p className="compare-h">NCA Dashboard</p>
+            <p className="compare-h">Kontifi</p>
             <p className="once">Paid once</p>
             <p className="compare-f">Runs on your toolkit, as often as you like</p>
           </div>

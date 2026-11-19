@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: { email: from, name: "NCA Dashboard site" },
+      from: { email: from, name: "Kontifi site" },
       to: [{ email: to }],
       reply_to: { email: checked.value.email, name: checked.value.name },
       subject: mail.subject,

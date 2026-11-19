@@ -1,4 +1,4 @@
-/* NCA Dashboard marketing site. Clean clipping-category look: white ground, near-black ink,
+/* Kontifi marketing site. Clean clipping-category look: white ground, near-black ink,
    one violet accent, soft grey panels instead of outlines, real dashboard media. */
 
 :root {
@@ -698,8 +698,12 @@ html {
 }
 .shot {
   margin: 0;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgb(11 11 18 / 0.06), 0 18px 40px -18px rgb(11 11 18 / 0.22);
 }
-/* The recording itself, as large as the layout allows: no mat around it, just a soft lift. */
+/* The recording itself, as large as the layout allows: no mat around it, just a soft lift.
+   Rounded with a clip-path rather than border-radius alone: inside the tilting, scaling story cards
+   Chrome draws a rounded video's edge as a dark hairline, and a clip-path cuts it off cleanly. */
 .shot video {
   display: block;
   width: 100%;
@@ -707,7 +711,7 @@ html {
   aspect-ratio: 16 / 10;
   background: #fafafa;
   border-radius: 14px;
-  box-shadow: 0 1px 2px rgb(11 11 18 / 0.06), 0 18px 40px -18px rgb(11 11 18 / 0.22);
+  clip-path: inset(0.5px round 14px);
 }
 .logo-chips {
   display: flex;
@@ -2858,7 +2862,7 @@ fieldset[aria-invalid="true"] .pill span {
 .row.story-row {
   grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
 }
-.story-card .shot video {
+.story-card .shot {
   box-shadow: 0 1px 2px rgb(11 11 18 / 0.06), 0 10px 28px -16px rgb(11 11 18 / 0.2);
 }
 @media (max-width: 900px) {
