@@ -113,10 +113,21 @@ test("the scroll scene holds on its finished moment before the page scrolls on",
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const place = () => page.locator(".split-next").evaluate((el) => (el as HTMLElement).style.transform);
+  // the scene follows the scroll with a lag, so read it only once it has come to rest
+  const settled = async () => {
+    let last = await place();
+    for (let i = 0; i < 40; i++) {
+      await page.waitForTimeout(100);
+      const now = await place();
+      if (now === last) return now;
+      last = now;
+    }
+    return last;
+  };
   await scrollSplit(page, 0.82);
-  const held = await place();
+  const held = await settled();
   await scrollSplit(page, 0.95);
-  expect(await place()).toBe(held);
+  expect(await settled()).toBe(held);
   await expect(page.locator(".split-steps li.on")).toHaveCount(5);
   // and it is still pinned on screen while it holds
   const box = (await page.locator(".split-stage").boundingBox())!;
