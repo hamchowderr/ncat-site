@@ -2543,7 +2543,7 @@ fieldset[aria-invalid="true"] .pill span {
 .shift-logo {
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 10px;
   width: 32px;
   height: 32px;
   border-radius: 9px;
@@ -2599,8 +2599,8 @@ fieldset[aria-invalid="true"] .pill span {
 /* the team's own brand, carried on every clip */
 .shift-team {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 16px;
+  left: 14px;
   width: 30px;
   height: 20px;
   background:

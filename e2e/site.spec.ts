@@ -556,6 +556,11 @@ test("the feeds section shows the agent badge and the brand every clip carries, 
   await expect(sec.locator(".agent-badge svg.lucide-bot")).toBeVisible();
   await expect(sec.locator(".shift-brand li")).toHaveCount(4);
   await expect(sec.locator(".shift-cap")).toBeVisible();
+  const frame = (await sec.locator(".shift-frame").boundingBox())!;
+  const team = (await sec.locator(".shift-team").boundingBox())!;
+  const plat = (await sec.locator(".shift-logo").boundingBox())!;
+  expect(team.x - frame.x).toBeLessThan(frame.width / 4);
+  expect(frame.x + frame.width - (plat.x + plat.width)).toBeLessThan(frame.width / 4);
   const vw = page.viewportSize()!.width;
   for (const li of await sec.locator(".shift-brand li").all()) {
     const b = (await li.boundingBox())!;
