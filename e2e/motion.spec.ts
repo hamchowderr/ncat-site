@@ -334,3 +334,15 @@ test("the team chat scene changes app, and its logo, each time the conversation 
   expect(new Set(said).size).toBe(4);
   await expect(chat).toHaveAttribute("data-app", "slack");
 });
+
+test("each step of one recording in has its own icon that moves in its own way", async ({ page }) => {
+  await page.goto("/");
+  const steps = page.locator(".split-steps .split-n");
+  await expect(steps).toHaveCount(5);
+  await page.locator(".split").scrollIntoViewIfNeeded();
+  const anims = await steps.evaluateAll((els) => els.map((e) => getComputedStyle(e.querySelector("svg")!).animationName));
+  const on = anims.filter((a) => a && a !== "none");
+  expect(new Set(on).size).toBe(on.length);
+  const colours = await steps.evaluateAll((els) => els.map((e) => getComputedStyle(e).getPropertyValue("--c").trim()));
+  expect(new Set(colours).size).toBe(5);
+});

@@ -40,8 +40,18 @@ describe("one recording in, a clip for every feed out", () => {
     const { container } = render(<SplitScene />);
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("One recording in. A clip for every feed out.");
     expect(within(screen.getByRole("list", { name: "What the automation does" })).getAllByRole("listitem").map((li) => li.textContent)).toEqual(
-      SPLIT_STEPS.map((s, i) => `${i + 1}${s.label}`),
+      SPLIT_STEPS.map((s) => s.label),
     );
+    // each step has its own icon and its own way of moving in, never the same numbered dot
+    const marks = [...container.querySelectorAll(".split-steps .split-n")];
+    expect(marks.map((m) => m.querySelector("svg")?.getAttribute("class"))).toEqual([
+      expect.stringContaining("lucide-file-audio"),
+      expect.stringContaining("lucide-scissors"),
+      expect.stringContaining("lucide-captions"),
+      expect.stringContaining("lucide-badge-check"),
+      expect.stringContaining("lucide-send"),
+    ]);
+    expect(new Set(marks.map((m) => m.getAttribute("data-move"))).size).toBe(5);
     const clips = [...container.querySelectorAll(".split-clip")];
     expect(clips).toHaveLength(5);
     for (const c of SPLIT_CLIPS) {
@@ -66,7 +76,9 @@ describe("one recording in, a clip for every feed out", () => {
     for (const ok of container.querySelectorAll(".split-ok")) expect(ok).toHaveTextContent("Approved");
     const editors = container.querySelector(".split-editors")!;
     expect(editors).toHaveTextContent("Finishing by hand? Get a timeline for");
-    expect([...editors.querySelectorAll("[title]")].map((e) => e.getAttribute("title"))).toEqual([...SPLIT_EDITORS]);
+    expect([...editors.querySelectorAll("[title]")].map((e) => e.getAttribute("title"))).toEqual([...SPLIT_EDITORS, "CapCut"]);
+    // CapCut can't open a timeline, so it is offered the clip pack instead
+    expect(editors).toHaveTextContent("or a clip pack for");
     for (const e of editors.querySelectorAll("[title]")) expect(e.querySelector("svg, img")).not.toBeNull();
     expect(container.querySelector(".split-tokens")).toHaveTextContent("AI tokens spent on these clips 0");
     expect(container.querySelector(".split-next")).toHaveTextContent("Next recording came in");

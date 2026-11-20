@@ -2339,9 +2339,54 @@ fieldset[aria-invalid="true"] .pill span {
 .split-steps li.on {
   color: var(--ink);
 }
+.split-n {
+  width: 28px;
+  height: 28px;
+}
 .split-steps li.on .split-n {
   background: var(--accent);
   color: #fff;
+}
+/* each step's icon arrives its own way when the scroll reaches it */
+.split-n[data-move="file"] { --c: #5b3df5; }
+.split-n[data-move="snip"] { --c: #e8590c; }
+.split-n[data-move="shape"] { --c: #0c8599; }
+.split-n[data-move="check"] { --c: #2f9e44; }
+.split-n[data-move="send"] { --c: #d6336c; }
+.split-steps li.on .split-n[data-move] {
+  background: var(--c);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .split-steps li.on .split-n[data-move="file"] svg { animation: sn-file 0.6s var(--ease) both; }
+  .split-steps li.on .split-n[data-move="snip"] svg { animation: sn-snip 0.7s var(--ease) both; }
+  .split-steps li.on .split-n[data-move="shape"] svg { animation: sn-shape 0.7s var(--ease) both; }
+  .split-steps li.on .split-n[data-move="check"] svg { animation: sn-check 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .split-steps li.on .split-n[data-move="send"] svg { animation: sn-send 0.8s var(--ease) both; }
+  .split-steps li[aria-current="step"] .split-n { animation: sn-glow 1.8s ease-in-out infinite; }
+}
+@keyframes sn-file {
+  from { transform: translateY(-8px); opacity: 0; }
+}
+@keyframes sn-snip {
+  0% { transform: rotate(0); }
+  25% { transform: rotate(-28deg); }
+  50% { transform: rotate(8deg); }
+  75% { transform: rotate(-18deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes sn-shape {
+  0% { transform: scale(1.5, 0.6); opacity: 0; }
+  60% { transform: scale(0.9, 1.1); opacity: 1; }
+}
+@keyframes sn-check {
+  from { transform: scale(0) rotate(-45deg); }
+}
+@keyframes sn-send {
+  0% { transform: translate(-10px, 10px) scale(0.6); opacity: 0; }
+  60% { transform: translate(3px, -3px); opacity: 1; }
+}
+@keyframes sn-glow {
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--c, var(--accent)) 22%, transparent); }
 }
 .split-stage {
   position: relative;
@@ -3160,6 +3205,14 @@ fieldset[aria-invalid="true"] .pill span {
   .split-editors,
   .split-tokens {
     font-size: 13px;
+  }
+  .split-editors {
+    gap: 4px 8px;
+  }
+  .split-editor-logos > span {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
   }
   .split.is-live .split-foot {
     flex-direction: column;
