@@ -1,4 +1,4 @@
-/** Helpers for the "try it with your own video" walk-through. Everything runs in the visitor's browser. */
+/** How the demo writes sizes and lengths. */
 
 /** "48 MB", "1.2 GB", "820 KB". */
 export function formatBytes(bytes: number): string {
@@ -18,17 +18,4 @@ export function formatDuration(seconds: number): string {
   const h = Math.floor(s / 3600);
   const m = Math.round((s % 3600) / 60);
   return m ? `${h} h ${m} min` : `${h} h`;
-}
-
-/**
- * Where the preview cuts: even parts, about five of them, never longer than a minute (the
- * shortest limit among the main platforms) and never shorter than five seconds, and no more than
- * 100 clips (the dashboard's own cap). The real step cuts at pauses in speech instead.
- */
-export function planCuts(duration: number): { start: number; seconds: number }[] {
-  if (!(duration > 0)) return [];
-  const length = Math.min(60, Math.max(5, duration / 5));
-  const count = Math.max(1, Math.min(100, Math.round(duration / length)));
-  const seconds = duration / count;
-  return Array.from({ length: count }, (_, i) => ({ start: i * seconds, seconds }));
 }

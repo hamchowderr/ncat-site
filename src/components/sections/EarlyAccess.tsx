@@ -1,4 +1,4 @@
-import { EarlyAccessForm } from "@/components/EarlyAccessForm";
+import { EarlyAccessDialog } from "@/components/EarlyAccessDialog";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
 import { siInstagram } from "simple-icons";
 
@@ -25,7 +25,12 @@ export function EarlyAccess() {
             </a>
           </div>
         </header>
-        <EarlyAccessForm />
+        <div className="early-cta">
+          <a className="btn primary" href="#early">
+            Get early access
+          </a>
+        </div>
+        <EarlyAccessDialog />
       </div>
     </section>
   );

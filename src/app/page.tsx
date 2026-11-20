@@ -10,6 +10,8 @@ import { Proof } from "@/components/sections/Proof";
 import { SplitScene } from "@/components/sections/SplitScene";
 import { TryIt } from "@/components/sections/TryIt";
 import { UseCases } from "@/components/sections/UseCases";
+import { demoEnabled } from "@/lib/demo/deps";
+import { mailSetup } from "@/lib/mail";
 
 export default function Home() {
   return (
@@ -19,7 +21,7 @@ export default function Home() {
       <SplitScene />
       <Features />
       <HowItWorks />
-      <TryIt />
+      <TryIt enabled={demoEnabled()} emails={!!mailSetup()} />
       <Engine />
       <PlatformExpert />
       <UseCases />
