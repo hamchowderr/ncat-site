@@ -26,12 +26,14 @@ describe("Everything around the clip", () => {
     for (const li of within(mcp).getAllByRole("listitem")) expect(li.querySelector("svg, img")).not.toBeNull();
   });
 
-  it("lists the rest plainly, with Slack and Discord marks on the team chat", () => {
+  it("lists the rest plainly, with Slack, Discord, Microsoft Teams and Telegram marks on the team chat", () => {
     render(<AroundTheClip />);
     const also = screen.getByRole("list", { name: "Also in the dashboard" });
     expect(within(also).getAllByRole("listitem")).toHaveLength(ALSO.length);
     const chat = within(also).getByRole("heading", { name: "The agent in your team chat" });
-    expect(chat.querySelectorAll("svg")).toHaveLength(2);
+    expect(chat.querySelectorAll("svg")).toHaveLength(4);
+    expect(ALSO[0].logos!.map((l) => l.name)).toEqual(["Slack", "Discord", "Microsoft Teams", "Telegram"]);
+    expect(within(also).getByText(/Slack, Discord, Microsoft Teams or Telegram/)).toBeInTheDocument();
   });
 
   it("never frames MCP as one app's feature, and keeps to the site's wording rules", () => {

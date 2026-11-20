@@ -3101,13 +3101,16 @@ fieldset[aria-invalid="true"] .pill span {
 }
 .also h4 {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   font-size: 1.15rem;
 }
+/* the apps sit on their own line above the title, so the title never squeezes beside them */
 .also-logos {
-  display: inline-flex;
-  gap: 6px;
+  display: flex;
+  flex-basis: 100%;
+  gap: 8px;
 }
 .also-logos .bi {
   width: 20px;

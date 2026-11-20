@@ -1,7 +1,7 @@
-import { siDiscord, siZoom } from "simple-icons";
+import { siDiscord, siTelegram, siZoom } from "simple-icons";
 import { BrandIcon } from "@/components/brand/Logo";
 
-// Marks for the apps the dashboard brings meetings in from and talks in. Zoom and Discord
+// Marks for the apps the dashboard brings meetings in from and talks in. Zoom, Discord and Telegram
 // come from Simple Icons (CC0); Google Meet, Microsoft Teams and Slack are drawn in their
 // own colours here, the same marks the dashboard shows on its settings pages.
 
@@ -11,6 +11,10 @@ export function ZoomMark() {
 
 export function DiscordMark() {
   return <BrandIcon icon={siDiscord} />;
+}
+
+export function TelegramMark() {
+  return <BrandIcon icon={siTelegram} />;
 }
 
 export function GoogleMeetMark() {

@@ -10,7 +10,7 @@ import { FeatureVideo } from "@/components/FeatureVideo";
 import { Reveal } from "@/components/Reveal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
 import { BrandIcon, FileLogo } from "@/components/brand/Logo";
-import { ChatGptMark, DiscordMark, GoogleMeetMark, SlackMark, TeamsMark, ZoomMark } from "@/components/brand/AppLogos";
+import { ChatGptMark, DiscordMark, GoogleMeetMark, SlackMark, TeamsMark, TelegramMark, ZoomMark } from "@/components/brand/AppLogos";
 import { AlsoScene, type AlsoSceneName } from "@/components/AlsoScenes";
 
 const TILE_SURFACE = { "--spotlight-card-surface": "transparent", "--spotlight-card-border": "transparent", "--spotlight-card-shadow": "none" } as React.CSSProperties;
@@ -84,10 +84,12 @@ export const ALSO: { title: string; body: string; scene: AlsoSceneName; logos?: 
   {
     title: "The agent in your team chat",
     scene: "chat",
-    body: "Tag it in Slack or Discord and it answers there. Review activity can post to your Slack channel, with replies brought back, and you can talk to it in voice notes.",
+    body: "Tag it in Slack, Discord, Microsoft Teams or Telegram and it answers there. Review activity can post to your Slack channel, with replies brought back, and you can talk to it in voice notes.",
     logos: [
       { name: "Slack", mark: <SlackMark /> },
       { name: "Discord", mark: <DiscordMark /> },
+      { name: "Microsoft Teams", mark: <TeamsMark /> },
+      { name: "Telegram", mark: <TelegramMark /> },
     ],
   },
   { title: "Clients and a client portal", scene: "clients", body: "Group work by client, track each project's deliverables, and give clients one link to review and approve their own." },
