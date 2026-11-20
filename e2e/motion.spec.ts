@@ -327,6 +327,7 @@ test("the team chat scene changes app, and its logo, each time the conversation 
     seen.push((await chat.getAttribute("data-app"))!);
     said.push((await chat.locator(".msg-bubble").first().textContent())!);
     await expect(chat.locator(".chat-chan svg")).toBeVisible();
+    await expect(chat.locator(".ava-bot svg.lucide-bot")).toBeAttached();
     await page.clock.runFor(9000);
   }
   expect(seen).toEqual(["slack", "discord", "teams", "telegram"]);

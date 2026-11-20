@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Check, FileVideo, MessageSquareText, Mic, Sparkles, Upload } from "lucide-react";
+import { ArrowRight, Bot, Check, FileVideo, MessageSquareText, Mic, Upload } from "lucide-react";
 import { DiscordMark, SlackMark, TeamsMark, TelegramMark } from "@/components/brand/AppLogos";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
@@ -105,7 +105,7 @@ function ChatScene() {
       </div>
       <div className="msg msg-bot">
         <span className="ava ava-bot">
-          <Sparkles size={14} strokeWidth={2.2} />
+          <Bot size={14} strokeWidth={2.2} />
         </span>
         <div>
           <p className="msg-who">Kontifi</p>
@@ -182,7 +182,7 @@ function StepsScene() {
       </p>
       <div className="made">
         <span className="made-icon">
-          <Sparkles size={15} strokeWidth={2.2} />
+          <Bot size={15} strokeWidth={2.2} />
         </span>
         <span>
           <b>Fade in</b>

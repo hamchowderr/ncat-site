@@ -129,7 +129,17 @@ describe("Fixes from the 2026-11-19 review", () => {
     expect(new Set(CHAT_APPS.map((a) => a.reply)).size).toBe(4);
     expect(CHAT_APPS.map((a) => a.app)).toEqual(["slack", "discord", "teams", "telegram"]);
     expect(container.querySelector(".chat")!.getAttribute("data-app")).toBe("slack");
+    expect(container.querySelector(".ava-bot svg")).toHaveClass("lucide-bot");
     vi.useRealTimers();
+  });
+
+  it("marks Kontifi's agent with a robot, never the sparkle star", () => {
+    for (const name of ["chat", "steps"] as const) {
+      const { container } = render(<AlsoScene name={name} />);
+      expect(container.querySelector(".lucide-bot"), name).not.toBeNull();
+      expect(container.querySelector(".lucide-sparkles"), name).toBeNull();
+    }
+    expect(readFileSync("src/components/AlsoScenes.tsx", "utf8")).not.toMatch(/Sparkles/);
   });
 
   it("shows the monthly bill rolling on next to the one Kontifi payment", () => {
