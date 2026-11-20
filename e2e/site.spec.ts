@@ -505,7 +505,7 @@ test("the Editing with AI tab says what it costs today and what changes", async 
   await tab.click();
   const panel = page.locator("#case-panel");
   await expect(panel).toContainText("Stop spending your AI limits on the same edit.");
-  await expect(panel.locator(".case-without")).toContainText("Without the shell");
+  await expect(panel.locator(".case-without")).toContainText("Without Kontifi");
   await expect(panel.locator(".case-outs li")).toHaveCount(4);
 });
 

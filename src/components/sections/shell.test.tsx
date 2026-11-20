@@ -65,13 +65,13 @@ describe("Use cases", () => {
     expect(panel).toHaveTextContent(/server or always-on machine/);
   });
 
-  it("shows what each profile does without the shell", () => {
+  it("shows what each profile does without Kontifi", () => {
     render(<UseCases />);
     for (const c of CASES) {
       expect(c.without.length).toBeGreaterThan(20);
       fireEvent.click(screen.getByRole("tab", { name: c.tab }));
       const line = document.querySelector(".case-without")!;
-      expect(line).toHaveTextContent("Without the shell");
+      expect(line).toHaveTextContent("Without Kontifi");
       expect(line).toHaveTextContent(c.without);
     }
   });
