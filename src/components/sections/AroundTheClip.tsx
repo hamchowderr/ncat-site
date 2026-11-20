@@ -11,6 +11,7 @@ import { Reveal } from "@/components/Reveal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
 import { BrandIcon, FileLogo } from "@/components/brand/Logo";
 import { ChatGptMark, DiscordMark, GoogleMeetMark, SlackMark, TeamsMark, ZoomMark } from "@/components/brand/AppLogos";
+import { AlsoScene, type AlsoSceneName } from "@/components/AlsoScenes";
 
 const TILE_SURFACE = { "--spotlight-card-surface": "transparent", "--spotlight-card-border": "transparent", "--spotlight-card-shadow": "none" } as React.CSSProperties;
 
@@ -79,19 +80,20 @@ export const AROUND_TILES: Tile[] = [
 ];
 
 /** Shipped features without their own recording here, said plainly. */
-export const ALSO: { title: string; body: string; logos?: { name: string; mark: React.ReactNode }[] }[] = [
+export const ALSO: { title: string; body: string; scene: AlsoSceneName; logos?: { name: string; mark: React.ReactNode }[] }[] = [
   {
     title: "The agent in your team chat",
+    scene: "chat",
     body: "Tag it in Slack or Discord and it answers there. Review activity can post to your Slack channel, with replies brought back, and you can talk to it in voice notes.",
     logos: [
       { name: "Slack", mark: <SlackMark /> },
       { name: "Discord", mark: <DiscordMark /> },
     ],
   },
-  { title: "Clients and a client portal", body: "Group work by client, track each project's deliverables, and give clients one link to review and approve their own." },
-  { title: "Your own steps", body: "Describe a step you need and the agent writes it, tries it on a file and saves it for your team." },
-  { title: "Big files and versions", body: "Upload files over 5 GB in parts, and compare two versions of a review clip side by side." },
-  { title: "Guided tours", body: "New teammates get a short tour of each page the first time they open it." },
+  { title: "Clients and a client portal", scene: "clients", body: "Group work by client, track each project's deliverables, and give clients one link to review and approve their own." },
+  { title: "Your own steps", scene: "steps", body: "Describe a step you need and the agent writes it, tries it on a file and saves it for your team." },
+  { title: "Big files and versions", scene: "files", body: "Upload files over 5 GB in parts, and compare two versions of a review clip side by side." },
+  { title: "Guided tours", scene: "tours", body: "New teammates get a short tour of each page the first time they open it." },
 ];
 
 export function AroundTheClip() {
@@ -133,19 +135,24 @@ export function AroundTheClip() {
           <h3 className="tiles-title">Also in the dashboard</h3>
         </Reveal>
         <ul className="also" aria-label="Also in the dashboard">
-          {ALSO.map((a) => (
-            <li key={a.title}>
-              <h4>
-                {a.logos && (
-                  <span className="also-logos" aria-hidden="true">
-                    {a.logos.map((l) => (
-                      <span key={l.name}>{l.mark}</span>
-                    ))}
-                  </span>
-                )}
-                {a.title}
-              </h4>
-              <p>{a.body}</p>
+          {ALSO.map((a, i) => (
+            <li key={a.title} className={`also-card also-${a.scene}`}>
+              <Reveal className="also-in" delay={(i % 3) * 0.06}>
+              <AlsoScene name={a.scene} />
+              <div className="also-text">
+                <h4>
+                  {a.logos && (
+                    <span className="also-logos" aria-hidden="true">
+                      {a.logos.map((l) => (
+                        <span key={l.name}>{l.mark}</span>
+                      ))}
+                    </span>
+                  )}
+                  {a.title}
+                </h4>
+                <p>{a.body}</p>
+              </div>
+              </Reveal>
             </li>
           ))}
         </ul>

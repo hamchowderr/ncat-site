@@ -167,13 +167,13 @@ describe("Features", () => {
 describe("UseCases", () => {
   it("switches who it is for", () => {
     render(<UseCases />);
-    fireEvent.click(screen.getByRole("tab", { name: "Podcast teams" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Podcast Teams" }));
     expect(within(screen.getByRole("tabpanel")).getByRole("heading")).toHaveTextContent("The call ends. The episode gets to work.");
   });
   it("shows what goes in and what comes out for each team, and every tab has an icon", () => {
     render(<UseCases />);
     for (const tab of screen.getAllByRole("tab")) expect(tab.querySelector("svg")).not.toBeNull();
-    for (const name of ["Creators", "Editing agencies", "Podcast teams", "Music video teams", "Coaches", "Webinars"]) {
+    for (const name of ["Creators", "Editing Agencies", "Podcast Teams", "Music Video Teams", "Coaches", "Webinars"]) {
       fireEvent.click(screen.getByRole("tab", { name }));
       const panel = screen.getByRole("tabpanel");
       expect(panel.querySelector(".case-in")?.textContent).toMatch(/^In.+/);

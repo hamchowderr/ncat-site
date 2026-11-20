@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 const pages = [
   { path: "/", h1: /Your content, organized and/ },
   { path: "/pricing", h1: "Pay once. Own your version." },
+  { path: "/about", h1: "Built for everyone who hit the same wall." },
 ];
 
 for (const { path, h1 } of pages) {
@@ -20,7 +21,7 @@ for (const { path, h1 } of pages) {
 }
 
 test("every internal link points at a real page or section", async ({ page, request }) => {
-  for (const path of ["/", "/pricing"]) {
+  for (const path of ["/", "/pricing", "/about"]) {
     await page.goto(path);
     const hrefs = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")!));
     for (const href of new Set(hrefs)) {
@@ -37,7 +38,9 @@ test("every internal link points at a real page or section", async ({ page, requ
 
 test("share image, icon, sitemap and robots are served", async ({ request }) => {
   for (const url of ["/opengraph-image", "/icon.svg", "/sitemap.xml", "/robots.txt"]) expect((await request.get(url)).status(), url).toBe(200);
-  expect(await (await request.get("/sitemap.xml")).text()).toContain("/pricing");
+  const map = await (await request.get("/sitemap.xml")).text();
+  expect(map).toContain("/pricing");
+  expect(map).toContain("/about");
 });
 
 test("unknown pages show the not-found page", async ({ page }) => {
@@ -260,7 +263,7 @@ test("every tab label fits inside its tab track, with nothing cut off", async ({
 
 test("use-case tabs switch panels", async ({ page }) => {
   await page.goto("/");
-  const tab = page.getByRole("tab", { name: "Podcast teams" });
+  const tab = page.getByRole("tab", { name: "Podcast Teams" });
   await tab.click();
   await expect(tab).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("tabpanel").filter({ hasText: "The call ends. The episode gets to work." })).toBeVisible();
@@ -500,7 +503,7 @@ test("the engine section lays the five ways on one rail, ending on the shell, wi
 
 test("the Editing with AI tab says what it costs today and what changes", async ({ page }) => {
   await page.goto("/");
-  const tab = page.getByRole("tab", { name: "Editing with AI" });
+  const tab = page.getByRole("tab", { name: "Editing With AI" });
   await tab.scrollIntoViewIfNeeded();
   await tab.click();
   const panel = page.locator("#case-panel");
@@ -515,4 +518,14 @@ test("the FAQ answers what you pay for when the toolkit is free", async ({ page 
   await q.scrollIntoViewIfNeeded();
   await q.click();
   await expect(page.getByText(/You never pay for the processing itself/)).toBeVisible();
+});
+
+test("the About page is in the menu and tells the five chapters", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.getByRole("button", { name: /menu/i }).click();
+  await page.getByRole("navigation", { name: isMobile ? "Menu" : "Main" }).getByRole("link", { name: "About" }).click();
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(page.locator(".chapter")).toHaveCount(5);
+  await page.locator(".chapter-shell").scrollIntoViewIfNeeded();
+  await expect(page.locator(".chapter-shell h3")).toBeVisible();
 });

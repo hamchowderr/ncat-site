@@ -173,9 +173,13 @@ export function ShapeShifter() {
             {Array.from({ length: 22 }, (_, i) => (
               <i
                 key={i}
-                style={{
-                  height: `${30 + 70 * Math.abs(Math.sin(i * 1.3) * Math.cos(i * 0.4))}%`,
-                }}
+                style={
+                  {
+                    height: `${30 + 70 * Math.abs(Math.sin(i * 1.3) * Math.cos(i * 0.4))}%`,
+                    "--i": i,
+                    "--d": `${0.9 + (i % 4) * 0.17}s`,
+                  } as React.CSSProperties
+                }
               />
             ))}
           </span>

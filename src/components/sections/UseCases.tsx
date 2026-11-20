@@ -36,7 +36,7 @@ export const CASES: { id: string; tab: string; icon: typeof CameraIcon; title: s
   },
   {
     id: "agencies",
-    tab: "Editing agencies",
+    tab: "Editing Agencies",
     icon: UsersGroupIcon,
     title: "Every client on autopilot. Nothing ships unapproved.",
     body: "Give each client their own automation with their logo, colours and font built in, plus an approval step before anything goes out. Your editors spend their time on the creative work, and more clients doesn’t mean a bigger software bill.",
@@ -51,7 +51,7 @@ export const CASES: { id: string; tab: string; icon: typeof CameraIcon; title: s
   },
   {
     id: "podcasts",
-    tab: "Podcast teams",
+    tab: "Podcast Teams",
     icon: Volume2Icon,
     title: "The call ends. The episode gets to work.",
     body: "Every new episode gets the same treatment, every time: audio, transcript, captioned clips and the full video, filed where the team expects them.",
@@ -66,7 +66,7 @@ export const CASES: { id: string; tab: string; icon: typeof CameraIcon; title: s
   },
   {
     id: "music",
-    tab: "Music video teams",
+    tab: "Music Video Teams",
     icon: VinylIcon,
     title: "Drop the master. Get the whole rollout.",
     body: "Hand over the finished track and the artwork. Every version a release needs is made the same way each time, so the team stays on the shoot and the edit.",
@@ -111,7 +111,7 @@ export const CASES: { id: string; tab: string; icon: typeof CameraIcon; title: s
   },
   {
     id: "local-ai",
-    tab: "Editing with AI",
+    tab: "Editing With AI",
     icon: RefreshIcon,
     title: "Stop spending your AI limits on the same edit.",
     body: "Editing with an AI agent on your own computer works while you sit with it. Describe the edit once here instead: the agent sets it up and tests it, then plain editing runs it on every new recording, with no AI used per video. It runs on your server or always-on machine, so your laptop can close.",

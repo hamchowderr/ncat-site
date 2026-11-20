@@ -24,6 +24,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Company",
     links: [
+      { label: "About", href: "/about" },
       { label: "Otaku Solutions", href: "https://otakusolutions.io" },
       { label: "chowderr.dev", href: "https://chowderr.dev" },
     ],

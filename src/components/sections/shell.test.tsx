@@ -58,7 +58,7 @@ describe("Engine and shell", () => {
 describe("Use cases", () => {
   it("has a tab for people editing with AI on their own computer", () => {
     render(<UseCases />);
-    fireEvent.click(screen.getByRole("tab", { name: "Editing with AI" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Editing With AI" }));
     const panel = screen.getByRole("tabpanel");
     expect(within(panel).getByRole("heading", { level: 3 })).toHaveTextContent("Stop spending your AI limits on the same edit.");
     expect(panel).toHaveTextContent(/no AI used per video/);
