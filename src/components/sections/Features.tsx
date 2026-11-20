@@ -155,7 +155,6 @@ export function Features() {
             </Reveal>
           ))}
         </div>
-        <p className="screens-note">Every video on this page is a screen recording of the working dashboard, sped up where it waits on the toolkit. The team, people and files in them are demo data.</p>
       </div>
     </section>
   );

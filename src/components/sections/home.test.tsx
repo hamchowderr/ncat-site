@@ -139,8 +139,7 @@ describe("Features", () => {
       expect(v.hasAttribute("playsinline")).toBe(true);
     }
     expect(container.querySelectorAll(".shot img").length).toBe(0);
-    expect(screen.getByText(/screen recording of the working dashboard/)).toBeInTheDocument();
-    expect(screen.getByText(/demo data/)).toBeInTheDocument();
+    expect(screen.queryByText(/screen recording of the working dashboard/)).toBeNull();
   });
 
   it("describes the current dashboard: the Inbox for failed runs and the Review list", () => {

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { siFfmpeg, siGithub, siYoutube } from "simple-icons";
 import { BrandIcon, FileLogo } from "@/components/brand/Logo";
 import { A16zMark, ClaudeMark, KinnMark } from "@/components/brand/Venues";
@@ -92,15 +93,15 @@ export function AboutStory() {
 function ChapterScene({ name }: { name: (typeof CHAPTERS)[number]["scene"] }) {
   if (name === "video")
     return (
-      <div className="cs cs-video" aria-hidden="true">
-        <span className="cs-play">
-          <BrandIcon icon={siYoutube} />
+      <a className="cs cs-video" href="https://youtu.be/ZHeDsV7diMw" aria-label="Watch “FACELESS Videos 100% Automated” by Stephen G. Pope on YouTube">
+        <span className="cs-thumb">
+          <Image src="/media/about/faceless-videos.jpg" alt="" width={1280} height={480} sizes="(max-width: 860px) 90vw, 460px" />
         </span>
-        <p className="cs-vtitle">FACELESS Videos 100% Automated</p>
-        <p className="cs-views">
-          <b>237,000+</b> views
-        </p>
-      </div>
+        <span className="cs-vtitle">FACELESS Videos 100% Automated</span>
+        <span className="cs-views">
+          <BrandIcon icon={siYoutube} /> Stephen G. Pope · <b>237,000+</b> views
+        </span>
+      </a>
     );
   if (name === "walls")
     return (

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { AlsoScene } from "@/components/AlsoScenes";
@@ -38,10 +38,18 @@ describe("About page", () => {
 
   it("keeps the drawn scenes away from screen readers and turns their motion off when asked", () => {
     const { container } = render(<AboutStory />);
-    const scenes = container.querySelectorAll(".cs");
-    expect(scenes).toHaveLength(5);
-    for (const s of scenes) expect(s).toHaveAttribute("aria-hidden", "true");
-    expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.cs-play,\s*\.cs-walls li,\s*\.shell-ring\s*\{\s*animation: none/);
+    expect(container.querySelectorAll(".cs")).toHaveLength(5);
+    for (const s of container.querySelectorAll(".cs:not(.cs-video)")) expect(s).toHaveAttribute("aria-hidden", "true");
+    expect(css).toMatch(/\.cs-engine \{\s*justify-items: center;/);
+    expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.cs-walls li,\s*\.shell-ring\s*\{\s*animation: none/);
+  });
+
+  it("shows the real thumbnail of Stephen's video, linking to it, with the Make box cropped off", () => {
+    render(<AboutStory />);
+    const link = screen.getByRole("link", { name: /Watch “FACELESS Videos 100% Automated”/ });
+    expect(link).toHaveAttribute("href", "https://youtu.be/ZHeDsV7diMw");
+    expect(link.querySelector("img")!.getAttribute("src")).toContain("faceless-videos.jpg");
+    expect(statSync("public/media/about/faceless-videos.jpg").size).toBeGreaterThan(20_000);
   });
 
   it("names who is behind it, his time in Stephen's community, and credits the open-source work underneath", () => {

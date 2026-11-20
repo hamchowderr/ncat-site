@@ -778,12 +778,6 @@ html {
   color: var(--soft);
   max-width: 54ch;
 }
-.screens-note {
-  margin-top: 40px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--mute);
-}
 @media (max-width: 900px) {
   .row,
   .row.flip {
@@ -3752,44 +3746,55 @@ fieldset[aria-invalid="true"] .pill span {
   align-content: center;
   gap: 12px;
 }
-/* 01 one video */
+/* 01 one video: the real thumbnail, linking to the video */
 .cs-video {
   justify-items: start;
-  background: linear-gradient(160deg, #1b1b22, #2a2140);
+  align-content: start;
+  padding: 12px 12px 22px;
+  background: #111116;
   color: #fff;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease);
 }
-.cs-play {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 46px;
-  border-radius: 12px;
-  background: #ff0033;
-  color: #fff;
-  animation: cs-pulse 2.4s var(--ease) infinite;
+.cs-video:hover {
+  transform: translateY(-3px);
 }
-.cs-play svg {
-  width: 26px;
-  height: 26px;
-  fill: #fff;
+.cs-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.cs-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .cs-vtitle {
+  padding: 4px 10px 0;
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  font-size: clamp(1.05rem, 1.8vw, 1.3rem);
   line-height: 1.2;
 }
 .cs-views {
-  color: #c9c3e6;
+  padding: 0 10px;
+  color: #b9b6c8;
+  font-size: 15px;
+}
+.cs-views {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cs-views svg {
+  width: 18px;
+  height: 18px;
+  fill: #ff0033;
 }
 .cs-views b {
   color: #fff;
-  font-size: 1.25em;
-}
-@keyframes cs-pulse {
-  50% {
-    transform: scale(1.06);
-  }
 }
 /* 02 the walls */
 .cs-walls {
@@ -3828,6 +3833,10 @@ fieldset[aria-invalid="true"] .pill span {
   }
 }
 /* 03 the engine */
+.cs-engine {
+  justify-items: center;
+  text-align: center;
+}
 .cs-repo,
 .cs-built {
   display: flex;
@@ -3849,6 +3858,7 @@ fieldset[aria-invalid="true"] .pill span {
 }
 .cs-tags {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -4069,7 +4079,6 @@ fieldset[aria-invalid="true"] .pill span {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cs-play,
   .cs-walls li,
   .shell-ring {
     animation: none;
