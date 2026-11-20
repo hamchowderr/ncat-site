@@ -3288,16 +3288,14 @@ fieldset[aria-invalid="true"] .pill span {
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
-.portal-thumbs span {
+.portal-thumbs video {
+  display: block;
+  width: 100%;
   height: 72px;
   border-radius: 7px;
-  background: linear-gradient(160deg, #2b2840, #6a5bd6);
-}
-.portal-thumbs span:nth-child(2) {
-  background: linear-gradient(160deg, #3a2a2a, #d0876a);
-}
-.portal-thumbs span:nth-child(3) {
-  background: linear-gradient(160deg, #1f3133, #5fb0a8);
+  object-fit: cover;
+  object-position: 50% 30%;
+  background: #1b1b22;
 }
 .portal-acts {
   display: flex;
@@ -3411,7 +3409,33 @@ fieldset[aria-invalid="true"] .pill span {
 /* big files: a long upload going up in parts */
 .files-s {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+.files-main {
+  display: grid;
   gap: 14px;
+}
+.vs-preview {
+  position: relative;
+  width: 84px;
+  aspect-ratio: 9 / 16;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1b1b22;
+}
+.vs-preview video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.vs-preview video.on {
+  opacity: 1;
 }
 .file-row {
   display: flex;
@@ -3474,6 +3498,7 @@ fieldset[aria-invalid="true"] .pill span {
   padding: 5px 12px;
   border-radius: 999px;
   color: var(--mute);
+  transition: background 0.35s var(--ease), color 0.35s var(--ease), box-shadow 0.35s var(--ease);
 }
 .vs .vs-on {
   background: #fff;

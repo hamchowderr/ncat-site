@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from "node:fs";
-import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { AlsoScene } from "@/components/AlsoScenes";
+import { act, render, screen, within } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { AlsoScene, PORTAL_CLIPS, VERSION_CLIPS } from "@/components/AlsoScenes";
 import { ShapeShifter } from "@/components/ShapeShifter";
 import { AboutHero, AboutQuote, AboutStory, AboutWho, CHAPTERS } from "./AboutStory";
 import { ALSO, AroundTheClip } from "./AroundTheClip";
@@ -82,6 +82,33 @@ describe("Fixes from the 2026-11-19 review", () => {
       const { container: c } = render(<AlsoScene name={name} />);
       expect(c.querySelector(`.scene-${name}`)).toHaveAttribute("aria-hidden", "true");
     }
+  });
+
+  it("plays real captioned clips in the client portal scene, muted and looping", () => {
+    const { container } = render(<AlsoScene name="clients" />);
+    const videos = Array.from(container.querySelectorAll("video"));
+    expect(videos.map((v) => v.getAttribute("src"))).toEqual(PORTAL_CLIPS.map((c) => `/media/split/${c}.mp4`));
+    for (const v of videos) {
+      expect(v.muted).toBe(true);
+      expect(v.loop).toBe(true);
+      expect(v.hasAttribute("playsinline")).toBe(true);
+      expect(statSync(`public${v.getAttribute("src")}`).size).toBeGreaterThan(20_000);
+    }
+  });
+
+  it("switches between Version 1 and Version 2 by itself, swapping the clip shown", async () => {
+    vi.useFakeTimers();
+    const { container } = render(<AlsoScene name="files" />);
+    const on = () => container.querySelector(".vs .vs-on")!.textContent;
+    const shown = () => container.querySelector(".vs-preview video.on")!.getAttribute("src");
+    expect(on()).toBe("Version 1");
+    expect(shown()).toBe(`/media/split/${VERSION_CLIPS[0]}.mp4`);
+    act(() => vi.advanceTimersByTime(2800));
+    expect(on()).toBe("Version 2");
+    expect(shown()).toBe(`/media/split/${VERSION_CLIPS[1]}.mp4`);
+    act(() => vi.advanceTimersByTime(2800));
+    expect(on()).toBe("Version 1");
+    vi.useRealTimers();
   });
 
   it("shows the monthly bill rolling on next to the one Kontifi payment", () => {

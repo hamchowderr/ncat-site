@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { ArrowRight, Check, FileVideo, MessageSquareText, Mic, Sparkles, Upload } from "lucide-react";
 import { SlackMark } from "@/components/brand/AppLogos";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 export type AlsoSceneName = "chat" | "clients" | "steps" | "files" | "tours";
 
@@ -61,6 +65,9 @@ function ChatScene() {
   );
 }
 
+/** Real captioned clips the site already shows, so the client portal plays actual work. */
+export const PORTAL_CLIPS = ["tiktok", "instagram", "linkedin"] as const;
+
 function ClientsScene() {
   return (
     <div className="portal">
@@ -72,9 +79,9 @@ function ClientsScene() {
         </span>
       </p>
       <div className="portal-thumbs">
-        <span />
-        <span />
-        <span />
+        {PORTAL_CLIPS.map((c) => (
+          <video key={c} src={`/media/split/${c}.mp4`} poster={`/media/split/${c}.jpg`} autoPlay muted loop playsInline preload="metadata" />
+        ))}
       </div>
       <p className="portal-acts">
         <span className="pa-yes">
@@ -109,23 +116,41 @@ function StepsScene() {
   );
 }
 
+/** Two cuts of the same recording, standing in for Version 1 and Version 2 of a review clip. */
+export const VERSION_CLIPS = ["tiktok", "youtube"] as const;
+
 function FilesScene() {
+  const reduce = useReducedMotion();
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (reduce) return;
+    const id = window.setInterval(() => setV((x) => 1 - x), 2800);
+    return () => window.clearInterval(id);
+  }, [reduce]);
+
   return (
     <div className="files-s">
-      <p className="file-row">
-        <FileVideo size={16} strokeWidth={2} />
-        <span className="file-name">full-day-shoot.mov</span>
-        <Upload size={14} strokeWidth={2.2} className="file-up" />
-      </p>
-      <div className="parts">
-        {Array.from({ length: 8 }, (_, i) => (
-          <i key={i} style={{ "--p": i } as React.CSSProperties} />
+      <div className="files-main">
+        <p className="file-row">
+          <FileVideo size={16} strokeWidth={2} />
+          <span className="file-name">full-day-shoot.mov</span>
+          <Upload size={14} strokeWidth={2.2} className="file-up" />
+        </p>
+        <div className="parts">
+          {Array.from({ length: 8 }, (_, i) => (
+            <i key={i} style={{ "--p": i } as React.CSSProperties} />
+          ))}
+        </div>
+        <p className="vs" data-v={v + 1}>
+          <span className={v === 0 ? "vs-on" : undefined}>Version 1</span>
+          <span className={v === 1 ? "vs-on" : undefined}>Version 2</span>
+        </p>
+      </div>
+      <div className="vs-preview">
+        {VERSION_CLIPS.map((c, i) => (
+          <video key={c} className={v === i ? "on" : undefined} src={`/media/split/${c}.mp4`} poster={`/media/split/${c}.jpg`} autoPlay muted loop playsInline preload="metadata" />
         ))}
       </div>
-      <p className="vs">
-        <span className="vs-on">Version 1</span>
-        <span>Version 2</span>
-      </p>
     </div>
   );
 }
