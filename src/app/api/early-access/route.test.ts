@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const blob = vi.hoisted(() => ({ put: vi.fn() }));
-vi.mock("@vercel/blob", () => ({ put: blob.put }));
+const blob = vi.hoisted(() => ({ put: vi.fn(), head: vi.fn() }));
+vi.mock("@vercel/blob", () => ({ put: blob.put, head: blob.head }));
+const bot = vi.hoisted(() => ({ checkBotId: vi.fn(async () => ({ isBot: false })) }));
+vi.mock("botid/server", () => bot);
+import { forgetSignUps } from "@/lib/guard";
 import { POST } from "./route";
 
-const post = (body: unknown) =>
-  POST(new Request("http://localhost/api/early-access", { method: "POST", headers: { "Content-Type": "application/json" }, body: typeof body === "string" ? body : JSON.stringify(body) }));
+const post = (body: unknown, from = "203.0.113.9") =>
+  POST(new Request("http://localhost/api/early-access", { method: "POST", headers: { "Content-Type": "application/json", "x-real-ip": from }, body: typeof body === "string" ? body : JSON.stringify(body) }));
 const valid = {
   name: "Ava",
   email: "ava@studio.co",
@@ -25,7 +28,7 @@ describe("POST /api/early-access", () => {
     vi.stubEnv("EARLY_ACCESS_FROM", "site@otakusolutions.io");
     vi.stubEnv("EARLY_ACCESS_TO", "owner@example.com");
   });
-  afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); fetchMock.mockReset(); blob.put.mockReset(); });
+  afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); fetchMock.mockReset(); blob.put.mockReset(); blob.head.mockReset(); bot.checkBotId.mockClear(); forgetSignUps(); });
 
   it("emails the sign-up through toSend with a reply-to", async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
@@ -147,5 +150,57 @@ describe("POST /api/early-access", () => {
     fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
     await post(valid);
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).subject).not.toContain("Tried the demo");
+  });
+
+  describe("kept for people", () => {
+    it("turns away a request BotID says is a bot, on Vercel", async () => {
+      vi.stubEnv("VERCEL", "1");
+      bot.checkBotId.mockResolvedValueOnce({ isBot: true });
+      const res = await post(valid);
+      expect(res.status).toBe(403);
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(blob.put).not.toHaveBeenCalled();
+    });
+
+    it("skips BotID away from Vercel, and lets people through when it fails", async () => {
+      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      expect((await post(valid)).status).toBe(200);
+      expect(bot.checkBotId).not.toHaveBeenCalled();
+      vi.stubEnv("VERCEL", "1");
+      bot.checkBotId.mockRejectedValueOnce(new Error("down"));
+      expect((await post(valid, "198.51.100.7")).status).toBe(200);
+    });
+
+    it("allows five sign-ups in ten minutes from one address, then asks them to wait", async () => {
+      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      for (let i = 0; i < 5; i++) expect((await post(valid)).status).toBe(200);
+      const res = await post(valid);
+      expect(res.status).toBe(429);
+      expect((await res.json()).error).toMatch(/Try again/);
+      // Someone else is not held up.
+      expect((await post(valid, "198.51.100.7")).status).toBe(200);
+    });
+
+    it("keeps a repeat sign-up but emails nobody twice in a day", async () => {
+      vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
+      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      blob.head.mockResolvedValueOnce({ uploadedAt: new Date() });
+      const res = await post(valid);
+      expect(res.status).toBe(200);
+      expect(fetchMock).not.toHaveBeenCalled();
+      // The sign-up itself was kept.
+      expect(blob.put.mock.calls.some(([path]) => String(path).startsWith("leads/"))).toBe(true);
+    });
+
+    it("emails a first sign-up, and notes it by a hash, never the address", async () => {
+      vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
+      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      blob.head.mockRejectedValueOnce(new Error("not found"));
+      expect((await post(valid)).status).toBe(200);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      const noted = blob.put.mock.calls.find(([path]) => String(path).startsWith("mailed/"));
+      expect(noted?.[0]).toMatch(/^mailed\/[0-9a-f]{64}\.json$/);
+      expect(String(noted?.[0])).not.toContain("ava");
+    });
   });
 });
