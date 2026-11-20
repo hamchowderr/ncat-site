@@ -3615,7 +3615,7 @@ fieldset[aria-invalid="true"] .pill span {
 /* ---------- Ready-made lead: one platform per phrase, the logos in rails outside the text ---------- */
 .pl-wrap {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  grid-template-columns: 76px minmax(0, 1fr) 76px;
   gap: clamp(16px, 3vw, 40px);
   /* a little wider than the heading column, so the rails sit outside the text */
   --w: min(980px, 100vw - 32px);
@@ -3629,14 +3629,66 @@ fieldset[aria-invalid="true"] .pill span {
   align-items: center;
   padding-block: 4px;
 }
+/* each logo is its own size, tilt and offset, so the rails read as scattered stickers, not a stack */
 .pl-rail-logo {
+  --s: 52px;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background: var(--panel);
-  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 30%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(11 11 18 / 0.06), 0 10px 24px -12px rgb(11 11 18 / 0.25);
+  translate: var(--x, 0) 0;
+  rotate: var(--r, 0deg);
+}
+.pl-rail-logo .pl-logo {
+  width: 54%;
+  height: 54%;
+}
+.pl-rail-logo[data-platform="tiktok"] { --s: 60px; --x: 6px; --r: -9deg; }
+.pl-rail-logo[data-platform="youtube"] { --s: 48px; --x: -10px; --r: 6deg; }
+.pl-rail-logo[data-platform="linkedin"] { --s: 56px; --x: 8px; --r: -4deg; }
+.pl-rail-logo[data-platform="instagram"] { --s: 54px; --x: -6px; --r: 8deg; }
+.pl-rail-logo[data-platform="facebook"] { --s: 62px; --x: 10px; --r: -6deg; }
+.pl-rail-logo[data-platform="x"] { --s: 46px; --x: -8px; --r: 11deg; }
+/* and each comes in its own way when its line lights up, then floats on its own beat */
+.pl-armed .pl-rail-logo.is-on {
+  animation: var(--in, pl-pop) 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both, pl-float var(--f, 5s) ease-in-out 0.9s infinite;
+}
+.pl-rail-logo[data-platform="tiktok"] { --in: pl-drop; --f: 4.6s; }
+.pl-rail-logo[data-platform="youtube"] { --in: pl-slide-l; --f: 5.4s; }
+.pl-rail-logo[data-platform="linkedin"] { --in: pl-spin; --f: 6s; }
+.pl-rail-logo[data-platform="instagram"] { --in: pl-pop; --f: 5s; }
+.pl-rail-logo[data-platform="facebook"] { --in: pl-slide-r; --f: 4.4s; }
+.pl-rail-logo[data-platform="x"] { --in: pl-flip; --f: 5.8s; }
+@keyframes pl-drop {
+  from { opacity: 0; transform: translateY(-60px) rotate(-30deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pl-slide-l {
+  from { opacity: 0; transform: translateX(-70px) scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pl-slide-r {
+  from { opacity: 0; transform: translateX(70px) scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pl-spin {
+  from { opacity: 0; transform: rotate(-200deg) scale(0.2); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pl-pop {
+  from { opacity: 0; transform: scale(0.1); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pl-flip {
+  from { opacity: 0; transform: perspective(300px) rotateY(180deg) scale(0.5); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pl-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
 }
 .pl-lead,
 .sec-head .pl-lead {
@@ -3694,7 +3746,6 @@ fieldset[aria-invalid="true"] .pill span {
   opacity: 0.3;
 }
 .pl-armed .pl-rail-logo:not(.is-on) {
-  transform: scale(0.3) rotate(-20deg);
   opacity: 0;
 }
 
@@ -3716,18 +3767,14 @@ fieldset[aria-invalid="true"] .pill span {
     padding: 0;
   }
   .pl-rail-logo {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-  }
-  .pl-logo {
-    width: 24px;
-    height: 24px;
+    width: calc(var(--s) * 0.78);
+    height: calc(var(--s) * 0.78);
+    translate: 0 calc(var(--x, 0) * 0.6);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pl-rail-logo {
-    transition: none;
+  .pl-armed .pl-rail-logo.is-on {
+    animation: none;
   }
 }
 

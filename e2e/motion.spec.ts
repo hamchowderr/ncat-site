@@ -302,11 +302,16 @@ test("the features lead lights up one platform at a time in its own colour, with
   for (const p of ["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]) {
     await expect(logo(p)).toHaveCSS("opacity", "1");
     const box = (await logo(p).boundingBox())!;
-    expect(box.width).toBeGreaterThan(36);
+    expect(box.width).toBeGreaterThan(30);
     const outside = box.x + box.width <= text.x || box.x >= text.x + text.width || box.y + box.height <= text.y;
     expect(outside, p).toBe(true);
     sides.add(box.x + box.width <= text.x ? "left" : box.x >= text.x + text.width ? "right" : "above");
   }
   expect([...sides].sort()).toEqual(isMobile ? ["above"] : ["left", "right"]);
+  // scattered, not stacked: each its own size and tilt, each coming in its own way
+  const looks = await page.$$eval(".features .pl-rail-logo", (els) => els.map((e) => { const c = getComputedStyle(e); return { w: c.width, r: c.rotate, a: c.animationName }; }));
+  expect(new Set(looks.map((l) => l.w)).size).toBeGreaterThanOrEqual(5);
+  expect(new Set(looks.map((l) => l.r)).size).toBe(6);
+  expect(new Set(looks.map((l) => l.a.split(",")[0].trim())).size).toBe(6);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
