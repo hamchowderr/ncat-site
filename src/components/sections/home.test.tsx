@@ -217,6 +217,21 @@ describe("story and icons", () => {
   });
 });
 
+describe("Use AI once, not on every video", () => {
+  it("puts the AI into building the factory once, then ends ready or handed to an editor", () => {
+    const { container } = render(<HowItWorks />);
+    expect(container.querySelector("h2")).toHaveTextContent("Use AI once. Not on every video.");
+    expect(container.querySelector(".sec-lead")).toHaveTextContent("Build your content factory once");
+    expect([...container.querySelectorAll(".steps h3")].map((h) => h.textContent)).toEqual([
+      "Build it once",
+      "It runs by itself",
+      "Ready, or handed off",
+    ]);
+    expect([...container.querySelectorAll(".step-ends span")].map((e) => e.textContent)).toEqual(["Ready to post", "Ready for your editor"]);
+    expect(container.textContent).not.toMatch(/Set it up once/);
+  });
+});
+
 describe("use cases from the newer features", () => {
   it("adds coaches and webinars, built on meeting recordings, chapters, best moments, follow the speaker and the calendar", () => {
     render(<UseCases />);

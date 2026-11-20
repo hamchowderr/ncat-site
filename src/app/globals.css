@@ -830,6 +830,20 @@ html {
   margin-top: 10px;
   color: var(--soft);
 }
+.steps .step-ends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.step-ends span {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
 @media (max-width: 820px) {
   .steps {
     grid-template-columns: 1fr;

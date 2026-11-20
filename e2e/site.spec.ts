@@ -535,3 +535,15 @@ test("the About page is in the menu and tells the five chapters", async ({ page,
   await page.locator(".chapter-shell").scrollIntoViewIfNeeded();
   await expect(page.locator(".chapter-shell h3")).toBeVisible();
 });
+
+test("the how-it-works section says use AI once, not on every video, and ends ready or handed off", async ({ page }) => {
+  await page.goto("/");
+  const how = page.locator("#how-it-works");
+  await how.scrollIntoViewIfNeeded();
+  await expect(how.getByRole("heading", { level: 2 })).toHaveText("Use AI once. Not on every video.");
+  await expect(how.locator(".steps li")).toHaveCount(3);
+  await expect(how.locator(".step-ends span")).toHaveText(["Ready to post", "Ready for your editor"]);
+  const box = await how.locator(".step-ends").boundingBox();
+  const vw = page.viewportSize()!.width;
+  expect(box!.x + box!.width).toBeLessThanOrEqual(vw);
+});

@@ -1,24 +1,26 @@
 import { MovingIcon } from "@/components/MovingIcon";
 import MousePointer2Icon from "@/components/itshover/mouse-pointer-2-icon";
-import PlugConnectedIcon from "@/components/itshover/plug-connected-icon";
-import ToggleIcon from "@/components/itshover/toggle-icon";
+import RefreshIcon from "@/components/itshover/refresh-icon";
+import SendIcon from "@/components/itshover/send-icon";
 import { Reveal } from "@/components/Reveal";
 
-const STEPS = [
+/** AI goes into building the factory once; after that every video goes through it with no chat. */
+export const STEPS: { title: string; icon: typeof MousePointer2Icon; body: string; ends?: string[] }[] = [
   {
-    title: "Connect your toolkit",
-    icon: PlugConnectedIcon,
-    body: "Sign up, then paste the address and key of your own NCA Toolkit and your storage. That is the only thing you plug in.",
-  },
-  {
-    title: "Pick an automation",
+    title: "Build it once",
     icon: MousePointer2Icon,
-    body: "Choose a ready-made automation for clips, captions, transcripts or audio. Want something else? Describe it and the agent builds it once.",
+    body: "Pick a ready-made automation, or describe what you want and the agent builds it with you. That’s where the AI goes.",
   },
   {
-    title: "Turn it on",
-    icon: ToggleIcon,
-    body: "From then on it runs on every upload, every morning or whenever another tool calls it, without you and without AI.",
+    title: "It runs by itself",
+    icon: RefreshIcon,
+    body: "From then on every upload, yours or a client’s, is cut, captioned and sized on its own. No chat and no prompting for each video.",
+  },
+  {
+    title: "Ready, or handed off",
+    icon: SendIcon,
+    body: "Simple posts come out ready to go. Bigger edits arrive as an organized pack your editor opens in Premiere Pro or CapCut.",
+    ends: ["Ready to post", "Ready for your editor"],
   },
 ];
 
@@ -28,8 +30,12 @@ export function HowItWorks() {
       <div className="wrap">
         <Reveal className="sec-head">
           <h2 id="how-title">
-            <span className="keep">Set it up once.</span> <span className="keep">It runs from then on.</span>
+            <span className="keep">Use AI once.</span> <span className="keep">Not on every video.</span>
           </h2>
+          <p className="sec-lead">
+            Social media ready shouldn’t mean a chat session for every edit. Build your content factory once, and every recording comes
+            out ready.
+          </p>
         </Reveal>
         <ol className="steps">
           {STEPS.map((s, i) => (
@@ -43,6 +49,13 @@ export function HowItWorks() {
                 </span>
                 <h3>{s.title}</h3>
                 <p>{s.body}</p>
+                {s.ends && (
+                  <p className="step-ends">
+                    {s.ends.map((e) => (
+                      <span key={e}>{e}</span>
+                    ))}
+                  </p>
+                )}
               </Reveal>
             </li>
           ))}
