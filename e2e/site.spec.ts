@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const pages = [
-  { path: "/", h1: /Your content, organized and/ },
+  { path: "/", h1: "Your content, social media ready." },
   { path: "/pricing", h1: "Pay once. Own your version." },
   { path: "/about", h1: "Built for everyone who hit the same wall." },
 ];
@@ -331,10 +331,16 @@ test("motion is skipped for people who turn it off", async ({ page }) => {
 test("the slogan sits above the headline", async ({ page }) => {
   await page.goto("/");
   const slogan = page.locator(".hero .slogan");
-  await expect(slogan).toHaveText("Social Media Ready");
+  await expect(slogan).toContainText("automatically");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your content, social media ready.");
   const s = (await slogan.boundingBox())!;
   const h = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
   expect(s.y + s.height).toBeLessThanOrEqual(h.y);
+  // one line that fits the screen, even with the longest rotating word
+  await expect(slogan.locator(".rot-word")).toHaveText("transcribed", { timeout: 9000 });
+  const t = (await slogan.boundingBox())!;
+  expect(t.height).toBeLessThan(40);
+  expect(t.x + t.width).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
 
 test("features stack as cards while you scroll on a wide screen", async ({ page, isMobile }) => {

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Kontifi: your content, organized and clipped automatically";
+export const alt = "Kontifi: Your content, social media ready.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -16,7 +16,7 @@ export default function OpengraphImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ display: "flex", fontSize: 28, fontWeight: 700, color: "#3d24c4", letterSpacing: 1 }}>SOCIAL MEDIA READY</div>
-          <div style={{ fontSize: 80, fontWeight: 700, lineHeight: 1.04, letterSpacing: -2.4, maxWidth: 1000 }}>Your content, organized and clipped automatically</div>
+          <div style={{ fontSize: 80, fontWeight: 700, lineHeight: 1.04, letterSpacing: -2.4, maxWidth: 1000 }}>Your content, social media ready.</div>
           <div style={{ fontSize: 30, color: "#5c5f6a" }}>Ready-made automations, no AI on every video. Pay once, own it.</div>
         </div>
       </div>

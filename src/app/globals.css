@@ -1855,7 +1855,20 @@ fieldset[aria-invalid="true"] .pill span {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.slogan {
+  white-space: nowrap;
+  max-width: 100%;
+}
+@media (max-width: 480px) {
+  .slogan {
+    gap: 6px;
+    padding: 6px 12px 6px 10px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+}
 .slogan-dot {
+  flex: none;
   width: 8px;
   height: 8px;
   border-radius: 999px;

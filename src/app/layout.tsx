@@ -16,7 +16,7 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "Kontifi: your content, organized and clipped automatically", template: "%s · Kontifi" },
+  title: { default: "Kontifi: Your content, social media ready.", template: "%s · Kontifi" },
   description,
   openGraph: { type: "website", siteName: "Kontifi", title: "Kontifi", description, url: "/" },
   robots: isIndexable() ? undefined : { index: false, follow: false },

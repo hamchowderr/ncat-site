@@ -21,16 +21,17 @@ describe("Hero", () => {
     expect(lit).toBeLessThan(line.querySelectorAll(".fw").length / 4);
     expect(line.querySelectorAll(".hl.on")).toHaveLength(0);
   });
-  it("carries the Social Media Ready slogan above the headline", () => {
+  it("leads with the motto as the headline, with the rotating line above it", () => {
     const { container } = render(<Hero />);
-    const slogan = screen.getByText("Social Media Ready");
+    const slogan = container.querySelector(".slogan")!;
+    expect(slogan.textContent).toMatch(/^Organized and .*automatically$/);
     const h1 = container.querySelector("h1")!;
     expect(slogan.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("keeps the hero to the headline, the line under it and the two buttons, with no list of automations", () => {
     render(<Hero />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Your content, organized and.*automatically/);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Your content, social media ready.");
     expect(document.querySelector(".hero-sub")).toHaveTextContent(/Pick a ready-made automation and switch it on/);
     expect(screen.queryByText(/ready to switch on/)).toBeNull();
     expect(screen.queryByRole("button", { name: "Caption every new upload" })).toBeNull();

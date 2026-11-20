@@ -46,7 +46,7 @@ export function Footer() {
           <Link className="brand" href="/">
             <BrandMark /> Kontifi
           </Link>
-          <p>Your content organized and clipped automatically, by Otaku Solutions.</p>
+          <p>Your content, social media ready. By Otaku Solutions.</p>
           <ul className="foot-social" aria-label="Follow">
             {SOCIAL.map((s) => (
               <li key={s.label}>
