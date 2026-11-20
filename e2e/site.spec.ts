@@ -547,3 +547,18 @@ test("the how-it-works section says use AI once, not on every video, and ends re
   const vw = page.viewportSize()!.width;
   expect(box!.x + box!.width).toBeLessThanOrEqual(vw);
 });
+
+test("the feeds section shows the agent badge and the brand every clip carries, inside the screen", async ({ page }) => {
+  await page.goto("/");
+  const sec = page.locator(".platforms");
+  await sec.scrollIntoViewIfNeeded();
+  await expect(sec.locator(".agent-badge")).toBeVisible();
+  await expect(sec.locator(".agent-badge svg.lucide-bot")).toBeVisible();
+  await expect(sec.locator(".shift-brand li")).toHaveCount(4);
+  await expect(sec.locator(".shift-cap")).toBeVisible();
+  const vw = page.viewportSize()!.width;
+  for (const li of await sec.locator(".shift-brand li").all()) {
+    const b = (await li.boundingBox())!;
+    expect(b.x + b.width).toBeLessThanOrEqual(vw);
+  }
+});

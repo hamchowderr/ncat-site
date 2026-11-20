@@ -217,6 +217,24 @@ describe("story and icons", () => {
   });
 });
 
+describe("the feeds section is clearly about the agent, and shows the brand", () => {
+  it("wears a robot agent badge and says every clip comes out in your brand", () => {
+    const { container } = render(<PlatformExpert />);
+    const badge = container.querySelector(".agent-badge")!;
+    expect(badge).toHaveTextContent("Kontifi’s agent");
+    expect(badge.querySelector("svg.lucide-bot")).not.toBeNull();
+    expect(container.querySelector(".sec-head")).toHaveTextContent("your caption style, logo, colours and font");
+    expect([...container.querySelectorAll(".shift-brand li")].map((l) => l.textContent?.trim())).toEqual([
+      expect.stringContaining("Caption style"),
+      "Logo",
+      "Colours",
+      expect.stringContaining("Font"),
+    ]);
+    expect(container.querySelector(".shift-cap")).toHaveTextContent("Your content, social media ready");
+    expect(container.querySelector(".shift-team")).not.toBeNull();
+  });
+});
+
 describe("Use AI once, not on every video", () => {
   it("puts the AI into building the factory once, then ends ready or handed to an editor", () => {
     const { container } = render(<HowItWorks />);

@@ -2557,7 +2557,7 @@ fieldset[aria-invalid="true"] .pill span {
 }
 .shift-wave {
   position: absolute;
-  inset: 32% 12%;
+  inset: 20% 12% 42%;
   display: flex;
   align-items: center;
   gap: 3px;
@@ -2594,6 +2594,138 @@ fieldset[aria-invalid="true"] .pill span {
   bottom: 12px;
   text-align: center;
   font: 700 18px/1 var(--display);
+  color: #fff;
+}
+/* the team's own brand, carried on every clip */
+.shift-team {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 20px;
+  background:
+    radial-gradient(circle at 10px 10px, #ff7a3d 9px, transparent 9.5px),
+    radial-gradient(circle at 20px 10px, rgba(255, 79, 154, 0.9) 9px, transparent 9.5px);
+}
+.shift-cap {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 44px;
+  text-align: center;
+  font: 800 14px/1.15 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.shift-cap em {
+  font-style: normal;
+  color: #ffd43b;
+}
+.shift-brand {
+  margin-top: 18px;
+  padding-top: 16px;
+}
+.shift-brand-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--soft);
+  margin-bottom: 8px;
+}
+.shift-brand ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.shift-brand li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.shift-brand li > span {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--panel-2);
+}
+.shift-brand li > .sb-cap {
+  display: inline-flex;
+  align-items: center;
+}
+.sb-cap {
+  width: auto !important;
+  padding: 0 7px;
+  white-space: nowrap;
+  font: 800 11px/1 var(--display);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.sb-cap em {
+  font-style: normal;
+  color: #e0a800;
+  margin-left: 2px;
+}
+.sb-logo {
+  background:
+    radial-gradient(circle at 10px 13px, #ff7a3d 6px, transparent 6.5px),
+    radial-gradient(circle at 16px 13px, rgba(255, 79, 154, 0.9) 6px, transparent 6.5px),
+    var(--panel-2) !important;
+}
+.sb-colours {
+  display: inline-flex !important;
+  gap: 2px;
+  width: auto !important;
+  padding: 0 6px;
+}
+.sb-colours i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.sb-colours i:nth-child(2) {
+  background: #ff7a3d;
+}
+.sb-colours i:nth-child(3) {
+  background: #ffd43b;
+}
+.sb-font {
+  font: 700 12px/1 var(--display);
+  color: var(--ink);
+}
+.shift-brand-note {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--soft);
+}
+.agent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink) !important;
+  font-size: 14px !important;
+  font-weight: 600;
+}
+.agent-badge-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--accent);
   color: #fff;
 }
 .shift-kicker {
@@ -4272,4 +4404,10 @@ fieldset[aria-invalid="true"] .pill span {
 
 .nowrap {
   white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .shift-cap {
+    font-size: 12px;
+    bottom: 38px;
+  }
 }
