@@ -23,13 +23,54 @@ export function AlsoScene({ name }: { name: AlsoSceneName }) {
   );
 }
 
-/** The chat apps the agent answers in; the scene's conversation replays in each one in turn. */
-export const CHAT_APPS = [
-  { app: "slack", channel: "# content-team", Mark: SlackMark },
-  { app: "discord", channel: "# content-team", Mark: DiscordMark },
-  { app: "teams", channel: "Content Team › General", Mark: TeamsMark },
-  { app: "telegram", channel: "Content Team", Mark: TelegramMark },
-] as const;
+type ChatLine = { ava: string; who: string; ask: string; file?: string };
+type ChatThird = { ava: string; voice: string } | { ava: string; who: string; ask: string };
+
+/**
+ * The chat apps the agent answers in. The scene replays once per app, and each app
+ * carries its own short conversation, so the box says something new every loop.
+ */
+export const CHAT_APPS: readonly {
+  app: "slack" | "discord" | "teams" | "telegram";
+  channel: string;
+  Mark: () => React.ReactNode;
+  ask: ChatLine;
+  reply: string;
+  third: ChatThird;
+}[] = [
+  {
+    app: "slack",
+    channel: "# content-team",
+    Mark: SlackMark,
+    ask: { ava: "MO", who: "Maya", ask: "cut Monday’s stream into three TikTok clips" },
+    reply: "Done. Three captioned clips are waiting in Review",
+    third: { ava: "JR", voice: "0:08" },
+  },
+  {
+    app: "discord",
+    channel: "# clips",
+    Mark: DiscordMark,
+    ask: { ava: "DK", who: "Dev", ask: "what’s still waiting for review?" },
+    reply: "Four clips from Tuesday’s podcast, all captioned",
+    third: { ava: "DK", who: "Dev", ask: "make the second one 4:5 for Instagram" },
+  },
+  {
+    app: "teams",
+    channel: "Content Team › General",
+    Mark: TeamsMark,
+    ask: { ava: "PN", who: "Priya", ask: "clip every new Zoom recording for LinkedIn" },
+    reply: "Set up. Each new Zoom recording now becomes captioned LinkedIn clips",
+    third: { ava: "SA", voice: "0:12" },
+  },
+  {
+    app: "telegram",
+    channel: "Content Team",
+    Mark: TelegramMark,
+    ask: { ava: "LT", who: "Leo", ask: "YouTube Shorts from this, please", file: "interview.mp4" },
+    reply: "On it. The Shorts will be in Review when the run finishes",
+    third: { ava: "LT", who: "Leo", ask: "and a square one for LinkedIn too" },
+  },
+];
 
 /** One full play of the conversation (matches the 9s msg-in animation in globals.css). */
 export const CHAT_LOOP_MS = 9000;
@@ -42,18 +83,23 @@ function ChatScene() {
     const id = window.setInterval(() => setN((x) => (x + 1) % CHAT_APPS.length), CHAT_LOOP_MS);
     return () => window.clearInterval(id);
   }, [reduced]);
-  const { app, channel, Mark } = CHAT_APPS[n];
+  const { app, channel, Mark, ask, reply, third } = CHAT_APPS[n];
   return (
     <div className="chat" key={app} data-app={app}>
       <p className="chat-chan">
         <Mark /> {channel}
       </p>
       <div className="msg">
-        <span className="ava ava-you">MO</span>
+        <span className="ava ava-you">{ask.ava}</span>
         <div>
-          <p className="msg-who">Maya</p>
+          <p className="msg-who">{ask.who}</p>
+          {ask.file && (
+            <p className="msg-file">
+              <FileVideo size={14} strokeWidth={2.2} /> {ask.file}
+            </p>
+          )}
           <p className="msg-bubble">
-            <b>@Kontifi</b> cut Monday’s stream into three TikTok clips
+            <b>@Kontifi</b> {ask.ask}
           </p>
         </div>
       </div>
@@ -64,22 +110,37 @@ function ChatScene() {
         <div>
           <p className="msg-who">Kontifi</p>
           <p className="msg-bubble">
-            Done. Three captioned clips are waiting in Review <ArrowRight size={13} strokeWidth={2.4} />
+            {reply.slice(0, reply.lastIndexOf(" ") + 1)}
+            <span className="nowrap">
+              {reply.slice(reply.lastIndexOf(" ") + 1)} <ArrowRight size={13} strokeWidth={2.4} />
+            </span>
           </p>
         </div>
       </div>
-      <div className="msg msg-voice">
-        <span className="ava ava-you">JR</span>
-        <p className="voice">
-          <Mic size={14} strokeWidth={2.2} />
-          <span className="voice-wave">
-            {Array.from({ length: 18 }, (_, i) => (
-              <i key={i} style={{ height: `${28 + 72 * Math.abs(Math.sin(i * 1.7))}%` }} />
-            ))}
-          </span>
-          <span className="voice-len">0:08</span>
-        </p>
-      </div>
+      {"voice" in third ? (
+        <div className="msg msg-voice">
+          <span className="ava ava-you">{third.ava}</span>
+          <p className="voice">
+            <Mic size={14} strokeWidth={2.2} />
+            <span className="voice-wave">
+              {Array.from({ length: 18 }, (_, i) => (
+                <i key={i} style={{ height: `${28 + 72 * Math.abs(Math.sin(i * 1.7 + n))}%` }} />
+              ))}
+            </span>
+            <span className="voice-len">{third.voice}</span>
+          </p>
+        </div>
+      ) : (
+        <div className="msg msg-voice msg-third">
+          <span className="ava ava-you">{third.ava}</span>
+          <div>
+            <p className="msg-who">{third.who}</p>
+            <p className="msg-bubble">
+              <b>@Kontifi</b> {third.ask}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -120,9 +120,13 @@ describe("Fixes from the 2026-11-19 review", () => {
       expect(chat.getAttribute("data-app")).toBe(a.app);
       expect(container.querySelector(".chat-chan svg")).not.toBeNull();
       seen.push(container.querySelector(".chat-chan")!.innerHTML);
+      expect(chat).toHaveTextContent(a.ask.ask);
+      expect(chat).toHaveTextContent(a.reply);
       act(() => vi.advanceTimersByTime(CHAT_LOOP_MS));
     }
     expect(new Set(seen).size).toBe(4);
+    expect(new Set(CHAT_APPS.map((a) => a.ask.ask)).size).toBe(4);
+    expect(new Set(CHAT_APPS.map((a) => a.reply)).size).toBe(4);
     expect(CHAT_APPS.map((a) => a.app)).toEqual(["slack", "discord", "teams", "telegram"]);
     expect(container.querySelector(".chat")!.getAttribute("data-app")).toBe("slack");
     vi.useRealTimers();

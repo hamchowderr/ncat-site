@@ -3217,6 +3217,23 @@ fieldset[aria-invalid="true"] .pill span {
   animation-delay: 2.4s;
   align-items: center;
 }
+.msg-third {
+  align-items: flex-start;
+}
+.msg-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  font-size: 12px;
+  color: var(--soft) !important;
+}
+.msg-file svg {
+  color: var(--accent);
+}
 .msg-who {
   font-size: 12px;
   font-weight: 600;
@@ -4237,4 +4254,8 @@ fieldset[aria-invalid="true"] .pill span {
   .shell-ring {
     animation: none;
   }
+}
+
+.nowrap {
+  white-space: nowrap;
 }
