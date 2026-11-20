@@ -5,9 +5,10 @@ import { siFacebook, siInstagram, siTiktok, siX, siYoutube } from "simple-icons"
 import { FileLogo } from "@/components/brand/Logo";
 
 /**
- * A lead paragraph read in the platforms' own colours: each phrase belongs to one platform,
- * takes that platform's colour as it scrolls into view, and has the platform's real logo
- * beside it, before the words and after them in turn, so the logos run down both sides.
+ * A lead paragraph read in the platforms' own colours: each phrase belongs to one platform and
+ * takes that platform's colour as it scrolls into view. The platforms' real logos stand in two
+ * rails outside the text, left and right in turn, and each pops in with its phrase, so the
+ * words themselves stay clean to read.
  */
 
 export type Platform = "tiktok" | "instagram" | "youtube" | "facebook" | "linkedin" | "x";
@@ -96,15 +97,19 @@ export function PlatformMark({ platform }: { platform: Platform }) {
 export type LeadPhrase = { platform: Platform; text: string };
 
 export function PlatformLead({ phrases, className = "" }: { phrases: LeadPhrase[]; className?: string }) {
-  const ref = useRef<HTMLParagraphElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
     const parts = Array.from(root.querySelectorAll<HTMLElement>(".pl-phrase"));
+    const light = (p: Element) => {
+      p.classList.add("is-on");
+      root.querySelector(`.pl-rail [data-platform="${(p as HTMLElement).dataset.platform}"]`)?.classList.add("is-on");
+    };
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still || typeof IntersectionObserver === "undefined") {
-      parts.forEach((p) => p.classList.add("is-on"));
+      parts.forEach(light);
       return;
     }
     root.classList.add("pl-armed");
@@ -112,7 +117,7 @@ export function PlatformLead({ phrases, className = "" }: { phrases: LeadPhrase[
       (entries) => {
         for (const e of entries) {
           if (e.isIntersecting) {
-            e.target.classList.add("is-on");
+            light(e.target);
             io.unobserve(e.target);
           }
         }
@@ -123,20 +128,31 @@ export function PlatformLead({ phrases, className = "" }: { phrases: LeadPhrase[
     return () => io.disconnect();
   }, []);
 
+  const rail = (side: "left" | "right") => (
+    <span className={`pl-rail pl-rail-${side}`} aria-hidden="true">
+      {phrases
+        .filter((_, i) => (i % 2 === 0) === (side === "left"))
+        .map((p) => (
+          <span key={p.platform} className="pl-rail-logo" data-platform={p.platform}>
+            <PlatformMark platform={p.platform} />
+          </span>
+        ))}
+    </span>
+  );
+
   return (
-    <p ref={ref} className={`pl-lead ${className}`}>
-      {phrases.map((p, i) => {
-        const before = i % 2 === 0;
-        return (
+    <div ref={ref} className={`pl-wrap ${className}`}>
+      {rail("left")}
+      <p className="pl-lead">
+        {phrases.map((p, i) => (
           <span key={i}>
-            <span className={`pl-phrase pl-${p.platform}`} data-platform={p.platform} data-side={before ? "before" : "after"}>
-              {before && <PlatformMark platform={p.platform} />}
+            <span className={`pl-phrase pl-${p.platform}`} data-platform={p.platform}>
               <span className="pl-words">{p.text}</span>
-              {!before && <PlatformMark platform={p.platform} />}
             </span>{" "}
           </span>
-        );
-      })}
-    </p>
+        ))}
+      </p>
+      {rail("right")}
+    </div>
   );
 }

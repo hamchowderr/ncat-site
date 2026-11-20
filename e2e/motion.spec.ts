@@ -266,14 +266,16 @@ test("a file the browser can't open still gets filed, with a plain note", async 
   await expect(page.locator(".try-thumbs")).toHaveCount(0);
 });
 
-test("the features lead lights up one platform at a time in its own colour, with its logo beside it on alternating sides", async ({ page }) => {
+test("the features lead lights up one platform at a time in its own colour, with the logos in rails outside the text", async ({ page, isMobile }) => {
   await page.goto("/");
   const ink = page.locator("#features-title .plat-ink");
   await expect(ink).toHaveText("No AI on every video.");
   const lead = page.locator(".features .pl-lead");
   const phrase = (p: string) => lead.locator(`.pl-phrase[data-platform="${p}"]`);
+  const logo = (p: string) => page.locator(`.features .pl-rail-logo[data-platform="${p}"]`);
   // before it scrolls in, it waits in grey with the logos tucked away
   await expect(phrase("youtube").locator(".pl-words")).toHaveCSS("opacity", "0.3");
+  await expect(logo("youtube")).toHaveCSS("opacity", "0");
   await lead.scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollBy(0, 300));
   const colours: Record<string, string> = { youtube: "rgb(255, 0, 0)", facebook: "rgb(8, 102, 255)", linkedin: "rgb(10, 102, 194)", tiktok: "rgb(0, 0, 0)", x: "rgb(0, 0, 0)" };
@@ -283,15 +285,17 @@ test("the features lead lights up one platform at a time in its own colour, with
     await expect(phrase(p).locator(".pl-words")).toHaveCSS("opacity", "1");
   }
   await expect(phrase("instagram").locator(".pl-words")).toHaveCSS("background-clip", "text");
-  // every logo is shown and big enough to recognise, and they sit on both sides of their words
+  // every logo shows, big enough to recognise, and none of them overlaps the text
+  const text = (await lead.boundingBox())!;
   const sides = new Set<string>();
   for (const p of ["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]) {
-    const logo = phrase(p).locator(".pl-logo");
-    await expect(logo).toHaveCSS("opacity", "1");
-    const box = (await logo.boundingBox())!;
-    expect(box.width).toBeGreaterThan(18);
-    const words = (await phrase(p).locator(".pl-words").boundingBox())!;
-    sides.add(box.x < words.x ? "left" : "right");
+    await expect(logo(p)).toHaveCSS("opacity", "1");
+    const box = (await logo(p).boundingBox())!;
+    expect(box.width).toBeGreaterThan(36);
+    const outside = box.x + box.width <= text.x || box.x >= text.x + text.width || box.y + box.height <= text.y;
+    expect(outside, p).toBe(true);
+    sides.add(box.x + box.width <= text.x ? "left" : box.x >= text.x + text.width ? "right" : "above");
   }
-  expect([...sides].sort()).toEqual(["left", "right"]);
+  expect([...sides].sort()).toEqual(isMobile ? ["above"] : ["left", "right"]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });

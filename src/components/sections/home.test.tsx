@@ -103,7 +103,7 @@ describe("Features", () => {
     expect(h.querySelector(".plat-ink")).toHaveTextContent("No AI on every video.");
   });
 
-  it("reads the lead one platform at a time, each with its real logo beside it, on alternating sides", () => {
+  it("reads the lead one platform at a time, with the real logos in rails outside the text, never inside it", () => {
     const { container } = render(<Features />);
     const lead = container.querySelector(".pl-lead")!;
     expect(lead).toHaveTextContent(
@@ -112,20 +112,20 @@ describe("Features", () => {
     const phrases = Array.from(lead.querySelectorAll<HTMLElement>(".pl-phrase"));
     expect(phrases.map((p) => p.dataset.platform)).toEqual(["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]);
     expect(LEAD).toHaveLength(6);
-    phrases.forEach((p, i) => {
-      const logo = p.querySelector(".pl-logo")!;
-      expect(logo.getAttribute("aria-hidden")).toBe("true");
-      expect(logo.getAttribute("data-platform")).toBe(p.dataset.platform);
-      // logos alternate: before the words, then after them, so they run down both sides
-      const before = i % 2 === 0;
-      expect(p.dataset.side).toBe(before ? "before" : "after");
-      expect(before ? p.firstElementChild : p.lastElementChild).toBe(logo);
-    });
+    // no logo sits among the words
+    expect(lead.querySelector(".pl-logo, svg, img")).toBeNull();
+    const rail = (side: string) => Array.from(container.querySelectorAll<HTMLElement>(`.pl-rail-${side} .pl-rail-logo`)).map((l) => l.dataset.platform);
+    expect(rail("left")).toEqual(["tiktok", "youtube", "linkedin"]);
+    expect(rail("right")).toEqual(["instagram", "facebook", "x"]);
+    for (const r of container.querySelectorAll(".pl-rail")) expect(r).toHaveAttribute("aria-hidden", "true");
+    const wrap = container.querySelector(".pl-wrap")!;
+    expect(wrap.firstElementChild).toHaveClass("pl-rail-left");
+    expect(wrap.lastElementChild).toHaveClass("pl-rail-right");
     // drawn in the platforms' own colours, not one ink
-    expect(lead.querySelector('[data-platform="youtube"] path[fill="#ff0000"]')).not.toBeNull();
-    expect(lead.querySelector('[data-platform="facebook"] path[fill="#0866ff"]')).not.toBeNull();
-    expect(lead.querySelector('[data-platform="tiktok"] path[fill="#25f4ee"]')).not.toBeNull();
-    expect(lead.querySelector('[data-platform="instagram"] radialGradient')).not.toBeNull();
+    expect(wrap.querySelector('[data-platform="youtube"] path[fill="#ff0000"]')).not.toBeNull();
+    expect(wrap.querySelector('[data-platform="facebook"] path[fill="#0866ff"]')).not.toBeNull();
+    expect(wrap.querySelector('[data-platform="tiktok"] path[fill="#25f4ee"]')).not.toBeNull();
+    expect(wrap.querySelector('[data-platform="instagram"] radialGradient')).not.toBeNull();
   });
 
   it("shows a silent, described screen recording for every feature", () => {

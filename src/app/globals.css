@@ -3587,10 +3587,35 @@ fieldset[aria-invalid="true"] .pill span {
   }
 }
 
-/* ---------- Ready-made lead: one platform per phrase, its logo beside it ---------- */
+/* ---------- Ready-made lead: one platform per phrase, the logos in rails outside the text ---------- */
+.pl-wrap {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  gap: clamp(16px, 3vw, 40px);
+  /* a little wider than the heading column, so the rails sit outside the text */
+  --w: min(980px, 100vw - 32px);
+  width: var(--w);
+  margin: 24px calc((100% - var(--w)) / 2) 0;
+}
+.pl-rail {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  padding-block: 4px;
+}
+.pl-rail-logo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--panel);
+  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
 .pl-lead,
 .sec-head .pl-lead {
-  margin: 24px auto 0;
+  margin: 0;
   color: var(--ink);
   font-size: clamp(1.3rem, 2.4vw, 2rem);
   line-height: 1.55;
@@ -3605,12 +3630,9 @@ fieldset[aria-invalid="true"] .pill span {
   transition: color 0.6s ease, opacity 0.6s ease;
 }
 .pl-logo {
-  display: inline-block;
-  width: 1.05em;
-  height: 1.05em;
-  vertical-align: -0.17em;
-  margin-inline: 0.28em;
-  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+  display: block;
+  width: 28px;
+  height: 28px;
 }
 .pl-logo-file img {
   display: block;
@@ -3646,9 +3668,42 @@ fieldset[aria-invalid="true"] .pill span {
   text-shadow: none;
   opacity: 0.3;
 }
-.pl-armed .pl-phrase:not(.is-on) .pl-logo {
+.pl-armed .pl-rail-logo:not(.is-on) {
   transform: scale(0.3) rotate(-20deg);
   opacity: 0;
+}
+
+@media (max-width: 640px) {
+  /* on a phone the two rails sit together in one row above the text */
+  .pl-wrap {
+    grid-template-columns: auto auto;
+    justify-content: center;
+    row-gap: 18px;
+    column-gap: 10px;
+  }
+  .pl-wrap .pl-lead {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .pl-rail {
+    flex-direction: row;
+    gap: 10px;
+    padding: 0;
+  }
+  .pl-rail-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+  .pl-logo {
+    width: 24px;
+    height: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-rail-logo {
+    transition: none;
+  }
 }
 
 /* the feature story gives its recording two thirds of the card */
