@@ -43,7 +43,8 @@ const FEATURES = ["templates", "runs", "review", "editors", "brand", "files", "a
 
 // The recordings move a camera in to each action, so most frames are close-ups. Every clip
 // opens on the whole app window, recorded from a production build: that first frame shows
-// the light page in both bottom corners, with no framework badge.
+// the light page in both bottom corners, with no framework badge. The badge is near-black;
+// the grey ring of the signed-in avatar at the foot of a long menu may reach the corner.
 describe.skipIf(!hasFfmpeg)("recordings", () => {
   for (const name of [...HERO, ...FEATURES.map((n) => `features/${n}`)]) {
     it(`${name} never shows a blank page and opens on the whole window`, () => {
@@ -52,7 +53,7 @@ describe.skipIf(!hasFfmpeg)("recordings", () => {
       all.forEach((f, i) => expect(inkShare(f, 0), `${name} at ${i / 10}s looks blank`).toBeGreaterThan(0.002));
       const first = all[0];
       expect(cornerLight(first), `${name} does not open on the whole window`).toBeGreaterThan(200);
-      for (let y = 160; y < H; y++) for (let x = 0; x < 12; x++) expect(first[y * W + x], `${name} has something dark in the corner`).toBeGreaterThan(100);
+      for (let y = 160; y < H; y++) for (let x = 0; x < 12; x++) expect(first[y * W + x], `${name} has something dark in the corner`).toBeGreaterThan(60);
     }, 60_000);
   }
 });
