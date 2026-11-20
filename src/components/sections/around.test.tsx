@@ -34,8 +34,8 @@ describe("Everything around the clip", () => {
     expect(chat.querySelectorAll("svg")).toHaveLength(4);
     expect(ALSO[0].logos!.map((l) => l.name)).toEqual(["Slack", "Discord", "Microsoft Teams", "Telegram"]);
     expect(within(also).getByText(/Slack, Discord, Microsoft Teams or Telegram/)).toBeInTheDocument();
-    // review alerts reach the chat apps where they are live, never Telegram until it ships
-    expect(within(also).getByText(/post to your Slack, Discord or Teams channel, with Approve and Send back/)).toBeInTheDocument();
+    // review alerts reach every chat app the dashboard supports
+    expect(within(also).getByText(/post to your Slack, Discord, Teams or Telegram channel, with Approve and Send back/)).toBeInTheDocument();
   });
 
   it("never frames MCP as one app's feature, and keeps to the site's wording rules", () => {
