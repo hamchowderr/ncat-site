@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from "node:fs";
 import { act, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { AlsoScene, PORTAL_CLIPS, VERSION_CLIPS } from "@/components/AlsoScenes";
+import { AlsoScene, CHAT_APPS, CHAT_LOOP_MS, PORTAL_CLIPS, VERSION_CLIPS } from "@/components/AlsoScenes";
 import { ShapeShifter } from "@/components/ShapeShifter";
 import { AboutHero, AboutQuote, AboutStory, AboutWho, CHAPTERS } from "./AboutStory";
 import { ALSO, AroundTheClip } from "./AroundTheClip";
@@ -108,6 +108,23 @@ describe("Fixes from the 2026-11-19 review", () => {
     expect(shown()).toBe(`/media/split/${VERSION_CLIPS[1]}.mp4`);
     act(() => vi.advanceTimersByTime(2800));
     expect(on()).toBe("Version 1");
+    vi.useRealTimers();
+  });
+
+  it("replays the chat in Slack, Discord, Microsoft Teams and Telegram, changing the app logo each time", () => {
+    vi.useFakeTimers();
+    const { container } = render(<AlsoScene name="chat" />);
+    const seen: string[] = [];
+    for (const a of CHAT_APPS) {
+      const chat = container.querySelector(".chat")!;
+      expect(chat.getAttribute("data-app")).toBe(a.app);
+      expect(container.querySelector(".chat-chan svg")).not.toBeNull();
+      seen.push(container.querySelector(".chat-chan")!.innerHTML);
+      act(() => vi.advanceTimersByTime(CHAT_LOOP_MS));
+    }
+    expect(new Set(seen).size).toBe(4);
+    expect(CHAT_APPS.map((a) => a.app)).toEqual(["slack", "discord", "teams", "telegram"]);
+    expect(container.querySelector(".chat")!.getAttribute("data-app")).toBe("slack");
     vi.useRealTimers();
   });
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight, Check, FileVideo, MessageSquareText, Mic, Sparkles, Upload } from "lucide-react";
-import { SlackMark } from "@/components/brand/AppLogos";
+import { DiscordMark, SlackMark, TeamsMark, TelegramMark } from "@/components/brand/AppLogos";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 export type AlsoSceneName = "chat" | "clients" | "steps" | "files" | "tours";
@@ -23,11 +23,30 @@ export function AlsoScene({ name }: { name: AlsoSceneName }) {
   );
 }
 
+/** The chat apps the agent answers in; the scene's conversation replays in each one in turn. */
+export const CHAT_APPS = [
+  { app: "slack", channel: "# content-team", Mark: SlackMark },
+  { app: "discord", channel: "# content-team", Mark: DiscordMark },
+  { app: "teams", channel: "Content Team › General", Mark: TeamsMark },
+  { app: "telegram", channel: "Content Team", Mark: TelegramMark },
+] as const;
+
+/** One full play of the conversation (matches the 9s msg-in animation in globals.css). */
+export const CHAT_LOOP_MS = 9000;
+
 function ChatScene() {
+  const reduced = useReducedMotion();
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (reduced) return;
+    const id = window.setInterval(() => setN((x) => (x + 1) % CHAT_APPS.length), CHAT_LOOP_MS);
+    return () => window.clearInterval(id);
+  }, [reduced]);
+  const { app, channel, Mark } = CHAT_APPS[n];
   return (
-    <div className="chat">
+    <div className="chat" key={app} data-app={app}>
       <p className="chat-chan">
-        <SlackMark /> # content-team
+        <Mark /> {channel}
       </p>
       <div className="msg">
         <span className="ava ava-you">MO</span>

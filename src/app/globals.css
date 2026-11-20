@@ -3188,6 +3188,17 @@ fieldset[aria-invalid="true"] .pill span {
   color: var(--soft) !important;
   padding-bottom: 4px;
 }
+@media (prefers-reduced-motion: no-preference) {
+  .chat-chan {
+    animation: chan-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+@keyframes chan-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
 .chat-chan .bi,
 .chat-chan svg {
   width: 15px;

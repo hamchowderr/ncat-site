@@ -315,3 +315,18 @@ test("the features lead lights up one platform at a time in its own colour, with
   expect(new Set(looks.map((l) => l.a.split(",")[0].trim())).size).toBe(6);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
+
+test("the team chat scene changes app, and its logo, each time the conversation replays", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/");
+  const chat = page.locator(".scene-chat .chat");
+  await chat.scrollIntoViewIfNeeded();
+  const seen: string[] = [];
+  for (let i = 0; i < 4; i++) {
+    seen.push((await chat.getAttribute("data-app"))!);
+    await expect(chat.locator(".chat-chan svg")).toBeVisible();
+    await page.clock.runFor(9000);
+  }
+  expect(seen).toEqual(["slack", "discord", "teams", "telegram"]);
+  await expect(chat).toHaveAttribute("data-app", "slack");
+});
