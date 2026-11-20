@@ -17,7 +17,7 @@ export const CHAPTERS: { n: string; when: string; title: string; body: string; s
     n: "02",
     when: "Then",
     title: "Everyone hit the same walls",
-    body: "Cost, above all. Every step was another paid tool, pieced together with the next one, each with its own monthly bill. I was one of the people stuck there.",
+    body: "Cost, above all. Every step was another paid tool, pieced together with the next one, each with its own monthly bill. Working for Stephen inside that community, I saw it every day.",
     scene: "walls",
   },
   {
@@ -187,8 +187,8 @@ export function AboutWho() {
           <p className="about-kicker">Who’s behind it</p>
           <h2 id="who-title">Tylan “Chowderr” Miller</h2>
           <p>
-            Founder and CTO of Otaku Solutions. I’ve been building automations since the 9th grade and building with AI since it came out. Kontifi is what I
-            wished existed when I was the one piecing tools together.
+            Founder and CTO of Otaku Solutions. I worked for Stephen in his community, so I know the NCA Toolkit and the tools around it inside out,
+            along with the walls people hit with them. Kontifi is everything I kept seeing people need around that free engine.
           </p>
           <p className="who-links">
             <a href="https://otakusolutions.io">Otaku Solutions</a>

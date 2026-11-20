@@ -44,7 +44,7 @@ describe("About page", () => {
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.cs-play,\s*\.cs-walls li,\s*\.shell-ring\s*\{\s*animation: none/);
   });
 
-  it("names who is behind it and credits the open-source work underneath", () => {
+  it("names who is behind it, his time in Stephen's community, and credits the open-source work underneath", () => {
     render(
       <>
         <AboutQuote />
@@ -55,6 +55,9 @@ describe("About page", () => {
     expect(screen.getByRole("link", { name: /NCA Toolkit/ })).toHaveAttribute("href", "https://github.com/stephengpope/no-code-architects-toolkit");
     expect(screen.getByRole("link", { name: /FFmpeg/ })).toHaveAttribute("href", "https://ffmpeg.org");
     expect(document.querySelector(".about-fill")!.textContent).toMatch(/rent one more tool/);
+    const who = document.querySelector(".who-text")!.textContent!;
+    expect(who).toMatch(/worked for Stephen in his community/);
+    expect(who).not.toMatch(/9th grade/);
   });
 });
 
