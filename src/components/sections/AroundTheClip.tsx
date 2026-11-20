@@ -84,7 +84,7 @@ export const ALSO: { title: string; body: string; scene: AlsoSceneName; logos?: 
   {
     title: "The agent in your team chat",
     scene: "chat",
-    body: "Tag it in Slack, Discord, Microsoft Teams or Telegram and it answers there. Review activity can post to your Slack channel, with replies brought back, and you can talk to it in voice notes.",
+    body: "Tag it in Slack, Discord, Microsoft Teams or Telegram and it answers there. Reviews, client notes and mentions post to your Slack, Discord or Teams channel, with Approve and Send back on each alert and replies brought back, and you can talk to it in voice notes.",
     logos: [
       { name: "Slack", mark: <SlackMark /> },
       { name: "Discord", mark: <DiscordMark /> },

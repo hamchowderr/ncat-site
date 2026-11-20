@@ -68,3 +68,22 @@ describe.skipIf(!hasFfmpeg)("recording sizes", () => {
     for (const name of HERO) expect(size(name), name).toBe("1600,1000");
   });
 });
+
+// The demo team's own logo (Northlight Media's coral and orange circles) sits in the team
+// switcher at the top left, so no clip shows the plain stand-in mark. Brand opens before the
+// logo is uploaded, and the calendar opens with the menu folded, so those two are left out.
+describe.skipIf(!hasFfmpeg)("team logo in the recordings", () => {
+  const coralIn = (file: string) => {
+    const w = 128;
+    const h = 100;
+    const raw = execFileSync("ffmpeg", ["-v", "error", "-i", `public/media/${file}.mp4`, "-frames:v", "1", "-vf", `crop=${w}:${h}:0:0`, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]);
+    let n = 0;
+    for (let i = 0; i + 2 < raw.length; i += 3) if (raw[i] > 220 && raw[i + 1] > 70 && raw[i + 1] < 130 && raw[i + 2] > 80 && raw[i + 2] < 140) n++;
+    return n;
+  };
+  for (const name of [...HERO, ...FEATURES.filter((n) => n !== "brand" && n !== "calendar").map((n) => `features/${n}`)]) {
+    it(`${name} opens with Northlight Media's logo, not the plain mark`, () => {
+      expect(coralIn(name)).toBeGreaterThan(200);
+    });
+  }
+});
