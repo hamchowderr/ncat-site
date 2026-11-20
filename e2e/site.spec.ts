@@ -214,6 +214,9 @@ test("event marks sit on one even row and platform logos are all the same size",
     for (const b of boxes) expect(Math.abs(b.x + b.width / 2 - page.viewportSize()!.width / 2)).toBeLessThanOrEqual(2);
   }
   for (const b of boxes) expect(b.height).toBeLessThanOrEqual(34);
+  // each event mark in its own brand colour, not a shared grey
+  const fills = await page.locator(".venues .mark").evaluateAll((ms) => ms.map((m) => getComputedStyle(m).fill));
+  expect(fills).toEqual(["rgb(217, 119, 87)", "rgb(154, 96, 36)", "rgb(17, 17, 17)"]);
   const logos = await page.locator(".feeds li").locator("svg, img").all();
   expect(logos).toHaveLength(9);
   for (const l of logos) {

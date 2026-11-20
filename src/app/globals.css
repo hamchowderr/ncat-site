@@ -545,7 +545,7 @@ html {
   align-items: center;
   gap: 10px;
   height: 32px;
-  color: var(--soft);
+  color: var(--ink);
   font-family: var(--display);
   font-weight: 700;
   font-size: 17px;
@@ -558,10 +558,17 @@ html {
   width: auto;
   flex-shrink: 0;
 }
+/* each event in its own colours: Claude's terracotta, a16z's bronze from a16z.com, and the KINN's
+   black wordmark (its official version for light backgrounds) */
+.mark.claude {
+  fill: #d97757;
+}
 .mark.a16z {
   height: 26px;
+  fill: #9a6024;
 }
 .mark.kinn {
+  fill: #111;
   /* a bare wordmark next to two logo-plus-name pairs: a little taller so it carries the same weight */
   height: 30px;
 }
