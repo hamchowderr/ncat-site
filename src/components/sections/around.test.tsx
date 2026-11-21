@@ -17,7 +17,9 @@ describe("Everything around the clip", () => {
       expect(existsSync(`public/media/features/${t.video}.mp4`), t.video).toBe(true);
       expect(existsSync(`public/media/features/${t.video}.jpg`), t.video).toBe(true);
     }
-    expect(AROUND_TILES.map((t) => t.id)).toEqual(["meetings", "library", "calendar", "moments", "follow", "mcp"]);
+    // the parts you would otherwise do by hand come first, in the same section (one list, not two)
+    expect(AROUND_TILES.map((t) => t.id)).toEqual(["brand", "files", "alerts", "schedule", "meetings", "library", "calendar", "moments", "follow", "mcp"]);
+    expect(document.querySelectorAll(".around .tiles")).toHaveLength(1);
   });
 
   it("names the real apps each one works with", () => {

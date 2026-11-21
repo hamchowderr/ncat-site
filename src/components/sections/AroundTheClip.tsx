@@ -3,8 +3,11 @@ import { MovingIcon } from "@/components/MovingIcon";
 import CameraIcon from "@/components/itshover/camera-icon";
 import ClockIcon from "@/components/itshover/clock-icon";
 import FileDescriptionIcon from "@/components/itshover/file-description-icon";
+import LayersIcon from "@/components/itshover/layers-icon";
+import PaintIcon from "@/components/itshover/paint-icon";
 import PlayerIcon from "@/components/itshover/player-icon";
 import PlugConnectedIcon from "@/components/itshover/plug-connected-icon";
+import RefreshIcon from "@/components/itshover/refresh-icon";
 import UsersIcon from "@/components/itshover/users-icon";
 import { FeatureVideo } from "@/components/FeatureVideo";
 import { PhoneFold } from "@/components/PhoneFold";
@@ -18,7 +21,43 @@ const TILE_SURFACE = { "--spotlight-card-surface": "transparent", "--spotlight-c
 
 type Tile = { id: string; title: string; icon: React.ReactNode; body: string; video: string; alt: string; logos?: { name: string; mark: React.ReactNode }[] };
 
-export const AROUND_TILES: Tile[] = [
+/** The parts you would otherwise do by hand, first, then everything around the clip. */
+const HAND_TILES: Tile[] = [
+  {
+    id: "brand",
+    title: "Your brand, set once",
+    icon: <MovingIcon icon={PaintIcon} size={18} trigger=".tile" />,
+    body: "Logo, colour, font and music are saved in settings and used by every step that needs them. No step ever asks again.",
+    video: "brand",
+    alt: "Screen recording: the logo, brand colour and theme music are saved in Settings, then the Add a logo step shows it is handled for you.",
+  },
+  {
+    id: "files",
+    title: "Organized in your own storage",
+    icon: <MovingIcon icon={LayersIcon} size={18} trigger=".tile" />,
+    body: "Every upload and every output is filed in your bucket, with its length, picture size and the run that made it.",
+    video: "files",
+    alt: "Screen recording: a new TikTok clips folder is made in the Files screen, a captioned clip is renamed and moved into it.",
+  },
+  {
+    id: "alerts",
+    title: "Retries, then an alert",
+    icon: <MovingIcon icon={RefreshIcon} size={18} trigger=".tile" />,
+    body: "If the toolkit is busy or offline, the step waits and tries again. If it still fails you get an alert saying what went wrong.",
+    video: "alerts",
+    alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails, and the Inbox in the side menu says what went wrong. Sped up while it waits.",
+  },
+  {
+    id: "schedule",
+    title: "On a schedule, in your time zone",
+    icon: <MovingIcon icon={ClockIcon} size={18} trigger=".tile" />,
+    body: "Run it every morning or every Friday at 9. The canvas shows what starts it and when it last ran.",
+    video: "schedule",
+    alt: "Screen recording: an automation's trigger is changed to a Schedule, every day at 09:00 America/Los_Angeles, and switched on.",
+  },
+];
+
+const CLIP_TILES: Tile[] = [
   {
     id: "meetings",
     title: "Meeting recordings come in by themselves",
@@ -80,6 +119,8 @@ export const AROUND_TILES: Tile[] = [
   },
 ];
 
+export const AROUND_TILES: Tile[] = [...HAND_TILES, ...CLIP_TILES];
+
 /** Shipped features without their own recording here, said plainly. */
 export const ALSO: { title: string; body: string; scene: AlsoSceneName; logos?: { name: string; mark: React.ReactNode }[] }[] = [
   {
@@ -105,7 +146,9 @@ export function AroundTheClip() {
       <div className="wrap">
         <Reveal className="sec-head">
           <h2 id="around-title">Everything around the clip, too</h2>
-          <p className="sec-lead">Recordings arrive on their own, get filed and searchable, and go out on a plan.</p>
+          <p className="sec-lead">
+            The parts you would otherwise do by hand are done for you. Recordings arrive on their own, get filed and searchable, and go out on a plan.
+          </p>
         </Reveal>
         <div className="tiles">
           {AROUND_TILES.map((t, i) => (

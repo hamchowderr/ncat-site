@@ -93,6 +93,9 @@ export function SplitScene() {
     let raf = 0;
     // the scene follows the scroll with a little lag, so each change eases in rather than jumping
     let shown = -1;
+    // on a phone the finished clips take turns at full size (TikTok first), the others waiting small underneath
+    let big = 1;
+    let settled = false;
 
     const paint = () => {
       raf = 0;
@@ -108,6 +111,8 @@ export function SplitScene() {
       const W = st.clientWidth;
       const H = st.clientHeight;
       const narrow = W < 600;
+      settled = narrow && p >= 0.62;
+      st.classList.toggle("is-turns", settled);
       const pad = narrow ? 12 : 24;
       const gapCards = narrow ? 12 : 22;
       const cols = narrow ? 3 : 5;
@@ -117,12 +122,13 @@ export function SplitScene() {
       const rowGap = narrow ? 14 : 18;
       // room above for the next recording, and below for the editor route and the token count
       const topBand = narrow ? 44 : 52;
-      const footH = narrow ? (foot?.offsetHeight ?? 96) + 10 : 72;
+      // measured from where the foot actually sits, so nothing above it can reach into it
+      const footH = narrow ? (foot ? H - foot.offsetTop : 110) + 8 : 72;
 
       // the long recording, across the middle
       const SW = W - 2 * pad;
       const stripH = Math.min(narrow ? 64 : 96, H * 0.18);
-      const stripY = H * 0.42 - stripH / 2;
+      const stripY = H * (narrow ? 0.34 : 0.42) - stripH / 2;
       const g = ease(local(p, 0.11, 0.22)) * (narrow ? 8 : 16);
 
       // the clips, in one row (three and two on a phone), centred in the scene
@@ -131,6 +137,15 @@ export function SplitScene() {
       const boxH = Math.min(boxW * 1.65, (room - 16 - rows * destH - (rows - 1) * rowGap) / rows);
       const total = rows * (boxH + destH) + (rows - 1) * rowGap;
       const top = topBand + (room - total) / 2;
+
+      // a phone: one clip large across the stage, the other four in a row of small ones under it
+      const tw = (SW - 3 * 10) / 4;
+      const th = Math.min(tw * 1.78, 104);
+      const thumbDest = 34;
+      const bigDest = 44 + 10;
+      const bigH = room - 8 - bigDest - 22 - th - thumbDest;
+      const thumbBottom = topBand + room - thumbDest;
+      const others = SPLIT_CLIPS.map((_, i) => i).filter((i) => i !== big);
 
       let x = pad;
       const onScreen = box.bottom > 0 && box.top < window.innerHeight;
@@ -144,8 +159,41 @@ export function SplitScene() {
         const left = (W - (inRow * boxW + (inRow - 1) * gapCards)) / 2;
         const cx = left + boxW / 2 + (i % cols) * (boxW + gapCards);
         const cardBottom = top + row * (boxH + destH + rowGap) + boxH;
-        const fit = fitFrame(c.frame, boxW, boxH);
-        const to = { x: cx - fit.width / 2, y: cardBottom - fit.height, w: fit.width, h: fit.height };
+        let fit = fitFrame(c.frame, boxW, boxH);
+        let to = {
+          x: cx - fit.width / 2,
+          y: cardBottom - fit.height,
+          w: fit.width,
+          h: fit.height,
+        };
+        let dest = { x: cx - boxW / 2, y: cardBottom + 14, w: boxW };
+        if (narrow) {
+          if (i === big) {
+            fit = fitFrame(c.frame, SW, bigH);
+            // a wide clip sits in the middle of the space, with its label right under it
+            const bottom = topBand + 8 + (bigH + fit.height) / 2;
+            to = {
+              x: (W - fit.width) / 2,
+              y: bottom - fit.height,
+              w: fit.width,
+              h: fit.height,
+            };
+            dest = { x: pad, y: bottom + 10, w: SW };
+          } else {
+            const k = others.indexOf(i);
+            const tx = pad + k * (tw + 10) + tw / 2;
+            fit = fitFrame(c.frame, tw, th);
+            to = {
+              x: tx - fit.width / 2,
+              y: thumbBottom - fit.height,
+              w: fit.width,
+              h: fit.height,
+            };
+            dest = { x: tx - tw / 2, y: thumbBottom + 4, w: tw };
+          }
+          dests[i].classList.toggle("is-big", i === big);
+          clips[i].classList.toggle("is-big", i === big);
+        }
         const t = ease(local(p, 0.24 + i * 0.035, 0.38 + i * 0.035));
         const s = clips[i].style;
         s.transform = `translate(${mix(from.x, to.x, t)}px, ${mix(from.y, to.y, t)}px)`;
@@ -173,8 +221,8 @@ export function SplitScene() {
 
         const d = local(p, 0.58 + i * 0.025, 0.66 + i * 0.025);
         const ds = dests[i].style;
-        ds.transform = `translate(${cx - boxW / 2}px, ${cardBottom + 14 + (1 - d) * 14}px)`;
-        ds.width = `${boxW}px`;
+        ds.transform = `translate(${dest.x}px, ${dest.y + (1 - d) * 14}px)`;
+        ds.width = `${dest.w}px`;
         ds.opacity = String(d);
       });
 
@@ -185,7 +233,9 @@ export function SplitScene() {
         playhead.style.opacity = String(1 - local(p, 0.1, 0.14));
       }
       if (name) {
-        name.style.transform = `translate(${pad}px, ${stripY - 34}px)`;
+        // above the strip, however many lines the label takes on a narrow screen
+        name.style.width = `${SW}px`;
+        name.style.transform = `translate(${pad}px, ${stripY - name.offsetHeight - 12}px)`;
         name.style.opacity = String(1 - local(p, 0.2, 0.26));
       }
       if (foot) {
@@ -215,10 +265,16 @@ export function SplitScene() {
       if (!raf) raf = requestAnimationFrame(paint);
     };
     paint();
+    const turn = window.setInterval(() => {
+      if (!settled) return;
+      big = (big + 1) % SPLIT_CLIPS.length;
+      onScroll();
+    }, 3200);
     const ro = new ResizeObserver(onScroll);
     ro.observe(st);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      window.clearInterval(turn);
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener("scroll", onScroll);
@@ -226,7 +282,7 @@ export function SplitScene() {
   }, [live]);
 
   return (
-    <section ref={root} className={`split${live ? " is-live" : ""}`} aria-labelledby="split-title">
+    <section ref={root} className={`split${live ? " is-live" : ""}`} id="how-it-works" aria-labelledby="split-title">
       <div className="split-pin">
         <div className="wrap split-head">
           <h2 id="split-title">One recording in. A clip for every feed out.</h2>

@@ -137,7 +137,7 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
   // on desktop the stack replaces the plain rows once it has loaded; measure the final ones
   if (!isMobile) await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
   const shots = page.locator("#features .shot video");
-  await expect(shots).toHaveCount(8);
+  await expect(shots).toHaveCount(4);
   const ratios: number[] = [];
   for (const img of await shots.all()) {
     await img.scrollIntoViewIfNeeded();
@@ -385,7 +385,7 @@ test.describe("with reduced motion, nothing waits to appear", () => {
   test("features are plain rows and every section is already visible", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#features .scroll-stack")).toHaveCount(0);
-    for (const sel of ["#features .sec-head", "#use-cases .sec-head", ".steps .step-in"]) {
+    for (const sel of ["#features .sec-head", "#use-cases .sec-head", ".mid-cta h2"]) {
       const el = page.locator(sel).first();
       expect(await el.evaluate((e) => Number(getComputedStyle(e).opacity)), sel).toBe(1);
     }
@@ -463,7 +463,7 @@ test("the newer features each show a whole-window recording that plays on screen
   if (isMobile) await openFolds(page);
   const section = page.getByRole("region", { name: "Everything around the clip, too" });
   const shots = section.locator(".shot video");
-  await expect(shots).toHaveCount(6);
+  await expect(shots).toHaveCount(10);
   for (const v of await shots.all()) {
     await v.scrollIntoViewIfNeeded();
     await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
@@ -560,16 +560,29 @@ test("the About page is in the menu and tells the five chapters", async ({ page,
   await expect(page.locator(".chapter-shell h3")).toBeVisible();
 });
 
-test("the how-it-works section says use AI once, not on every video, and ends ready or handed off", async ({ page }) => {
+test("the ask comes straight after the scene, and How it works leads to the scene itself", async ({ page, isMobile }) => {
   await page.goto("/");
   const how = page.locator("#how-it-works");
-  await how.scrollIntoViewIfNeeded();
-  await expect(how.getByRole("heading", { level: 2 })).toHaveText("Use AI once. Not on every video.");
-  await expect(how.locator(".steps li")).toHaveCount(3);
-  await expect(how.locator(".step-ends span")).toHaveText(["Ready to post", "Ready for your editor"]);
-  const box = await how.locator(".step-ends").boundingBox();
+  await expect(how.getByRole("heading", { level: 2 })).toHaveText("One recording in. A clip for every feed out.");
+  const ask = page.locator(".mid-cta");
+  await expect(ask.getByRole("heading", { level: 2 })).toHaveText("Use AI once. Every recording after that runs by itself.");
+  expect(await page.evaluate(() => document.querySelector(".split")!.nextElementSibling!.className)).toBe("mid-cta");
+  await ask.scrollIntoViewIfNeeded();
+  const btn = (await ask.getByRole("link", { name: "Get early access" }).boundingBox())!;
+  expect(btn.height).toBeGreaterThanOrEqual(44);
+  if (isMobile) expect(btn.width).toBeGreaterThan(page.viewportSize()!.width * 0.7);
+  await expect(page.getByText("Use AI once. Not on every video.")).toHaveCount(0);
+});
+
+test("the page ends on one centred ask, with the button before the messaging links", async ({ page }) => {
+  await page.goto("/");
+  const early = page.locator("#early");
+  await early.scrollIntoViewIfNeeded();
   const vw = page.viewportSize()!.width;
-  expect(box!.x + box!.width).toBeLessThanOrEqual(vw);
+  const btn = (await early.locator(".early-cta a").boundingBox())!;
+  const socials = (await early.locator(".socials").boundingBox())!;
+  expect(btn.y + btn.height).toBeLessThanOrEqual(socials.y);
+  expect(Math.abs(btn.x + btn.width / 2 - vw / 2)).toBeLessThan(24);
 });
 
 test("the feeds section shows the agent badge and the brand every clip carries, inside the screen", async ({ page }) => {

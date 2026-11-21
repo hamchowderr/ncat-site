@@ -30,11 +30,19 @@ test.describe("home page on a phone", () => {
     // only the stage is pinned: the headline has scrolled away and the stage fills nearly all the screen under the bar
     await expect.poll(async () => (await stage.boundingBox())!.height).toBeGreaterThan((vh - 68) * 0.85);
     await expect(page.locator(".split-head h2")).not.toBeInViewport();
-    // the finished tall clips are large: well over a sixth of the screen wide and a sixth of it tall
-    const tiktok = page.locator('.split-clip[data-platform="TikTok"]');
-    await expect.poll(async () => (await tiktok.boundingBox())!.height, { timeout: 8000 }).toBeGreaterThan(vh / 6);
+    // the finished clips take turns at full size: one is large enough to read its captions, the rest wait small
+    const big = page.locator(".split-clip.is-big");
+    await expect(big).toHaveCount(1);
     const vw = page.viewportSize()!.width;
-    expect((await tiktok.boundingBox())!.width / vw).toBeGreaterThan(0.16);
+    await expect.poll(async () => (await big.boundingBox())!.height, { timeout: 8000 }).toBeGreaterThan(vh * 0.35);
+    await page.waitForTimeout(800);
+    const bb = (await big.boundingBox())!;
+    if ((await big.getAttribute("data-frame")) !== "original") expect(bb.width / vw).toBeGreaterThan(0.4);
+    await expect(page.locator(".split-dest.is-big .split-ready")).toBeVisible();
+    // and the turn moves on to the next clip by itself
+    const first = await big.getAttribute("data-platform");
+    await expect.poll(async () => page.locator(".split-clip.is-big").getAttribute("data-platform"), { timeout: 6000 }).not.toBe(first);
+    await page.waitForTimeout(900);
     // every clip and its logo stays inside the stage, with nothing overlapping
     const sb = (await stage.boundingBox())!;
     const boxes = await page.locator(".split-clip, .split-dest, .split-foot").evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x: r.x, y: r.y, w: r.width, h: r.height })));
@@ -65,10 +73,11 @@ test.describe("home page on a phone", () => {
 
   test("the feature tiles are one list of rows that open one by one, the first already open", async ({ page }) => {
     await page.goto("/");
-    for (const sel of ["#features .tiles", "#around .tiles"]) {
+    await expect(page.locator("#features .tiles")).toHaveCount(0);
+    for (const sel of ["#around .tiles"]) {
       const heads = page.locator(`${sel} .fold-head`);
       const n = await heads.count();
-      expect(n, sel).toBeGreaterThan(3);
+      expect(n, sel).toBe(10);
       await expect(heads.first()).toHaveAttribute("aria-expanded", "true");
       for (let i = 1; i < n; i++) await expect(heads.nth(i)).toHaveAttribute("aria-expanded", "false");
       // a closed row hides its recording; opening it shows the whole-window recording and its words
@@ -104,6 +113,52 @@ test.describe("home page on a phone", () => {
       await expect(page.locator(`#${id} .ticks`)).toBeHidden();
     }
   });
+  test("the recording's name sits above the film strip, never on it, and the next recording's line is never cut off", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".split.is-live")).toHaveCount(1);
+    const at = (f: number) =>
+      page.evaluate((f) => {
+        const el = document.querySelector<HTMLElement>(".split")!;
+        const top = el.getBoundingClientRect().top + scrollY;
+        scrollTo(0, top + (el.offsetHeight - innerHeight) * f);
+      }, f);
+    await at(0.12);
+    await page.waitForTimeout(1500);
+    const name = (await page.locator(".split-name").boundingBox())!;
+    const strip = (await page.locator(".split-clip").first().boundingBox())!;
+    expect(name.y + name.height).toBeLessThanOrEqual(strip.y);
+    await at(0.99);
+    await page.waitForTimeout(2500);
+    const text = page.locator(".split-next-text");
+    expect(await text.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+    const stage = (await page.locator(".split-stage").boundingBox())!;
+    const banner = (await page.locator(".split-next").boundingBox())!;
+    expect(banner.x + banner.width).toBeLessThanOrEqual(stage.x + stage.width + 1);
+  });
+
+  test("every button a thumb presses is at least 44px tall, and an opened tile's words are never clipped", async ({ page }) => {
+    await page.goto("/");
+    for (const sel of [
+      ".nav .btn",
+      ".menu-btn",
+      ".hero-cta .btn",
+      ".stage-tabs button",
+      ".seg button",
+      ".shot-full >> visible=true",
+      ".foot-social a",
+      ".socials a",
+      ".mid-cta .btn",
+    ]) {
+      for (const el of await page.locator(sel).all()) {
+        const b = await el.boundingBox();
+        if (b) expect(b.height, sel).toBeGreaterThanOrEqual(43.5);
+      }
+    }
+    const tile = page.locator("#around .fold").first().locator(".tile");
+    await tile.scrollIntoViewIfNeeded();
+    await expect(tile).toHaveCSS("overflow", "visible");
+    await expect(tile).toHaveCSS("border-radius", "0px");
+  });
 });
 
 test("a wide screen keeps the scroll scene, the tiles in full and no fold rows or full-screen buttons", async ({ page, isMobile }) => {
@@ -112,9 +167,14 @@ test("a wide screen keeps the scroll scene, the tiles in full and no fold rows o
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   await expect(page.locator(".fold-head").first()).toBeHidden();
   await expect(page.getByRole("button", { name: "Watch full screen" }).first()).toBeHidden();
-  const tiles = page.locator("#features .tiles");
+  const tiles = page.locator("#around .tiles");
   await tiles.scrollIntoViewIfNeeded();
   expect(await tiles.evaluate((el) => getComputedStyle(el).display)).toBe("grid");
-  for (const v of await page.locator("#features .tiles .shot video").all()) await expect(v).toBeVisible();
-  expect(await page.locator(".story-row .ticks").first().evaluate((el) => getComputedStyle(el).display)).not.toBe("none");
+  for (const v of (await page.locator("#around .tiles .shot video").all()).slice(0, 2)) await expect(v).toBeVisible();
+  expect(
+    await page
+      .locator(".story-row .ticks")
+      .first()
+      .evaluate((el) => getComputedStyle(el).display),
+  ).not.toBe("none");
 });

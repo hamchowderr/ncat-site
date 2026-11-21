@@ -406,43 +406,26 @@ test("every Get early access button opens the pop-up, and Escape closes it", asy
   await expect(page.locator("dialog[open] form")).toBeVisible();
 });
 
-test("the features lead lights up one platform at a time in its own colour, with the logos in rails outside the text", async ({ page, isMobile }) => {
+test("the features heading uses the one accent colour and the lead reads as plain text", async ({ page }) => {
   await page.goto("/");
-  const ink = page.locator("#features-title .plat-ink");
-  await expect(ink).toHaveText("No AI on every video.");
-  const lead = page.locator(".features .pl-lead");
-  const phrase = (p: string) => lead.locator(`.pl-phrase[data-platform="${p}"]`);
-  const logo = (p: string) => page.locator(`.features .pl-rail-logo[data-platform="${p}"]`);
-  // before it scrolls in, it waits in grey with the logos tucked away
-  await expect(phrase("youtube").locator(".pl-words")).toHaveCSS("opacity", "0.3");
-  await expect(logo("youtube")).toHaveCSS("opacity", "0");
-  await lead.scrollIntoViewIfNeeded();
-  await page.evaluate(() => window.scrollBy(0, 300));
-  const colours: Record<string, string> = { youtube: "rgb(255, 0, 0)", facebook: "rgb(8, 102, 255)", linkedin: "rgb(10, 102, 194)", tiktok: "rgb(0, 0, 0)", x: "rgb(0, 0, 0)" };
-  for (const [p, rgb] of Object.entries(colours)) {
-    await expect(phrase(p)).toHaveClass(/is-on/);
-    await expect(phrase(p).locator(".pl-words")).toHaveCSS("color", rgb);
-    await expect(phrase(p).locator(".pl-words")).toHaveCSS("opacity", "1");
+  const accent = page.locator("#features-title .accent-ink");
+  await expect(accent).toHaveText("No AI on every video.");
+  await expect(accent).toHaveCSS("color", "rgb(91, 61, 245)");
+  await expect(accent).not.toHaveCSS("background-clip", "text");
+  const lead = page.locator(".features .sec-lead");
+  await expect(lead).toContainText("Most of that work is plain editing");
+  await expect(lead).toHaveCSS("opacity", "1");
+});
+
+test("the hero line is readable before anyone scrolls", async ({ page }) => {
+  await page.goto("/");
+  // the words not yet filled are the soft ink, never a pale grey, and the rotating word always shows
+  const colours = await page.$$eval(".hero-sub .fw:not(.on)", (els) => [...new Set(els.map((e) => getComputedStyle(e).color))]);
+  expect(colours).toEqual(["rgb(79, 82, 96)"]);
+  for (let i = 0; i < 6; i++) {
+    expect(Number(await page.locator(".rot-word").evaluate((e) => getComputedStyle(e).opacity))).toBeGreaterThanOrEqual(0.3);
+    await page.waitForTimeout(150);
   }
-  await expect(phrase("instagram").locator(".pl-words")).toHaveCSS("background-clip", "text");
-  // every logo shows, big enough to recognise, and none of them overlaps the text
-  const text = (await lead.boundingBox())!;
-  const sides = new Set<string>();
-  for (const p of ["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]) {
-    await expect(logo(p)).toHaveCSS("opacity", "1");
-    const box = (await logo(p).boundingBox())!;
-    expect(box.width).toBeGreaterThan(30);
-    const outside = box.x + box.width <= text.x || box.x >= text.x + text.width || box.y + box.height <= text.y;
-    expect(outside, p).toBe(true);
-    sides.add(box.x + box.width <= text.x ? "left" : box.x >= text.x + text.width ? "right" : "above");
-  }
-  expect([...sides].sort()).toEqual(isMobile ? ["above"] : ["left", "right"]);
-  // scattered, not stacked: each its own size and tilt, each coming in its own way
-  const looks = await page.$$eval(".features .pl-rail-logo", (els) => els.map((e) => { const c = getComputedStyle(e); return { w: c.width, r: c.rotate, a: c.animationName }; }));
-  expect(new Set(looks.map((l) => l.w)).size).toBeGreaterThanOrEqual(5);
-  expect(new Set(looks.map((l) => l.r)).size).toBe(6);
-  expect(new Set(looks.map((l) => l.a.split(",")[0].trim())).size).toBe(6);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
 
 test("the team chat scene changes app, and its logo, each time the conversation replays", async ({ page }) => {

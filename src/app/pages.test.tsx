@@ -100,3 +100,27 @@ describe("names on the site", () => {
     expect(container.querySelector(".foot-about p")).toHaveTextContent(/^Your content, social media ready\.$/);
   });
 });
+
+describe("the Impeccable review fixes", () => {
+  it("asks for sign-ups straight after the scene and tells the set-up-once story only once", () => {
+    const page = readFileSync("src/app/page.tsx", "utf8");
+    expect(page).not.toMatch(/HowItWorks/);
+    expect(page.indexOf("<MidCta />")).toBe(page.indexOf("<SplitScene />") + "<SplitScene />\n      ".length);
+  });
+  it("shows the hero line in readable colours from the first paint, with no gradient text", () => {
+    expect(css).toMatch(/\.fill-text \.fw \{\s*color: var\(--soft\);/);
+    expect(css).not.toMatch(/#c4c4ce/);
+    expect(css).not.toMatch(/\.fill-text \.fw\.hot \{[^}]*background-clip: text/);
+  });
+  it("drops the pulsing dot and the uppercase hero label", () => {
+    expect(css).not.toMatch(/slogan-pulse|\.slogan-dot/);
+    expect(css).not.toMatch(/\.slogan \{[^}]*text-transform: uppercase/);
+  });
+  it("gives every phone control at least 44px and keeps the tile's words unclipped", () => {
+    const phone = css.slice(css.indexOf("/* ---------- Phones: a layout made for the phone"));
+    expect(phone).toMatch(/\.shot-full \{[^}]*height: 44px;/);
+    expect(phone).toMatch(/\.seg button \{[^}]*min-height: 44px;/);
+    expect(phone).toMatch(/\.foot-social a \{\s*width: 44px;\s*height: 44px;/);
+    expect(phone).toMatch(/\.tiles \.tile\.spotlight-card \{[^}]*overflow: visible;/);
+  });
+});
