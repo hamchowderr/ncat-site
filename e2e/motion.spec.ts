@@ -93,11 +93,12 @@ test("one recording splits into clips that each take their platform's shape and 
   expect(firstClip.width).toBeGreaterThan(0);
 });
 
-test("the scroll scene takes a long scroll and eases into each change instead of jumping", async ({ page }) => {
+test("the scroll scene takes a long scroll and eases into each change instead of jumping", async ({ page, isMobile }) => {
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const [h, vh] = await page.evaluate(() => [document.querySelector<HTMLElement>(".split")!.offsetHeight, window.innerHeight]);
-  expect(h).toBeGreaterThanOrEqual(vh * 4);
+  // a shorter run on a phone, so the page there is not mostly this one scene
+  expect(h).toBeGreaterThanOrEqual(vh * (isMobile ? 3 : 4));
   await scrollSplit(page, 0);
   // jump straight to the end: a moment later the scene is still on its way there
   await page.evaluate(() => {

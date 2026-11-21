@@ -121,7 +121,7 @@ test("every logo and picture loads", async ({ page }) => {
   }
 });
 
-test("every feature is a dashboard recording, shown whole, the whole app window uncropped, all the same shape", async ({ page, request, isMobile }) => {
+test("every feature is a dashboard recording, the whole app window on a wide screen and its working area on a phone, all the same shape", async ({ page, request, isMobile }) => {
   await page.goto("/");
   // on desktop the stack replaces the plain rows once it has loaded; measure the final ones
   if (!isMobile) await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
@@ -145,7 +145,11 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
     // and is a recording made to be read at this size
     await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1600, 1000]);
   }
-  for (const r of ratios) expect(Math.abs(r - 16 / 10)).toBeLessThan(0.02);
+  // a wide screen shows the whole window; a phone crops off the side menu in a square frame so the screen reads larger
+  for (const r of ratios) expect(Math.abs(r - (isMobile ? 1 : 16 / 10))).toBeLessThan(0.02);
+  const fit = await shots.first().evaluate((v) => getComputedStyle(v).objectFit);
+  if (isMobile) expect(fit).toBe("cover");
+  else expect(fit).not.toBe("cover");
   for (const v of await shots.all()) {
     for (const attr of ["src", "poster"]) {
       const url = (await v.getAttribute(attr))!;
@@ -444,7 +448,7 @@ test("social logos rain down beside the headline, never across it, and move when
   }
 });
 
-test("the newer features each show a whole-window recording that plays on screen, with real app logos", async ({ page, request }) => {
+test("the newer features each show a recording that plays on screen, with real app logos", async ({ page, request, isMobile }) => {
   await page.goto("/");
   const section = page.getByRole("region", { name: "Everything around the clip, too" });
   const shots = section.locator(".shot video");
@@ -453,7 +457,7 @@ test("the newer features each show a whole-window recording that plays on screen
     await v.scrollIntoViewIfNeeded();
     await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
     const box = (await v.boundingBox())!;
-    expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
+    expect(Math.abs(box.width / box.height - (isMobile ? 1 : 16 / 10))).toBeLessThan(0.02);
     for (const attr of ["src", "poster"]) {
       const url = (await v.getAttribute(attr))!;
       expect((await request.get(url)).status(), url).toBe(200);
@@ -487,8 +491,16 @@ test("the newer features each show a whole-window recording that plays on screen
   expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
 });
 
-test("the engine section lays the five ways on one rail, ending on the shell, with nothing overflowing", async ({ page, isMobile }) => {
+test("the engine section lives on the About page, not the home page", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator("#engine")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Free engine. Fine-tuned shell." })).toHaveCount(0);
+  await page.goto("/about");
+  await expect(page.locator("#engine")).toHaveCount(1);
+});
+
+test("the engine section lays the five ways on one rail, ending on the shell, with nothing overflowing", async ({ page, isMobile }) => {
+  await page.goto("/about");
   const ways = page.locator(".ways");
   await ways.scrollIntoViewIfNeeded();
   await expect(page.getByRole("heading", { name: "Free engine. Fine-tuned shell." })).toBeVisible();

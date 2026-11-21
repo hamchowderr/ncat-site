@@ -1,6 +1,5 @@
 import { AroundTheClip } from "@/components/sections/AroundTheClip";
 import { EarlyAccess } from "@/components/sections/EarlyAccess";
-import { Engine } from "@/components/sections/Engine";
 import { Faq } from "@/components/sections/Faq";
 import { Features } from "@/components/sections/Features";
 import { Hero } from "@/components/sections/Hero";
@@ -24,7 +23,6 @@ export default function Home() {
       <AroundTheClip />
       <HowItWorks />
       <TryIt enabled={demoEnabled()} emails={!!mailSetup()} />
-      <Engine />
       <PlatformExpert />
       <UseCases />
       <NoFees />
