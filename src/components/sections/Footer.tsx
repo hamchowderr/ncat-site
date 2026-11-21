@@ -25,8 +25,6 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Otaku Solutions", href: "https://otakusolutions.io" },
-      { label: "chowderr.dev", href: "https://chowderr.dev" },
     ],
   },
 ];
@@ -44,9 +42,9 @@ export function Footer() {
       <div className="wrap foot-row">
         <div className="foot-about">
           <Link className="brand" href="/">
-            <BrandMark /> Kontifi
+            <BrandMark /> Takewon
           </Link>
-          <p>Your content, social media ready. By Otaku Solutions.</p>
+          <p>Your content, social media ready.</p>
           <ul className="foot-social" aria-label="Follow">
             {SOCIAL.map((s) => (
               <li key={s.label}>

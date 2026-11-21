@@ -20,6 +20,9 @@ for (const { path, h1 } of pages) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(h1);
     await expect(page.locator(".early-cta a")).toBeVisible();
+    // the site names Takewon only: no company or personal site (Chowderr, 2026-11-21)
+    const html = await page.content();
+    expect(html).not.toMatch(/Otaku Solutions|otakusolutions\.io|chowderr\.dev/i);
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
     expect(errors).toEqual([]);
@@ -515,7 +518,7 @@ test("the engine section lays the five ways on one rail, ending on the shell, wi
   const items = ways.locator(".ways-list > li");
   await expect(items).toHaveCount(5);
   await expect(items.last()).toHaveClass(/ours/);
-  await expect(items.last()).toContainText("Kontifi, the fine-tuned shell");
+  await expect(items.last()).toContainText("Takewon, the fine-tuned shell");
   const boxes = await Promise.all((await items.all()).map((i) => i.boundingBox()));
   if (isMobile) {
     // one under another on a phone
@@ -535,7 +538,7 @@ test("the Editing with AI tab says what it costs today and what changes", async 
   await tab.click();
   const panel = page.locator("#case-panel");
   await expect(panel).toContainText("Stop spending your AI limits on the same edit.");
-  await expect(panel.locator(".case-without")).toContainText("Without Kontifi");
+  await expect(panel.locator(".case-without")).toContainText("Without Takewon");
   await expect(panel.locator(".case-outs li")).toHaveCount(4);
 });
 

@@ -100,7 +100,7 @@ export function PricingPlans() {
                   <span className="sr">Feature</span>
                 </th>
                 <th scope="col">Typical clipping app</th>
-                <th scope="col">Kontifi</th>
+                <th scope="col">Takewon</th>
               </tr>
             </thead>
             <tbody>

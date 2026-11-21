@@ -83,3 +83,20 @@ describe("the phone stylesheet", () => {
     expect(phone).toMatch(/\.story-row \.ticks \{\s*display: none;/);
   });
 });
+
+describe("names on the site", () => {
+  it("never mentions Otaku Solutions or chowderr.dev in the footer, About page or FAQ", async () => {
+    const { Footer } = await import("@/components/sections/Footer");
+    const { AboutWho } = await import("@/components/sections/AboutStory");
+    const { Faq } = await import("@/components/sections/Faq");
+    const { container } = render(
+      <>
+        <Footer />
+        <AboutWho />
+        <Faq />
+      </>,
+    );
+    expect(container.innerHTML).not.toMatch(/Otaku Solutions|otakusolutions\.io|chowderr\.dev/i);
+    expect(container.querySelector(".foot-about p")).toHaveTextContent(/^Your content, social media ready\.$/);
+  });
+});

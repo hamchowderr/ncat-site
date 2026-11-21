@@ -5,7 +5,7 @@ import { EarlyAccess } from "@/components/sections/EarlyAccess";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Why Kontifi exists: a free open-source engine, a community of creators tired of paying for every step, and two talks that kept ending with the same question.",
+  description: "Why Takewon exists: a free open-source engine, a community of creators tired of paying for every step, and two talks that kept ending with the same question.",
   alternates: { canonical: "/about" },
 };
 

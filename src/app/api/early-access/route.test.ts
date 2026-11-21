@@ -83,7 +83,7 @@ describe("POST /api/early-access", () => {
     const note = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(note.to).toEqual([{ email: "ava@studio.co", name: "Ava" }]);
     expect(note.reply_to).toEqual({ email: "owner@example.com", name: "Chowderr" });
-    expect(note.subject).toBe("You’re on the list for Kontifi");
+    expect(note.subject).toBe("You’re on the list for Takewon");
     expect(note.text).toContain("Hi Ava,");
     // No trial link until the trial has somewhere to start.
     expect(note.text).not.toContain("3 days");
