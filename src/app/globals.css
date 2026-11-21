@@ -2517,12 +2517,18 @@ fieldset[aria-invalid="true"] .pill span {
   .split.is-live {
     height: 420vh;
   }
-  .split-stage.is-turns .split-clip,
-  .split-stage.is-turns .split-dest {
+  .split-stage.is-turns .split-clip {
     transition:
       transform 0.6s var(--ease),
       width 0.6s var(--ease),
       height 0.6s var(--ease);
+  }
+  /* the labels change place at once and fade in, so a big label never slides across the editor line */
+  .split-stage.is-turns .split-dest {
+    animation: split-dest-in 0.45s var(--ease);
+  }
+  .split-stage.is-turns .split-dest.is-big {
+    animation-name: split-dest-in-big;
   }
   .split.is-live .split-dest:not(.is-big) .split-shape {
     display: none;
@@ -2586,6 +2592,7 @@ fieldset[aria-invalid="true"] .pill span {
   .split-stage.is-turns .split-clip,
   .split-stage.is-turns .split-dest {
     transition: none;
+    animation: none;
   }
 }
 
@@ -4487,6 +4494,16 @@ html:has(.ea-dialog[open]) {
   box-shadow: 0 0 0 1px var(--accent-soft-2, rgb(91 61 245 / 0.18));
 }
 
+@keyframes split-dest-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes split-dest-in-big {
+  from {
+    opacity: 0;
+  }
+}
 /* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
    Desktop is untouched. The feature tiles become one soft grouped list: each row is an icon and a title
    that opens to its recording and words (the first starts open). Recordings keep the whole window and

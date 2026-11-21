@@ -159,6 +159,32 @@ test.describe("home page on a phone", () => {
     await expect(tile).toHaveCSS("overflow", "visible");
     await expect(tile).toHaveCSS("border-radius", "0px");
   });
+
+  test("when the clips swap places, no label ever passes over the editor line", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".split.is-live")).toHaveCount(1);
+    await page.evaluate(() => {
+      const el = document.querySelector<HTMLElement>(".split")!;
+      const top = el.getBoundingClientRect().top + scrollY;
+      scrollTo(0, top + (el.offsetHeight - innerHeight) * 0.7);
+    });
+    await expect(page.locator(".split-stage.is-turns")).toHaveCount(1);
+    // watch through more than one turn, every 80ms
+    const hits: string[] = [];
+    for (let t = 0; t < 60; t++) {
+      const hit = await page.evaluate(() => {
+        const foot = document.querySelector(".split-foot")!.getBoundingClientRect();
+        for (const d of document.querySelectorAll<HTMLElement>(".split-dest")) {
+          const r = d.getBoundingClientRect();
+          if (Number(getComputedStyle(d).opacity) > 0.05 && r.bottom > foot.top + 1) return d.dataset.platform ?? d.textContent;
+        }
+        return null;
+      });
+      if (hit) hits.push(hit);
+      await page.waitForTimeout(80);
+    }
+    expect(hits).toEqual([]);
+  });
 });
 
 test("a wide screen keeps the scroll scene, the tiles in full and no fold rows or full-screen buttons", async ({ page, isMobile }) => {
