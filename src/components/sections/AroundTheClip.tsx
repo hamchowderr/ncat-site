@@ -7,6 +7,7 @@ import PlayerIcon from "@/components/itshover/player-icon";
 import PlugConnectedIcon from "@/components/itshover/plug-connected-icon";
 import UsersIcon from "@/components/itshover/users-icon";
 import { FeatureVideo } from "@/components/FeatureVideo";
+import { PhoneFold } from "@/components/PhoneFold";
 import { Reveal } from "@/components/Reveal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
 import { BrandIcon, FileLogo } from "@/components/brand/Logo";
@@ -109,27 +110,29 @@ export function AroundTheClip() {
         <div className="tiles">
           {AROUND_TILES.map((t, i) => (
             <Reveal key={t.id} delay={(i % 2) * 0.08}>
-              <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
-                <FeatureVideo name={t.video} label={t.alt} />
-                <div className="tile-text">
-                  <div className="tile-head">
-                    <span className="tile-icon" aria-hidden="true">
-                      {t.icon}
-                    </span>
-                    <h3>{t.title}</h3>
+              <PhoneFold id={`tile-${t.id}`} title={t.title} icon={t.icon} level={3} defaultOpen={i === 0}>
+                <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
+                  <FeatureVideo name={t.video} label={t.alt} />
+                  <div className="tile-text">
+                    <div className="tile-head">
+                      <span className="tile-icon" aria-hidden="true">
+                        {t.icon}
+                      </span>
+                      <h3>{t.title}</h3>
+                    </div>
+                    <p>{t.body}</p>
+                    {t.logos && (
+                      <ul className="logo-chips" aria-label={`${t.title}: apps`}>
+                        {t.logos.map((l) => (
+                          <li key={l.name}>
+                            {l.mark} {l.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  <p>{t.body}</p>
-                  {t.logos && (
-                    <ul className="logo-chips" aria-label={`${t.title}: apps`}>
-                      {t.logos.map((l) => (
-                        <li key={l.name}>
-                          {l.mark} {l.name}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </SpotlightCard>
+                </SpotlightCard>
+              </PhoneFold>
             </Reveal>
           ))}
         </div>

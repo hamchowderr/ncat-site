@@ -56,6 +56,9 @@ function DestLogo({ platform }: { platform: string }) {
 /** How far through the section's scroll the scene finishes; the rest is a pause on the finished scene. */
 export const HOLD_AT = 0.8;
 
+/** Screens this narrow get the still, finished scene instead of the scroll-played one. */
+export const PHONE = "(max-width: 600px)";
+
 const clamp = (v: number) => Math.min(1, Math.max(0, v));
 const local = (p: number, a: number, b: number) => clamp((p - a) / (b - a));
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -71,8 +74,36 @@ export function SplitScene() {
     () => false,
   );
   const reduce = useReducedMotion();
-  const live = mounted && !reduce;
+  // on a phone the scene is too small to play by the scroll: it shows the finished clips, large, two to a row
+  const phone = useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia(PHONE);
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => window.matchMedia(PHONE).matches,
+    () => false,
+  );
+  const live = mounted && !reduce && !phone;
   const [step, setStep] = useState(SPLIT_STEPS.length - 1);
+
+  // the finished clips play while they are on screen, unless motion is off
+  useEffect(() => {
+    if (live || !mounted || reduce || typeof IntersectionObserver === "undefined") return;
+    const videos = Array.from(stage.current?.querySelectorAll<HTMLVideoElement>(".split-video") ?? []);
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const v = e.target as HTMLVideoElement;
+          if (e.isIntersecting) v.play()?.catch(() => {});
+          else v.pause();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    videos.forEach((v) => io.observe(v));
+    return () => io.disconnect();
+  }, [live, mounted, reduce]);
 
   useEffect(() => {
     if (!live) return;

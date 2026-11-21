@@ -2536,34 +2536,64 @@ fieldset[aria-invalid="true"] .pill span {
   background: var(--ink);
   z-index: 2;
 }
+/* On a phone the scene is still: the wide LinkedIn clip across the top, then the four tall ones two to a row,
+   each as wide as its column so its captions can be read, with its platform beside the logo underneath. */
 @media (max-width: 600px) {
+  .split-stage {
+    padding: 14px 14px 20px;
+  }
   .split-row {
-    --h: 150px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 18px 12px;
+    --h: 9999px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 12px;
+    align-items: start;
   }
   .split-col {
-    width: calc((100% - 24px) / 3);
+    justify-content: flex-start;
   }
-  .split-ready {
-    display: none;
+  .split-col:first-child {
+    grid-column: 1 / -1;
+  }
+  .split-clip {
+    width: 100%;
+    border-radius: 14px;
+  }
+  .split-dest {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    align-items: center;
+    justify-items: start;
+    width: 100%;
+    margin-top: 12px;
+    text-align: left;
   }
   .split-logo {
-    width: 32px;
-    height: 32px;
+    grid-row: 1 / 3;
+    width: 34px;
+    height: 34px;
+    margin: 0;
   }
   .split-logo .bi {
-    width: 18px;
-    height: 18px;
+    width: 19px;
+    height: 19px;
   }
-  .split-shape {
-    font-size: 11px;
+  .split-ready {
+    font-size: 14px;
     line-height: 1.25;
   }
-  .split.is-live .split-stage {
-    margin-inline: 0;
+  .split-shape {
+    font-size: 12.5px;
+    line-height: 1.25;
+  }
+  .split-steps {
+    gap: 10px 16px;
+    font-size: 14px;
+  }
+  .split-stage {
+    margin-top: 28px;
   }
 }
 
@@ -4602,5 +4632,192 @@ html:has(.ea-dialog[open]) {
   .demo-clips {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+}
+
+
+/* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
+   Desktop is untouched. The feature tiles become one soft grouped list: each row is an icon and a title
+   that opens to its recording and words (the first starts open). Recordings keep the whole window and
+   get a "Watch full screen" button, so they can be seen large with the phone turned. */
+.fold-title,
+.shot-full {
+  display: none;
+}
+@media (max-width: 640px) {
+  .features,
+  .around,
+  .try,
+  .how,
+  .platforms,
+  .cases,
+  .fees,
+  .faq,
+  .early {
+    padding-top: 64px;
+  }
+  .sec-head {
+    margin-bottom: 28px;
+  }
+  .sec-head h2 {
+    font-size: 30px;
+    line-height: 1.12;
+  }
+  .sec-head p {
+    font-size: 16.5px;
+    line-height: 1.55;
+  }
+
+  /* the four main features: words, then the recording, with even space between them */
+  .rows {
+    gap: 48px;
+  }
+  .row-text h3 {
+    font-size: 26px;
+    line-height: 1.15;
+  }
+  .row-text > p {
+    margin-top: 12px;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .row {
+    gap: 20px;
+  }
+  .story-row .ticks {
+    display: none;
+  }
+  .story-row .logo-chips {
+    margin-top: 18px;
+  }
+
+  /* recordings: the whole window, with a button to open it full screen */
+  .shot,
+  .story-card .shot {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    box-shadow: none;
+  }
+  .shot video {
+    box-shadow: 0 1px 2px rgb(11 11 18 / 0.06), 0 14px 30px -16px rgb(11 11 18 / 0.25);
+    cursor: zoom-in;
+  }
+  .shot-full {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* the tiles: one grouped list on a soft panel */
+  .tiles-title {
+    font-size: 24px;
+    line-height: 1.2;
+    margin: 64px auto 20px;
+    max-width: 18ch;
+  }
+  .tiles {
+    display: block;
+    background: var(--panel);
+    border-radius: 24px;
+    padding: 6px 16px;
+  }
+  .tiles > * + * .fold {
+    box-shadow: inset 0 1px 0 rgb(255 255 255);
+  }
+  .fold-title {
+    display: block;
+    margin: 0;
+  }
+  .fold-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 64px;
+    padding: 12px 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 16.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    text-align: left;
+    cursor: pointer;
+  }
+  .fold-head .tile-icon {
+    flex-shrink: 0;
+    background: #fff;
+  }
+  .fold-name {
+    flex: 1;
+  }
+  .fold-chev {
+    flex-shrink: 0;
+    color: var(--mute);
+    transition: transform 0.3s var(--ease);
+  }
+  .fold[data-open] .fold-chev {
+    transform: rotate(180deg);
+  }
+  .fold:not([data-open]) .fold-body {
+    display: none;
+  }
+  .fold-body {
+    padding: 4px 0 22px;
+  }
+  .fold-body .tile-head {
+    display: none;
+  }
+  .tiles .tile.spotlight-card {
+    margin: 0;
+    padding: 0;
+    gap: 16px;
+  }
+  .tiles .tile .shot video {
+    border-radius: 12px;
+    clip-path: inset(0.5px round 12px);
+  }
+  .tiles .shot-full {
+    background: #fff;
+  }
+  .tile p {
+    margin-top: 0;
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+  .tile .logo-chips {
+    margin-top: 14px;
+  }
+  .tile .logo-chips li {
+    background: #fff;
+  }
+}
+@media (max-width: 640px) {
+  /* the use-case tabs: an even grid of centred labels */
+  .seg button {
+    justify-content: center;
+    min-height: 40px;
+  }
+  .case {
+    padding: 22px 18px;
+    border-radius: 24px;
+  }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .fold-chev {
+    transition: none;
   }
 }

@@ -9,6 +9,7 @@ import SendIcon from "@/components/itshover/send-icon";
 import UploadIcon from "@/components/itshover/upload-icon";
 import { FeatureStory, type StoryRow } from "@/components/FeatureStory";
 import { FeatureVideo } from "@/components/FeatureVideo";
+import { PhoneFold } from "@/components/PhoneFold";
 import { Reveal } from "@/components/Reveal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
 import { PlatformLead, type LeadPhrase } from "@/components/PlatformLead";
@@ -140,18 +141,20 @@ export function Features() {
         <div className="tiles">
           {TILES.map((t, i) => (
             <Reveal key={t.title} delay={(i % 2) * 0.08}>
-              <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
-                <FeatureVideo name={t.video} label={t.alt} />
-                <div className="tile-text">
-                  <div className="tile-head">
-                    <span className="tile-icon" aria-hidden="true">
-                      {t.icon}
-                    </span>
-                    <h4>{t.title}</h4>
+              <PhoneFold id={`tile-${t.video}`} title={t.title} icon={t.icon} level={4} defaultOpen={i === 0}>
+                <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
+                  <FeatureVideo name={t.video} label={t.alt} />
+                  <div className="tile-text">
+                    <div className="tile-head">
+                      <span className="tile-icon" aria-hidden="true">
+                        {t.icon}
+                      </span>
+                      <h4>{t.title}</h4>
+                    </div>
+                    <p>{t.body}</p>
                   </div>
-                  <p>{t.body}</p>
-                </div>
-              </SpotlightCard>
+                </SpotlightCard>
+              </PhoneFold>
             </Reveal>
           ))}
         </div>

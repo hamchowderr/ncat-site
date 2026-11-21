@@ -8,7 +8,10 @@ describe("Everything around the clip", () => {
     render(<AroundTheClip />);
     const section = screen.getByRole("region", { name: "Everything around the clip, too" });
     for (const t of AROUND_TILES) {
-      expect(within(section).getByRole("heading", { level: 3, name: t.title })).toBeInTheDocument();
+      // the tile's own heading, plus the phone's fold row that opens it
+      const hs = within(section).getAllByRole("heading", { level: 3, name: t.title });
+      expect(hs.some((h) => h.closest(".tile"))).toBe(true);
+      expect(hs.some((h) => h.classList.contains("fold-title"))).toBe(true);
       const video = within(section).getByLabelText(t.alt);
       expect(video.getAttribute("src")).toBe(`/media/features/${t.video}.mp4`);
       expect(existsSync(`public/media/features/${t.video}.mp4`), t.video).toBe(true);
