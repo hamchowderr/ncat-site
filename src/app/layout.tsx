@@ -16,11 +16,11 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "NCA Dashboard: your content, organized and clipped automatically", template: "%s · NCA Dashboard" },
+  title: { default: "Kontifi: Your content, social media ready.", template: "%s · Kontifi" },
   description,
-  openGraph: { type: "website", siteName: "NCA Dashboard", title: "NCA Dashboard", description, url: "/" },
+  openGraph: { type: "website", siteName: "Kontifi", title: "Kontifi", description, url: "/" },
   robots: isIndexable() ? undefined : { index: false, follow: false },
-  twitter: { card: "summary_large_image", title: "NCA Dashboard", description, creator: "@hamchowderr" },
+  twitter: { card: "summary_large_image", title: "Kontifi", description, creator: "@hamchowderr" },
 };
 
 export const viewport: Viewport = { themeColor: "#ffffff", colorScheme: "light", viewportFit: "cover" };

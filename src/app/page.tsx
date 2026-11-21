@@ -1,3 +1,4 @@
+import { AroundTheClip } from "@/components/sections/AroundTheClip";
 import { EarlyAccess } from "@/components/sections/EarlyAccess";
 import { Engine } from "@/components/sections/Engine";
 import { Faq } from "@/components/sections/Faq";
@@ -20,6 +21,7 @@ export default function Home() {
       <Proof />
       <SplitScene />
       <Features />
+      <AroundTheClip />
       <HowItWorks />
       <TryIt enabled={demoEnabled()} emails={!!mailSetup()} />
       <Engine />

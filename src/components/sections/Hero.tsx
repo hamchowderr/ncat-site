@@ -27,17 +27,15 @@ export function Hero() {
         <HeroIcons />
         <p className="slogan">
           <span className="slogan-dot" aria-hidden="true" />
-          Social Media Ready
-        </p>
-        <h1 id="hero-title">
-          Your content, organized and{" "}
+          Organized and{" "}
           <span className="rot" aria-hidden="true">
             <span key={WORDS[word]} className="rot-word">
               {WORDS[word]}
             </span>
           </span>
           <span className="sr">clipped</span> automatically
-        </h1>
+        </p>
+        <h1 id="hero-title">Your content, social media ready.</h1>
         <FillText
           className="hero-sub"
           text="Pick a [ready-made automation] and switch it on. From then on, every new recording is [filed, transcribed, cut and captioned] by itself, on a [server you own], with [no AI tokens] spent on each video."

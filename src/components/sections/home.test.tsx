@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { HeroStage, STAGE } from "@/components/HeroStage";
-import { Features, PLATFORM_INKS } from "./Features";
+import { Features, LEAD } from "./Features";
 import { Hero } from "./Hero";
 import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
@@ -21,16 +21,17 @@ describe("Hero", () => {
     expect(lit).toBeLessThan(line.querySelectorAll(".fw").length / 4);
     expect(line.querySelectorAll(".hl.on")).toHaveLength(0);
   });
-  it("carries the Social Media Ready slogan above the headline", () => {
+  it("leads with the motto as the headline, with the rotating line above it", () => {
     const { container } = render(<Hero />);
-    const slogan = screen.getByText("Social Media Ready");
+    const slogan = container.querySelector(".slogan")!;
+    expect(slogan.textContent).toMatch(/^Organized and .*automatically$/);
     const h1 = container.querySelector("h1")!;
     expect(slogan.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("keeps the hero to the headline, the line under it and the two buttons, with no list of automations", () => {
     render(<Hero />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Your content, organized and.*automatically/);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Your content, social media ready.");
     expect(document.querySelector(".hero-sub")).toHaveTextContent(/Pick a ready-made automation and switch it on/);
     expect(screen.queryByText(/ready to switch on/)).toBeNull();
     expect(screen.queryByRole("button", { name: "Caption every new upload" })).toBeNull();
@@ -100,8 +101,31 @@ describe("Features", () => {
     render(<Features />);
     const h = screen.getByRole("heading", { level: 2, name: "Ready-made automations. No AI on every video." });
     expect(h.querySelector(".plat-ink")).toHaveTextContent("No AI on every video.");
-    // TikTok, Instagram, YouTube, Facebook and LinkedIn, each its own brand colour
-    expect(PLATFORM_INKS).toEqual(["#fe2c55", "#e1306c", "#ff0000", "#0866ff", "#0a66c2"]);
+  });
+
+  it("reads the lead one platform at a time, with the real logos in rails outside the text, never inside it", () => {
+    const { container } = render(<Features />);
+    const lead = container.querySelector(".pl-lead")!;
+    expect(lead).toHaveTextContent(
+      "Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.",
+    );
+    const phrases = Array.from(lead.querySelectorAll<HTMLElement>(".pl-phrase"));
+    expect(phrases.map((p) => p.dataset.platform)).toEqual(["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]);
+    expect(LEAD).toHaveLength(6);
+    // no logo sits among the words
+    expect(lead.querySelector(".pl-logo, svg, img")).toBeNull();
+    const rail = (side: string) => Array.from(container.querySelectorAll<HTMLElement>(`.pl-rail-${side} .pl-rail-logo`)).map((l) => l.dataset.platform);
+    expect(rail("left")).toEqual(["tiktok", "youtube", "linkedin"]);
+    expect(rail("right")).toEqual(["instagram", "facebook", "x"]);
+    for (const r of container.querySelectorAll(".pl-rail")) expect(r).toHaveAttribute("aria-hidden", "true");
+    const wrap = container.querySelector(".pl-wrap")!;
+    expect(wrap.firstElementChild).toHaveClass("pl-rail-left");
+    expect(wrap.lastElementChild).toHaveClass("pl-rail-right");
+    // drawn in the platforms' own colours, not one ink
+    expect(wrap.querySelector('[data-platform="youtube"] path[fill="#ff0000"]')).not.toBeNull();
+    expect(wrap.querySelector('[data-platform="facebook"] path[fill="#0866ff"]')).not.toBeNull();
+    expect(wrap.querySelector('[data-platform="tiktok"] path[fill="#25f4ee"]')).not.toBeNull();
+    expect(wrap.querySelector('[data-platform="instagram"] radialGradient')).not.toBeNull();
   });
 
   it("shows a silent, described screen recording for every feature", () => {
@@ -116,8 +140,7 @@ describe("Features", () => {
       expect(v.hasAttribute("playsinline")).toBe(true);
     }
     expect(container.querySelectorAll(".shot img").length).toBe(0);
-    expect(screen.getByText(/screen recording of the working dashboard/)).toBeInTheDocument();
-    expect(screen.getByText(/demo data/)).toBeInTheDocument();
+    expect(screen.queryByText(/screen recording of the working dashboard/)).toBeNull();
   });
 
   it("describes the current dashboard: the Inbox for failed runs and the Review list", () => {
@@ -144,13 +167,13 @@ describe("Features", () => {
 describe("UseCases", () => {
   it("switches who it is for", () => {
     render(<UseCases />);
-    fireEvent.click(screen.getByRole("tab", { name: "Podcast teams" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Podcast Teams" }));
     expect(within(screen.getByRole("tabpanel")).getByRole("heading")).toHaveTextContent("The call ends. The episode gets to work.");
   });
   it("shows what goes in and what comes out for each team, and every tab has an icon", () => {
     render(<UseCases />);
     for (const tab of screen.getAllByRole("tab")) expect(tab.querySelector("svg")).not.toBeNull();
-    for (const name of ["Creators", "Editing agencies", "Podcast teams", "Music video teams"]) {
+    for (const name of ["Creators", "Editing Agencies", "Podcast Teams", "Music Video Teams", "Coaches", "Webinars"]) {
       fireEvent.click(screen.getByRole("tab", { name }));
       const panel = screen.getByRole("tabpanel");
       expect(panel.querySelector(".case-in")?.textContent).toMatch(/^In.+/);
@@ -191,5 +214,52 @@ describe("story and icons", () => {
     for (const li of items) expect(li.querySelector(".step-icon svg")).not.toBeNull();
     const cases = render(<UseCases />).container;
     expect(cases.querySelector(".case-icon svg")).not.toBeNull();
+  });
+});
+
+describe("the feeds section is clearly about the agent, and shows the brand", () => {
+  it("wears a robot agent badge and says every clip comes out in your brand", () => {
+    const { container } = render(<PlatformExpert />);
+    const badge = container.querySelector(".agent-badge")!;
+    expect(badge).toHaveTextContent("Kontifi’s agent");
+    expect(badge.querySelector("svg.lucide-bot")).not.toBeNull();
+    expect(container.querySelector(".sec-head")).toHaveTextContent("your caption style, logo, colours and font");
+    expect([...container.querySelectorAll(".shift-brand li")].map((l) => l.textContent?.trim())).toEqual([
+      expect.stringContaining("Caption style"),
+      "Logo",
+      "Colours",
+      expect.stringContaining("Font"),
+    ]);
+    expect(container.querySelector(".shift-cap")).toHaveTextContent("Your content, social media ready");
+    expect(container.querySelector(".shift-team")).not.toBeNull();
+  });
+});
+
+describe("Use AI once, not on every video", () => {
+  it("puts the AI into building the factory once, then ends ready or handed to an editor", () => {
+    const { container } = render(<HowItWorks />);
+    expect(container.querySelector("h2")).toHaveTextContent("Use AI once. Not on every video.");
+    expect(container.querySelector(".sec-lead")).toHaveTextContent("Build your content factory once");
+    expect([...container.querySelectorAll(".steps h3")].map((h) => h.textContent)).toEqual([
+      "Build it once",
+      "It runs by itself",
+      "Ready, or handed off",
+    ]);
+    expect([...container.querySelectorAll(".step-ends span")].map((e) => e.textContent)).toEqual(["Ready to post", "Ready for your editor"]);
+    expect(container.textContent).not.toMatch(/Set it up once/);
+  });
+});
+
+describe("use cases from the newer features", () => {
+  it("adds coaches and webinars, built on meeting recordings, chapters, best moments, follow the speaker and the calendar", () => {
+    render(<UseCases />);
+    fireEvent.click(screen.getByRole("tab", { name: "Coaches" }));
+    let panel = screen.getByRole("tabpanel");
+    expect(panel).toHaveTextContent("Zoom, Google Meet or Microsoft Teams");
+    expect(panel).toHaveTextContent("Best moments as vertical clips");
+    fireEvent.click(screen.getByRole("tab", { name: "Webinars" }));
+    panel = screen.getByRole("tabpanel");
+    expect(panel).toHaveTextContent("Clips that follow the speaker");
+    expect(panel).toHaveTextContent("Posts planned on the calendar");
   });
 });

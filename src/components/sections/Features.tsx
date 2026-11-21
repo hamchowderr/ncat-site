@@ -11,7 +11,7 @@ import { FeatureStory, type StoryRow } from "@/components/FeatureStory";
 import { FeatureVideo } from "@/components/FeatureVideo";
 import { Reveal } from "@/components/Reveal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
-import ScrollReveal from "@/components/reactbits/ScrollReveal/ScrollReveal";
+import { PlatformLead, type LeadPhrase } from "@/components/PlatformLead";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
 
 const ROWS: StoryRow[] = [
@@ -113,8 +113,15 @@ const TILES: { title: string; icon: React.ReactNode; body: string; video: string
   },
 ];
 
-/** The platforms' own brand colours (TikTok, Instagram, YouTube, Facebook, LinkedIn): each word of the lead takes the next one as it appears, and keeps it. */
-export const PLATFORM_INKS = ["#fe2c55", "#e1306c", "#ff0000", "#0866ff", "#0a66c2"];
+/** The lead, read one platform at a time: each phrase takes that platform's colour, with its logo beside it. */
+export const LEAD: LeadPhrase[] = [
+  { platform: "tiktok", text: "Clipping apps run AI on every video" },
+  { platform: "instagram", text: "and bill you for it," },
+  { platform: "youtube", text: "and editing with an AI assistant spends tokens on every cut." },
+  { platform: "facebook", text: "Most of that work is plain editing:" },
+  { platform: "linkedin", text: "cut, resize, caption, join and level the audio." },
+  { platform: "x", text: "Here it is set up once and runs the same way every time." },
+];
 
 export function Features() {
   return (
@@ -124,9 +131,7 @@ export function Features() {
           <h2 id="features-title">
             Ready-made automations. <span className="plat-ink">No AI on every video.</span>
           </h2>
-          <ScrollReveal baseOpacity={0.15} enableBlur={false} baseRotation={0} highlightColor={PLATFORM_INKS} highlightStays containerClassName="sec-lead" textClassName="sec-lead-text">
-            Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.
-          </ScrollReveal>
+          <PlatformLead phrases={LEAD} className="sec-lead" />
         </Reveal>
         <FeatureStory rows={ROWS} />
         <Reveal>
@@ -136,19 +141,20 @@ export function Features() {
           {TILES.map((t, i) => (
             <Reveal key={t.title} delay={(i % 2) * 0.08}>
               <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
-                <FeatureVideo name={t.video} label={t.alt} small />
-                <div className="tile-head">
-                  <span className="tile-icon" aria-hidden="true">
-                    {t.icon}
-                  </span>
-                  <h4>{t.title}</h4>
+                <FeatureVideo name={t.video} label={t.alt} />
+                <div className="tile-text">
+                  <div className="tile-head">
+                    <span className="tile-icon" aria-hidden="true">
+                      {t.icon}
+                    </span>
+                    <h4>{t.title}</h4>
+                  </div>
+                  <p>{t.body}</p>
                 </div>
-                <p>{t.body}</p>
               </SpotlightCard>
             </Reveal>
           ))}
         </div>
-        <p className="screens-note">Every video on this page is a screen recording of the working dashboard, sped up where it waits on the toolkit. The team, people and files in them are demo data.</p>
       </div>
     </section>
   );

@@ -113,10 +113,21 @@ test("the scroll scene holds on its finished moment before the page scrolls on",
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const place = () => page.locator(".split-next").evaluate((el) => (el as HTMLElement).style.transform);
+  // the scene follows the scroll with a lag, so read it only once it has come to rest
+  const settled = async () => {
+    let last = await place();
+    for (let i = 0; i < 40; i++) {
+      await page.waitForTimeout(100);
+      const now = await place();
+      if (now === last) return now;
+      last = now;
+    }
+    return last;
+  };
   await scrollSplit(page, 0.82);
-  const held = await place();
+  const held = await settled();
   await scrollSplit(page, 0.95);
-  expect(await place()).toBe(held);
+  expect(await settled()).toBe(held);
   await expect(page.locator(".split-steps li.on")).toHaveCount(5);
   // and it is still pinned on screen while it holds
   const box = (await page.locator(".split-stage").boundingBox())!;
@@ -216,9 +227,12 @@ test("the caption under the hero recording lights up word by word as it plays", 
   await expect(cap).toHaveText(/A new upload starts the run/);
 });
 
-/** Picks a real recording the way a visitor would, under the name a visitor's file might have. */
+/**
+ * Picks a real recording the way a visitor would, under the name a visitor's file might have.
+ * It is a fixed 35-second file, so these tests don't move when the site's own videos are re-recorded.
+ */
 async function dropRecording(page: import("@playwright/test").Page) {
-  const buffer = await (await import("node:fs/promises")).readFile("public/media/live-run.mp4");
+  const buffer = await (await import("node:fs/promises")).readFile("e2e/fixtures/first-video.mp4");
   await page.locator('.try input[type="file"]').setInputFiles({ name: "my-first-video.mp4", mimeType: "video/mp4", buffer });
 }
 
@@ -389,29 +403,74 @@ test("every Get early access button opens the pop-up, and Escape closes it", asy
   await expect(page.locator("dialog[open] form")).toBeVisible();
 });
 
-test("the features heading runs through the platforms' colours, and the lead's words glow in them as they appear", async ({ page }) => {
+test("the features lead lights up one platform at a time in its own colour, with the logos in rails outside the text", async ({ page, isMobile }) => {
   await page.goto("/");
   const ink = page.locator("#features-title .plat-ink");
   await expect(ink).toHaveText("No AI on every video.");
-  await expect(ink).toHaveCSS("animation-name", "plat-ink");
-  await expect(ink).toHaveCSS("color", "rgba(0, 0, 0, 0)");
-  const lead = page.locator(".features .sec-lead");
-  // scroll so the lead is part way through appearing, and look for words lit in a platform's colour
-  const seen = new Set<string>();
-  const y0 = await lead.evaluate((el) => el.getBoundingClientRect().top + window.scrollY - window.innerHeight);
-  for (let i = 0; i < 24; i++) {
-    await page.evaluate((y) => window.scrollTo(0, y), y0 + i * 25);
-    await page.waitForTimeout(60);
-    for (const c of await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.map((p) => (p as HTMLElement).style.color)))
-      for (const rgb of ["rgb(254, 44, 85)", "rgb(225, 48, 108)", "rgb(255, 0, 0)", "rgb(8, 102, 255)", "rgb(10, 102, 194)"]) if (c.includes(rgb)) seen.add(rgb);
+  const lead = page.locator(".features .pl-lead");
+  const phrase = (p: string) => lead.locator(`.pl-phrase[data-platform="${p}"]`);
+  const logo = (p: string) => page.locator(`.features .pl-rail-logo[data-platform="${p}"]`);
+  // before it scrolls in, it waits in grey with the logos tucked away
+  await expect(phrase("youtube").locator(".pl-words")).toHaveCSS("opacity", "0.3");
+  await expect(logo("youtube")).toHaveCSS("opacity", "0");
+  await lead.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, 300));
+  const colours: Record<string, string> = { youtube: "rgb(255, 0, 0)", facebook: "rgb(8, 102, 255)", linkedin: "rgb(10, 102, 194)", tiktok: "rgb(0, 0, 0)", x: "rgb(0, 0, 0)" };
+  for (const [p, rgb] of Object.entries(colours)) {
+    await expect(phrase(p)).toHaveClass(/is-on/);
+    await expect(phrase(p).locator(".pl-words")).toHaveCSS("color", rgb);
+    await expect(phrase(p).locator(".pl-words")).toHaveCSS("opacity", "1");
   }
-  expect(seen.size).toBeGreaterThanOrEqual(3);
-  // once it has all appeared, every word keeps its platform's colour, taken in turn
-  await page.evaluate((y) => window.scrollTo(0, y), y0 + 2000);
-  await page.waitForTimeout(400);
-  const colours = await lead.locator(".scroll-reveal-piece").evaluateAll((ps) => ps.map((p) => getComputedStyle(p).color));
-  const inks = ["rgb(254, 44, 85)", "rgb(225, 48, 108)", "rgb(255, 0, 0)", "rgb(8, 102, 255)", "rgb(10, 102, 194)"];
-  colours.forEach((c, i) => expect(c).toBe(inks[i % inks.length]));
+  await expect(phrase("instagram").locator(".pl-words")).toHaveCSS("background-clip", "text");
+  // every logo shows, big enough to recognise, and none of them overlaps the text
+  const text = (await lead.boundingBox())!;
+  const sides = new Set<string>();
+  for (const p of ["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]) {
+    await expect(logo(p)).toHaveCSS("opacity", "1");
+    const box = (await logo(p).boundingBox())!;
+    expect(box.width).toBeGreaterThan(30);
+    const outside = box.x + box.width <= text.x || box.x >= text.x + text.width || box.y + box.height <= text.y;
+    expect(outside, p).toBe(true);
+    sides.add(box.x + box.width <= text.x ? "left" : box.x >= text.x + text.width ? "right" : "above");
+  }
+  expect([...sides].sort()).toEqual(isMobile ? ["above"] : ["left", "right"]);
+  // scattered, not stacked: each its own size and tilt, each coming in its own way
+  const looks = await page.$$eval(".features .pl-rail-logo", (els) => els.map((e) => { const c = getComputedStyle(e); return { w: c.width, r: c.rotate, a: c.animationName }; }));
+  expect(new Set(looks.map((l) => l.w)).size).toBeGreaterThanOrEqual(5);
+  expect(new Set(looks.map((l) => l.r)).size).toBe(6);
+  expect(new Set(looks.map((l) => l.a.split(",")[0].trim())).size).toBe(6);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
+});
+
+test("the team chat scene changes app, and its logo, each time the conversation replays", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/");
+  const chat = page.locator(".scene-chat .chat");
+  await chat.scrollIntoViewIfNeeded();
+  const seen: string[] = [];
+  const said: string[] = [];
+  for (let i = 0; i < 4; i++) {
+    seen.push((await chat.getAttribute("data-app"))!);
+    said.push((await chat.locator(".msg-bubble").first().textContent())!);
+    await expect(chat.locator(".chat-chan svg")).toBeVisible();
+    await expect(chat.locator(".ava-bot svg.lucide-bot")).toBeAttached();
+    await page.clock.runFor(9000);
+  }
+  expect(seen).toEqual(["slack", "discord", "teams", "telegram"]);
+  expect(new Set(said).size).toBe(4);
+  await expect(chat).toHaveAttribute("data-app", "slack");
+});
+
+test("each step of one recording in has its own icon that moves in its own way", async ({ page }) => {
+  await page.goto("/");
+  const steps = page.locator(".split-steps .split-n");
+  await expect(steps).toHaveCount(5);
+  await page.locator(".split").scrollIntoViewIfNeeded();
+  const anims = await steps.evaluateAll((els) => els.map((e) => getComputedStyle(e.querySelector("svg")!).animationName));
+  const on = anims.filter((a) => a && a !== "none");
+  expect(new Set(on).size).toBe(on.length);
+  const colours = await steps.evaluateAll((els) => els.map((e) => getComputedStyle(e).getPropertyValue("--c").trim()));
+  expect(new Set(colours).size).toBe(5);
 });
 
 test("a clips link without its key shows nothing", async ({ page }) => {

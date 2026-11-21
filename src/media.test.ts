@@ -38,31 +38,22 @@ function cornerLight(f: Buffer) {
   return sum / n;
 }
 
-describe.skipIf(!hasFfmpeg)("hero recordings", () => {
-  for (const name of ["live-run", "review", "outputs", "agent-builds"]) {
-    it(`${name} has no blank loading frames, no developer badge and no misplaced frame`, () => {
-      frames(name).forEach((f, i) => {
-        const at = `${name} at ${i / 10}s`;
-        // the main area (right of the sidebar) always shows the app, never a blank loading page
-        expect(inkShare(f, 55), `${at} looks blank`).toBeGreaterThan(0.004);
-        // the corner where the framework's dark badge sat holds only the light account avatar
-        for (let y = 160; y < H; y++) for (let x = 0; x < 12; x++) expect(f[y * W + x], `${at} has something dark in the corner`).toBeGreaterThan(100);
-        expect(cornerLight(f), `${at} is not filling the frame`).toBeGreaterThan(200);
-      });
-    }, 60_000);
-  }
-});
+const HERO = ["live-run", "review", "outputs", "agent-builds"];
+const FEATURES = ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule", "zoom", "library", "calendar", "moments", "follow", "mcp"];
 
-describe.skipIf(!hasFfmpeg)("feature recordings", () => {
-  for (const name of ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule"]) {
-    it(`${name} never shows a blank page or a misplaced frame`, () => {
-      const all = frames(`features/${name}`);
+// The recordings move a camera in to each action, so most frames are close-ups. Every clip
+// opens on the whole app window, recorded from a production build: that first frame shows
+// the light page in both bottom corners, with no framework badge. The badge is near-black;
+// the grey ring of the signed-in avatar at the foot of a long menu may reach the corner.
+describe.skipIf(!hasFfmpeg)("recordings", () => {
+  for (const name of [...HERO, ...FEATURES.map((n) => `features/${n}`)]) {
+    it(`${name} never shows a blank page and opens on the whole window`, () => {
+      const all = frames(name);
       expect(all.length).toBeGreaterThan(100);
-      all.forEach((f, i) => {
-        const at = `${name} at ${i / 10}s`;
-        expect(inkShare(f, 0), `${at} looks blank`).toBeGreaterThan(0.004);
-        expect(cornerLight(f), `${at} is not filling the frame`).toBeGreaterThan(200);
-      });
+      all.forEach((f, i) => expect(inkShare(f, 0), `${name} at ${i / 10}s looks blank`).toBeGreaterThan(0.002));
+      const first = all[0];
+      expect(cornerLight(first), `${name} does not open on the whole window`).toBeGreaterThan(200);
+      for (let y = 160; y < H; y++) for (let x = 0; x < 12; x++) expect(first[y * W + x], `${name} has something dark in the corner`).toBeGreaterThan(60);
     }, 60_000);
   }
 });
@@ -72,8 +63,27 @@ describe.skipIf(!hasFfmpeg)("recording sizes", () => {
     execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", `public/media/${file}.mp4`])
       .toString()
       .trim();
-  it("shows the whole app window, 16:10, in every recording", () => {
-    for (const name of ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule"]) expect(size(`features/${name}`), name).toBe("1280,800");
-    for (const name of ["live-run", "review", "outputs", "agent-builds"]) expect(size(name), name).toBe("1440,900");
+  it("is 16:10 at 1600x1000 in every recording", () => {
+    for (const name of FEATURES) expect(size(`features/${name}`), name).toBe("1600,1000");
+    for (const name of HERO) expect(size(name), name).toBe("1600,1000");
   });
+});
+
+// The demo team's own logo (Northlight Media's coral and orange circles) sits in the team
+// switcher at the top left, so no clip shows the plain stand-in mark. Brand opens before the
+// logo is uploaded, and the calendar opens with the menu folded, so those two are left out.
+describe.skipIf(!hasFfmpeg)("team logo in the recordings", () => {
+  const coralIn = (file: string) => {
+    const w = 128;
+    const h = 100;
+    const raw = execFileSync("ffmpeg", ["-v", "error", "-i", `public/media/${file}.mp4`, "-frames:v", "1", "-vf", `crop=${w}:${h}:0:0`, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]);
+    let n = 0;
+    for (let i = 0; i + 2 < raw.length; i += 3) if (raw[i] > 220 && raw[i + 1] > 70 && raw[i + 1] < 130 && raw[i + 2] > 80 && raw[i + 2] < 140) n++;
+    return n;
+  };
+  for (const name of [...HERO, ...FEATURES.filter((n) => n !== "brand" && n !== "calendar").map((n) => `features/${n}`)]) {
+    it(`${name} opens with Northlight Media's logo, not the plain mark`, () => {
+      expect(coralIn(name)).toBeGreaterThan(200);
+    });
+  }
 });

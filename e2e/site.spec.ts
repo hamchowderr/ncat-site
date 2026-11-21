@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 const pages = [
-  { path: "/", h1: /Your content, organized and/ },
+  { path: "/", h1: "Your content, social media ready." },
   { path: "/pricing", h1: "Pay once. Own your version." },
+  { path: "/about", h1: "Built for everyone who hit the same wall." },
 ];
 
 for (const { path, h1 } of pages) {
@@ -20,7 +21,7 @@ for (const { path, h1 } of pages) {
 }
 
 test("every internal link points at a real page or section", async ({ page, request }) => {
-  for (const path of ["/", "/pricing"]) {
+  for (const path of ["/", "/pricing", "/about"]) {
     await page.goto(path);
     const hrefs = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")!));
     for (const href of new Set(hrefs)) {
@@ -37,7 +38,9 @@ test("every internal link points at a real page or section", async ({ page, requ
 
 test("share image, icon, sitemap and robots are served", async ({ request }) => {
   for (const url of ["/opengraph-image", "/icon.svg", "/sitemap.xml", "/robots.txt"]) expect((await request.get(url)).status(), url).toBe(200);
-  expect(await (await request.get("/sitemap.xml")).text()).toContain("/pricing");
+  const map = await (await request.get("/sitemap.xml")).text();
+  expect(map).toContain("/pricing");
+  expect(map).toContain("/about");
 });
 
 test("unknown pages show the not-found page", async ({ page }) => {
@@ -134,9 +137,13 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
     const left = box.x - frame.x;
     const right = frame.x + frame.width - (box.x + box.width);
     expect(Math.abs(left - right)).toBeLessThanOrEqual(1.5);
-    expect(await img.evaluate((v) => getComputedStyle(v).boxShadow)).toBe("none");
-    // and is a zoomed-in recording, not a shrunk whole screen
-    await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1280, 800]);
+    // no grey mat or padding around it: the recording is the surface
+    expect(Math.abs(box.width - frame.width)).toBeLessThanOrEqual(1.5);
+    expect(await img.locator("..").evaluate((f) => getComputedStyle(f).backgroundColor)).toBe("rgba(0, 0, 0, 0)");
+    // its rounded corners are cut with a clip-path, so no dark hairline shows round it while the story cards tilt
+    expect(await img.evaluate((v) => getComputedStyle(v).clipPath)).toMatch(/^inset\(.*round/);
+    // and is a recording made to be read at this size
+    await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1600, 1000]);
   }
   for (const r of ratios) expect(Math.abs(r - 16 / 10)).toBeLessThan(0.02);
   for (const v of await shots.all()) {
@@ -145,6 +152,29 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
       expect((await request.get(url)).status(), url).toBe(200);
     }
     await expect(v).toHaveAttribute("aria-label", /^Screen recording: /);
+  }
+});
+
+test("each feature recording takes most of its row, alternating sides, so its text is readable", async ({ page, isMobile }) => {
+  await page.goto("/");
+  for (const id of ["#features .tiles", "#around .tiles"]) {
+    const tiles = page.locator(`${id} .tile`);
+    const n = await tiles.count();
+    if (!n) continue;
+    const sides: string[] = [];
+    for (let i = 0; i < n; i++) {
+      const tile = tiles.nth(i);
+      await tile.scrollIntoViewIfNeeded();
+      const t = (await tile.boundingBox())!;
+      const v = (await tile.locator(".shot video").boundingBox())!;
+      if (isMobile) {
+        expect(v.width / t.width).toBeGreaterThan(0.85);
+      } else {
+        expect(v.width / t.width, `${id} tile ${i}`).toBeGreaterThan(0.55);
+        sides.push(v.x - t.x < t.width / 4 ? "left" : "right");
+      }
+    }
+    if (!isMobile) for (let i = 1; i < sides.length; i++) expect(sides[i]).not.toBe(sides[i - 1]);
   }
 });
 
@@ -176,8 +206,21 @@ test("event marks sit on one even row and platform logos are all the same size",
   const boxes = await Promise.all(venues.map(async (v) => (await v.boundingBox())!));
   if (!isMobile) {
     for (const b of boxes) expect(Math.abs(b.y + b.height / 2 - (boxes[0].y + boxes[0].height / 2))).toBeLessThanOrEqual(1);
+    // evenly spread: the middle event sits on the page's centre line and the gaps either side of it are equal
+    const vw = page.viewportSize()!.width;
+    expect(Math.abs(boxes[1].x + boxes[1].width / 2 - vw / 2)).toBeLessThanOrEqual(2);
+    const gapLeft = boxes[1].x - (boxes[0].x + boxes[0].width);
+    const gapRight = boxes[2].x - (boxes[1].x + boxes[1].width);
+    expect(Math.abs(gapLeft - gapRight)).toBeLessThanOrEqual(2);
+    expect(boxes[0].x).toBeGreaterThanOrEqual(0);
+  } else {
+    // stacked on a phone: every event centred under the heading
+    for (const b of boxes) expect(Math.abs(b.x + b.width / 2 - page.viewportSize()!.width / 2)).toBeLessThanOrEqual(2);
   }
   for (const b of boxes) expect(b.height).toBeLessThanOrEqual(34);
+  // each event mark in its own brand colour, not a shared grey
+  const fills = await page.locator(".venues .mark").evaluateAll((ms) => ms.map((m) => getComputedStyle(m).fill));
+  expect(fills).toEqual(["rgb(217, 119, 87)", "rgb(154, 96, 36)", "rgb(17, 17, 17)"]);
   const logos = await page.locator(".feeds li").locator("svg, img").all();
   expect(logos).toHaveLength(9);
   for (const l of logos) {
@@ -221,7 +264,7 @@ test("every tab label fits inside its tab track, with nothing cut off", async ({
 
 test("use-case tabs switch panels", async ({ page }) => {
   await page.goto("/");
-  const tab = page.getByRole("tab", { name: "Podcast teams" });
+  const tab = page.getByRole("tab", { name: "Podcast Teams" });
   await tab.click();
   await expect(tab).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("tabpanel").filter({ hasText: "The call ends. The episode gets to work." })).toBeVisible();
@@ -252,7 +295,28 @@ test("the FAQ opens and closes", async ({ page }) => {
   await page.goto("/");
   const q = page.locator("details").filter({ hasText: "Do I need n8n?" });
   await q.locator("summary").click();
-  await expect(q.getByText("Automations run inside the dashboard")).toBeVisible();
+  await expect(q.getByText(/Automations run inside the shell itself/)).toBeVisible();
+  await expect(q).toHaveAttribute("open", "");
+  await q.locator("summary").click();
+  await expect(q).not.toHaveAttribute("open", "");
+});
+
+test("the FAQ is one centred column with no boxes, and the footer has nothing under it", async ({ page }) => {
+  await page.goto("/");
+  const list = page.locator(".faq-list");
+  await list.scrollIntoViewIfNeeded();
+  const box = (await list.boundingBox())!;
+  const vw = page.viewportSize()!.width;
+  expect(Math.abs(box.x + box.width / 2 - vw / 2)).toBeLessThan(4);
+  const first = list.locator("details").first();
+  await expect(first).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  const q = (await first.locator("summary").boundingBox())!;
+  expect(q.height).toBeGreaterThanOrEqual(56);
+  const foot = page.locator("footer.foot");
+  await expect(foot.locator(".legal")).toHaveCount(0);
+  await expect(foot).not.toContainText("demo data");
+  await expect(foot.getByRole("link", { name: "Instagram" })).toBeVisible();
+  expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
 });
 
 test("motion is skipped for people who turn it off", async ({ page }) => {
@@ -268,10 +332,16 @@ test("motion is skipped for people who turn it off", async ({ page }) => {
 test("the slogan sits above the headline", async ({ page }) => {
   await page.goto("/");
   const slogan = page.locator(".hero .slogan");
-  await expect(slogan).toHaveText("Social Media Ready");
+  await expect(slogan).toContainText("automatically");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your content, social media ready.");
   const s = (await slogan.boundingBox())!;
   const h = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
   expect(s.y + s.height).toBeLessThanOrEqual(h.y);
+  // one line that fits the screen, even with the longest rotating word
+  await expect(slogan.locator(".rot-word")).toHaveText("transcribed", { timeout: 9000 });
+  const t = (await slogan.boundingBox())!;
+  expect(t.height).toBeLessThan(40);
+  expect(t.x + t.width).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
 
 test("features stack as cards while you scroll on a wide screen", async ({ page, isMobile }) => {
@@ -371,6 +441,131 @@ test("social logos rain down beside the headline, never across it, and move when
     // a falling logo may be above or below the visible band right now, so point at it directly
     await drop.dispatchEvent("pointerenter");
     await expect.poll(() => logo.innerHTML(), { message: name }).not.toBe(before);
+  }
+});
+
+test("the newer features each show a whole-window recording that plays on screen, with real app logos", async ({ page, request }) => {
+  await page.goto("/");
+  const section = page.getByRole("region", { name: "Everything around the clip, too" });
+  const shots = section.locator(".shot video");
+  await expect(shots).toHaveCount(6);
+  for (const v of await shots.all()) {
+    await v.scrollIntoViewIfNeeded();
+    await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
+    const box = (await v.boundingBox())!;
+    expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
+    for (const attr of ["src", "poster"]) {
+      const url = (await v.getAttribute(attr))!;
+      expect((await request.get(url)).status(), url).toBe(200);
+    }
+    await expect(v).toHaveAttribute("aria-label", /^Screen recording: /);
+  }
+  const zoom = section.locator(".shot video").first();
+  await zoom.scrollIntoViewIfNeeded();
+  await expect.poll(() => zoom.evaluate((x: HTMLVideoElement) => !x.paused && x.currentTime > 0), { timeout: 15_000 }).toBe(true);
+  // every app chip carries a drawn mark, and none renders at zero size
+  for (const mark of await section.locator(".logo-chips li .bi, .logo-chips li .fl, .also-logos .bi").all()) {
+    const b = (await mark.boundingBox())!;
+    expect(b.width).toBeGreaterThan(14);
+    expect(b.height).toBeGreaterThan(14);
+  }
+  await expect(section.getByRole("list", { name: "Also in the dashboard" }).getByRole("listitem")).toHaveCount(5);
+  // the meeting apps sit side by side, Microsoft Teams next to Google Meet, each chip only as wide as its name
+  const meet = section.getByRole("list", { name: /Meeting recordings.*: apps/ });
+  const chips = await Promise.all(["Zoom", "Google Meet", "Microsoft Teams"].map((n) => meet.getByRole("listitem").filter({ hasText: n }).boundingBox()));
+  if ((page.viewportSize()?.width ?? 0) >= 900) {
+    expect(Math.abs(chips[2]!.y - chips[1]!.y)).toBeLessThan(2);
+    expect(chips[2]!.x).toBeGreaterThan(chips[1]!.x + chips[1]!.width);
+  }
+  expect(chips[0]!.width).toBeLessThan(chips[2]!.width);
+  // the AI apps sit in one row too
+  const ai = section.getByRole("list", { name: /AI apps you already use: apps/ }).getByRole("listitem");
+  if ((page.viewportSize()?.width ?? 0) >= 900) {
+    const ys = await ai.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+    expect(new Set(ys).size).toBe(1);
+  }
+  expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
+});
+
+test("the engine section lays the five ways on one rail, ending on the shell, with nothing overflowing", async ({ page, isMobile }) => {
+  await page.goto("/");
+  const ways = page.locator(".ways");
+  await ways.scrollIntoViewIfNeeded();
+  await expect(page.getByRole("heading", { name: "Free engine. Fine-tuned shell." })).toBeVisible();
+  const items = ways.locator(".ways-list > li");
+  await expect(items).toHaveCount(5);
+  await expect(items.last()).toHaveClass(/ours/);
+  await expect(items.last()).toContainText("Kontifi, the fine-tuned shell");
+  const boxes = await Promise.all((await items.all()).map((i) => i.boundingBox()));
+  if (isMobile) {
+    // one under another on a phone
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.y).toBeGreaterThan(boxes[i - 1]!.y);
+  } else {
+    // side by side on a wide screen, left to right
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.x).toBeGreaterThan(boxes[i - 1]!.x);
+  }
+  for (const item of await items.all()) expect(await item.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
+});
+
+test("the Editing with AI tab says what it costs today and what changes", async ({ page }) => {
+  await page.goto("/");
+  const tab = page.getByRole("tab", { name: "Editing With AI" });
+  await tab.scrollIntoViewIfNeeded();
+  await tab.click();
+  const panel = page.locator("#case-panel");
+  await expect(panel).toContainText("Stop spending your AI limits on the same edit.");
+  await expect(panel.locator(".case-without")).toContainText("Without Kontifi");
+  await expect(panel.locator(".case-outs li")).toHaveCount(4);
+});
+
+test("the FAQ answers what you pay for when the toolkit is free", async ({ page }) => {
+  await page.goto("/");
+  const q = page.getByText("If the NCA Toolkit is free, what am I paying for?");
+  await q.scrollIntoViewIfNeeded();
+  await q.click();
+  await expect(page.getByText(/You never pay for the processing itself/)).toBeVisible();
+});
+
+test("the About page is in the menu and tells the five chapters", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.getByRole("button", { name: /menu/i }).click();
+  await page.getByRole("navigation", { name: isMobile ? "Menu" : "Main" }).getByRole("link", { name: "About" }).click();
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(page.locator(".chapter")).toHaveCount(5);
+  await page.locator(".chapter-shell").scrollIntoViewIfNeeded();
+  await expect(page.locator(".chapter-shell h3")).toBeVisible();
+});
+
+test("the how-it-works section says use AI once, not on every video, and ends ready or handed off", async ({ page }) => {
+  await page.goto("/");
+  const how = page.locator("#how-it-works");
+  await how.scrollIntoViewIfNeeded();
+  await expect(how.getByRole("heading", { level: 2 })).toHaveText("Use AI once. Not on every video.");
+  await expect(how.locator(".steps li")).toHaveCount(3);
+  await expect(how.locator(".step-ends span")).toHaveText(["Ready to post", "Ready for your editor"]);
+  const box = await how.locator(".step-ends").boundingBox();
+  const vw = page.viewportSize()!.width;
+  expect(box!.x + box!.width).toBeLessThanOrEqual(vw);
+});
+
+test("the feeds section shows the agent badge and the brand every clip carries, inside the screen", async ({ page }) => {
+  await page.goto("/");
+  const sec = page.locator(".platforms");
+  await sec.scrollIntoViewIfNeeded();
+  await expect(sec.locator(".agent-badge")).toBeVisible();
+  await expect(sec.locator(".agent-badge svg.lucide-bot")).toBeVisible();
+  await expect(sec.locator(".shift-brand li")).toHaveCount(4);
+  await expect(sec.locator(".shift-cap")).toBeVisible();
+  const frame = (await sec.locator(".shift-frame").boundingBox())!;
+  const team = (await sec.locator(".shift-team").boundingBox())!;
+  const plat = (await sec.locator(".shift-logo").boundingBox())!;
+  expect(team.x - frame.x).toBeLessThan(frame.width / 4);
+  expect(frame.x + frame.width - (plat.x + plat.width)).toBeLessThan(frame.width / 4);
+  const vw = page.viewportSize()!.width;
+  for (const li of await sec.locator(".shift-brand li").all()) {
+    const b = (await li.boundingBox())!;
+    expect(b.x + b.width).toBeLessThanOrEqual(vw);
   }
 });
 

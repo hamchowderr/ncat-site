@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { BadgeCheck, Captions, FileAudio, Scissors, Send } from "lucide-react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
 import { MovingIcon } from "@/components/MovingIcon";
@@ -31,13 +32,14 @@ export const SPLIT_CLIPS: { platform: string; place: string; frame: Frame; said:
   { platform: "Facebook", place: "Facebook Reels", frame: "9:16", said: "come out and learn", from: 133, to: 187.26, video: "/media/split/facebook.mp4", poster: "/media/split/facebook.jpg" },
 ];
 
+/** Each step has its own icon, colour and way of moving in when the scroll reaches it. */
 export const SPLIT_STEPS = [
-  { at: 0, label: "Filed and transcribed" },
-  { at: 0.11, label: "Cut at the pauses" },
-  { at: 0.24, label: "Reshaped and captioned" },
-  { at: 0.46, label: "Approved in Review" },
-  { at: 0.58, label: "Ready for every feed" },
-];
+  { at: 0, label: "Filed and transcribed", icon: FileAudio, move: "file" },
+  { at: 0.11, label: "Cut at the pauses", icon: Scissors, move: "snip" },
+  { at: 0.24, label: "Reshaped and captioned", icon: Captions, move: "shape" },
+  { at: 0.46, label: "Approved in Review", icon: BadgeCheck, move: "check" },
+  { at: 0.58, label: "Ready for every feed", icon: Send, move: "send" },
+] as const;
 
 /** The editors a run's cuts can go to as a timeline, for anyone finishing by hand. */
 export const SPLIT_EDITORS = ["Premiere Pro", "DaVinci Resolve", "Final Cut Pro"] as const;
@@ -220,13 +222,15 @@ export function SplitScene() {
           <ol className="split-steps" aria-label="What the automation does">
             {SPLIT_STEPS.map((s, i) => (
               <li key={s.label} className={i <= step ? "on" : undefined} aria-current={i === step ? "step" : undefined}>
-                <span className="split-n">{i + 1}</span>
+                <span className="split-n" data-move={s.move} aria-hidden="true">
+                  <s.icon size={14} strokeWidth={2.4} />
+                </span>
                 {s.label}
               </li>
             ))}
           </ol>
           <p className="sr">
-            A real interview from LA Tech Week is filed, transcribed and cut at the pauses into five clips. Each one is reshaped and captioned with its own words: {SPLIT_CLIPS.map((c) => `${frameName(c.frame)} for ${c.place}`).join(", ")}. Someone approves them in Review, and they are ready for every feed. Anyone finishing by hand gets the cuts as a timeline for {SPLIT_EDITORS.join(", ")}. No AI tokens are spent on these clips, and the next recording runs the same way.
+            A real interview from LA Tech Week is filed, transcribed and cut at the pauses into five clips. Each one is reshaped and captioned with its own words: {SPLIT_CLIPS.map((c) => `${frameName(c.frame)} for ${c.place}`).join(", ")}. Someone approves them in Review, and they are ready for every feed. Anyone finishing by hand gets the cuts as a timeline for {SPLIT_EDITORS.join(", ")}, or as a numbered clip pack with captions for CapCut. No AI tokens are spent on these clips, and the next recording runs the same way.
           </p>
         </div>
         <div className="wrap">
@@ -277,6 +281,12 @@ export function SplitScene() {
                   </span>
                   <span title="Final Cut Pro">
                     <FileLogo name="finalcut" size={22} />
+                  </span>
+                </span>
+                <span>or a clip pack for</span>
+                <span className="split-editor-logos">
+                  <span title="CapCut">
+                    <FileLogo name="capcut" size={22} />
                   </span>
                 </span>
               </p>

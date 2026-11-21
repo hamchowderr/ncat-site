@@ -22,7 +22,7 @@ export function Proof() {
         </h2>
         <ul className="venues">
           <li>
-            <ClaudeMark className="mark" />
+            <ClaudeMark className="mark claude" />
             <span>Claude Code Creators Summit</span>
           </li>
           <li>

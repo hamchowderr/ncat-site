@@ -173,11 +173,19 @@ export function ShapeShifter() {
             {Array.from({ length: 22 }, (_, i) => (
               <i
                 key={i}
-                style={{
-                  height: `${30 + 70 * Math.abs(Math.sin(i * 1.3) * Math.cos(i * 0.4))}%`,
-                }}
+                style={
+                  {
+                    height: `${30 + 70 * Math.abs(Math.sin(i * 1.3) * Math.cos(i * 0.4))}%`,
+                    "--i": i,
+                    "--d": `${0.9 + (i % 4) * 0.17}s`,
+                  } as React.CSSProperties
+                }
               />
             ))}
+          </span>
+          <span className="shift-team" title="Your logo" />
+          <span className="shift-cap">
+            Your content, <em>social media ready</em>
           </span>
           <span className="shift-ratio">
             {place.level
@@ -268,6 +276,36 @@ export function ShapeShifter() {
           <p className="shift-takes">
             {SHIFT_PLATFORMS[pi]} itself takes: {place.takes}
           </p>
+          <div className="shift-brand">
+            <p className="shift-brand-head">In your brand, every time</p>
+            <ul aria-label="Brand the agent uses">
+              <li>
+                <span className="sb-cap" aria-hidden="true">
+                  Aa <em>Aa</em>
+                </span>
+                Caption style
+              </li>
+              <li>
+                <span className="sb-logo" aria-hidden="true" />
+                Logo
+              </li>
+              <li>
+                <span className="sb-colours" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                Colours
+              </li>
+              <li>
+                <span className="sb-font" aria-hidden="true">
+                  Ag
+                </span>
+                Font
+              </li>
+            </ul>
+            <p className="shift-brand-note">Set once in Settings. Every clip picks them up by itself.</p>
+          </div>
           <p className="shift-note">
             Checked on {CHECKED} against{" "}
             <a href={place.source} target="_blank" rel="noreferrer">

@@ -13,6 +13,7 @@ const links = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#use-cases", label: "Use cases" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
 ];
 
 export function SiteHeader() {
@@ -29,7 +30,7 @@ export function SiteHeader() {
     <header className={open ? "nav open" : "nav"}>
       <div className="wrap nav-in">
         <Link className="brand" href="/" onClick={() => setOpen(false)}>
-          <BrandMark /> NCA Dashboard
+          <BrandMark /> Kontifi
         </Link>
         <nav className="nav-links" aria-label="Main">
           {items}
