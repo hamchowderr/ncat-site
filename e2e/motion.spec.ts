@@ -227,54 +227,180 @@ test("the caption under the hero recording lights up word by word as it plays", 
   await expect(cap).toHaveText(/A new upload starts the run/);
 });
 
-/** True when a canvas has a picture on it, not just blank. */
-const drawn = (c: HTMLCanvasElement) => {
-  const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
-  let lit = 0;
-  for (let i = 0; i < d.length; i += 16) if (d[i + 3] > 0 && d[i] + d[i + 1] + d[i + 2] > 30) lit++;
-  return lit > 50;
-};
+/**
+ * Picks a real recording the way a visitor would, under the name a visitor's file might have.
+ * It is a fixed 35-second file, so these tests don't move when the site's own videos are re-recorded.
+ */
+async function dropRecording(page: import("@playwright/test").Page) {
+  const buffer = await (await import("node:fs/promises")).readFile("e2e/fixtures/first-video.mp4");
+  await page.locator('.try input[type="file"]').setInputFiles({ name: "my-first-video.mp4", mimeType: "video/mp4", buffer });
+}
 
-test("trying the sample walks every step and makes real vertical frames from the video", async ({ page }) => {
-  await page.goto("/");
-  await page.locator("#try-it").scrollIntoViewIfNeeded();
-  await page.getByRole("button", { name: "Use a sample" }).click();
-  await expect(page.locator(".try-step.done")).toHaveCount(6, { timeout: 15_000 });
-  await expect(page.locator('[data-step="Filed"] .try-detail')).toHaveText(/^sample-recording\.mp4, \d+ KB$/);
-  await expect(page.locator('[data-step="Details read"] .try-detail')).toHaveText("35 s long, 1440 × 900");
-  await expect(page.locator('[data-step="Cut into clips"] .try-detail')).toContainText("5 clips of about 7 s");
-  await expect(page.locator('[data-step="Captioned"] .try-detail')).toContainText("skips them");
-  const thumbs = page.locator(".try-thumbs canvas");
-  await expect(thumbs).toHaveCount(5);
-  for (const c of await thumbs.all()) {
-    expect(await c.evaluate(drawn)).toBe(true);
-    const b = (await c.boundingBox())!;
-    expect(b.width / b.height).toBeCloseTo(9 / 16, 1);
-  }
-});
+type Step = { label: string; state: string; detail?: string };
+const LABELS = ["Uploaded", "Read by the toolkit", "Cut at the pauses, made vertical", "Captioned", "Ready to download"];
+const steps = (states: string[], details: (string | undefined)[] = []): Step[] =>
+  LABELS.map((label, i) => ({ label, state: states[i], ...(details[i] ? { detail: details[i] } : {}) }));
 
-test("a video you choose is read in the browser and never sent anywhere", async ({ page }) => {
+/**
+ * Stands in for the site's demo routes and Blob storage, so the browser side can be
+ * checked end to end: booking, the upload, the start, and the toolkit's progress.
+ */
+async function fakeDemo(page: import("@playwright/test").Page, finish: "done" | "failed" = "done") {
+  const calls: { path: string; body: unknown }[] = [];
+  let asked = 0;
+  await page.route("**/api/early-access", (r) => r.fulfill({ json: { ok: true } }));
+  await page.route("**/api/demo", (r) => {
+    calls.push({ path: "/api/demo", body: r.request().postDataJSON() });
+    return r.fulfill({ json: { ok: true, id: "run1", key: "key1", path: "demos/run1/source.mp4" } });
+  });
+  await page.route("**/api/demo/upload", (r) => {
+    calls.push({ path: "/api/demo/upload", body: r.request().postDataJSON() });
+    return r.fulfill({ json: { type: "blob.generate-client-token", clientToken: "vercel_blob_client_teststore_x" } });
+  });
+  await page.route("https://vercel.com/api/blob/**", (r) => {
+    calls.push({ path: "blob PUT", body: new URL(r.request().url()).searchParams.get("pathname") });
+    const url = "https://teststore.private.blob.vercel-storage.com/demos/run1/source.mp4";
+    return r.fulfill({ json: { url, downloadUrl: url, pathname: "demos/run1/source.mp4", contentType: "video/mp4", contentDisposition: "inline", etag: "e" } });
+  });
+  await page.route("**/api/demo/start", (r) => {
+    calls.push({ path: "/api/demo/start", body: r.request().postDataJSON() });
+    return r.fulfill({ json: { ok: true } });
+  });
+  const file = "my-first-video.mp4, 2 MB";
+  await page.route("**/api/demo/status**", (r) => {
+    asked++;
+    const view =
+      asked === 1
+        ? { stage: "running", steps: steps(["done", "doing", "wait", "wait", "wait"], [file]), clips: [] }
+        : asked === 2
+          ? { stage: "running", steps: steps(["done", "done", "doing", "wait", "wait"], [file, "35 s long, 1440 × 900", "1 clip, up to a minute each, 1080 × 1920."]), clips: [] }
+          : finish === "failed"
+            ? { stage: "failed", steps: steps(["done", "failed", "wait", "wait", "wait"], [file]), clips: [], error: "The toolkit couldn’t read that video. Try another file, such as an MP4 or MOV." }
+            : {
+                stage: "done",
+                steps: steps(["done", "done", "done", "done", "done"], [file, "35 s long, 1440 × 900", "1 clip, up to a minute each, 1080 × 1920.", "Every word transcribed and burned in."]),
+                clips: [{ url: "/media/features/review.mp4", captioned: true }],
+              };
+    return r.fulfill({ json: { ok: true, view } });
+  });
+  return calls;
+}
+
+async function signUp(page: import("@playwright/test").Page) {
+  const form = page.locator("dialog[open] form");
+  await form.getByLabel("Your name").fill("Ava Reyes");
+  await form.getByLabel("Email").fill("ava@studio.co");
+  await form.getByLabel("Editing agency", { exact: true }).check();
+  await form.getByLabel("2 to 5", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await form.getByLabel("Podcasts", { exact: true }).check();
+  await form.getByLabel("1 to 5 hours", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await form.getByLabel("A rented server", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await expect(form.getByLabel(/in your words/i)).toHaveValue("I ran my-first-video.mp4, 35 s through the demo.");
+  await form.getByRole("button", { name: "Join early access" }).click();
+  await expect(page.locator("dialog[open]").getByRole("status")).toContainText("You’re on the list");
+  await page.locator("dialog[open]").getByRole("button", { name: "Close" }).click();
+}
+
+test("the section asks for their own first video, and nothing is sent before they sign up", async ({ page }) => {
   await page.goto("/");
-  await page.locator("#try-it").scrollIntoViewIfNeeded();
+  await expect(page.locator("#try-it h2")).toHaveText("Drop in your first video, get early access sooner");
+  await expect(page.locator("#try-it").getByRole("button", { name: /sample/i })).toHaveCount(0);
+  await expect(page.locator("#try-it")).not.toContainText(/in your browser|nothing is uploaded|preview/i);
   const sent: string[] = [];
   page.on("request", (r) => {
     if (r.method() !== "GET" && r.method() !== "HEAD") sent.push(`${r.method()} ${r.url()}`);
   });
-  await page.locator('.try input[type="file"]').setInputFiles("public/media/sample-recording.mp4");
-  await expect(page.locator(".try-step.done")).toHaveCount(6, { timeout: 15_000 });
-  await expect(page.locator('[data-step="Filed"] .try-detail')).toHaveText(/^sample-recording\.mp4, \d+ KB$/);
-  await expect(page.locator('[data-step="Details read"] .try-detail')).toHaveText("35 s long, 1440 × 900");
-  expect(await page.locator(".try-thumbs canvas").first().evaluate(drawn)).toBe(true);
+  await page.locator("#try-it").scrollIntoViewIfNeeded();
+  await dropRecording(page);
+  await expect(page.locator(".try-drop-title")).toHaveText("my-first-video.mp4");
+  await expect(page.locator(".try-drop-note")).toHaveText(/^\d+ (KB|MB), 35 s$/);
+  await expect(page.getByRole("button", { name: "Sign up and run it" })).toBeVisible();
+  // said before they sign up: it takes a while, and they don't have to sit and watch
+  await expect(page.locator(".try-drop-hint")).toHaveText("The toolkit can take a while on it, and you don’t have to wait on this page.");
+  // every step waits: nothing has run, and nothing pretends to
+  await expect(page.locator(".try-step.wait")).toHaveCount(5);
   expect(sent).toEqual([]);
 });
 
-test("a file the browser can't open still gets filed, with a plain note", async ({ page }) => {
+test("signing up uploads the video to the real toolkit, shows its real steps, then the clips to watch and download", async ({ page }) => {
+  const calls = await fakeDemo(page);
   await page.goto("/");
   await page.locator("#try-it").scrollIntoViewIfNeeded();
-  await page.locator('.try input[type="file"]').setInputFiles({ name: "broken.mp4", mimeType: "video/mp4", buffer: Buffer.from("not really a video") });
-  await expect(page.locator('[data-step="Details read"] .try-detail')).toContainText("can’t open that file", { timeout: 10_000 });
-  await expect(page.locator('[data-step="Filed"] .try-detail')).toHaveText("broken.mp4, 1 KB");
-  await expect(page.locator(".try-thumbs")).toHaveCount(0);
+  await dropRecording(page);
+  await page.getByRole("button", { name: "Sign up and run it" }).click();
+  await signUp(page);
+  // booked for this person and file, uploaded to the booked place, then started
+  await expect.poll(() => calls.map((c) => c.path)).toEqual(expect.arrayContaining(["/api/demo", "/api/demo/upload", "blob PUT", "/api/demo/start"]));
+  expect(calls.find((c) => c.path === "/api/demo")!.body).toMatchObject({ name: "Ava Reyes", email: "ava@studio.co", fileName: "my-first-video.mp4" });
+  expect(calls.find((c) => c.path === "blob PUT")!.body).toBe("demos/run1/source.mp4");
+  expect(calls.find((c) => c.path === "/api/demo/start")!.body).toEqual({ id: "run1", key: "key1" });
+  // while it works: told not to wait, and given their own clips link to come back to
+  const wait = page.locator(".try-wait");
+  await expect(wait).toContainText("you don’t need to wait here");
+  await expect(wait).not.toContainText("email");
+  await expect(wait.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=key1");
+  const steps = (await page.locator(".try-run").boundingBox())!;
+  expect((await wait.boundingBox())!.y).toBeGreaterThanOrEqual(steps.y + steps.height - 1);
+  // centred in its box, not pushed to the left
+  const box = (await wait.boundingBox())!;
+  const lead = (await wait.locator(".try-next-lead").boundingBox())!;
+  expect(Math.abs(lead.x - box.x - (box.x + box.width - lead.x - lead.width))).toBeLessThan(4);
+  const first = (await wait.getByRole("link", { name: "Your clips link" }).boundingBox())!;
+  const last = (await wait.getByRole("button", { name: "Copy link" }).boundingBox())!;
+  expect(Math.abs(first.x - box.x - (box.x + box.width - last.x - last.width))).toBeLessThan(4);
+  // the toolkit's own answers, step by step
+  await expect(page.locator('[data-step="Read by the toolkit"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
+  await expect(page.locator(".try-step.done")).toHaveCount(5, { timeout: 15_000 });
+  const next = page.locator(".try-next");
+  await expect(next).toContainText("Here are your clips, made by the toolkit.");
+  await expect(wait).toHaveCount(0);
+  // No email is promised while the site has no way to send one (toSend is not set up here).
+  await expect(next).not.toContainText("in your email");
+  // in the page's flow, under the steps, never over them
+  const run = (await page.locator(".try-run").boundingBox())!;
+  expect((await next.boundingBox())!.y).toBeGreaterThanOrEqual(run.y + run.height - 1);
+  const clip = next.getByLabel("Clip 1");
+  await expect(clip).toBeVisible();
+  await expect.poll(() => clip.evaluate((v: HTMLVideoElement) => v.videoWidth)).toBeGreaterThan(0);
+  await expect(next.getByRole("link", { name: "Download clip 1" })).toHaveAttribute("download", "my-first-video clip 1.mp4");
+});
+
+test("when the toolkit can't finish, it says why plainly and lets them start over", async ({ page }) => {
+  await fakeDemo(page, "failed");
+  await page.goto("/");
+  await page.locator("#try-it").scrollIntoViewIfNeeded();
+  await dropRecording(page);
+  await page.getByRole("button", { name: "Sign up and run it" }).click();
+  await signUp(page);
+  const alert = page.locator(".try-next[role=alert]");
+  await expect(alert).toContainText("The toolkit couldn’t read that video.", { timeout: 15_000 });
+  await expect(alert).toContainText("You’re still on the list.");
+  await alert.getByRole("button", { name: "Start over" }).click();
+  await expect(page.locator(".try-drop .btn.primary")).toHaveText("Choose a video");
+  await expect(page.locator(".try-step.wait")).toHaveCount(5);
+});
+
+test("every Get early access button opens the pop-up, and Escape closes it", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (!isMobile) {
+    await page.locator(".nav-r").getByRole("link", { name: "Get early access" }).click();
+    await expect(page.locator("dialog[open]")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("dialog[open]")).toHaveCount(0);
+  }
+  await page.locator(".hero-cta").getByRole("link", { name: "Get early access" }).click();
+  await expect(page.locator("dialog[open] form")).toBeVisible();
+  const box = (await page.locator("dialog[open]").boundingBox())!;
+  const vp = page.viewportSize()!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
+  expect(box.height).toBeLessThanOrEqual(vp.height);
+  await page.keyboard.press("Escape");
+  await page.goto("/pricing#early");
+  await expect(page.locator("dialog[open] form")).toBeVisible();
 });
 
 test("the features lead lights up one platform at a time in its own colour, with the logos in rails outside the text", async ({ page, isMobile }) => {
@@ -345,4 +471,9 @@ test("each step of one recording in has its own icon that moves in its own way",
   expect(new Set(on).size).toBe(on.length);
   const colours = await steps.evaluateAll((els) => els.map((e) => getComputedStyle(e).getPropertyValue("--c").trim()));
   expect(new Set(colours).size).toBe(5);
+});
+
+test("a clips link without its key shows nothing", async ({ page }) => {
+  const res = await page.goto("/clips/run1?k=wrong");
+  expect(res?.status()).toBe(404);
 });

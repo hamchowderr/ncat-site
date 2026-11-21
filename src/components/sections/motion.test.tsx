@@ -1,14 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { HeroIcons } from "@/components/HeroIcons";
 import { HeroStage, STAGE } from "@/components/HeroStage";
 import { SHIFT_PLATFORMS, ShapeShifter } from "@/components/ShapeShifter";
 import { CLIP_SHAPES, fitFrame, formatLimit, frameName } from "@/lib/clipShapes";
-import { formatBytes, formatDuration, planCuts } from "@/lib/tryIt";
+import { formatBytes, formatDuration } from "@/lib/tryIt";
+import { DEMO_STEPS } from "@/components/DemoRun";
 import { SPLIT_CLIPS, SPLIT_EDITORS, SPLIT_RECORDING, SPLIT_STEPS, SplitScene } from "./SplitScene";
-import { TRY_STEPS, TryIt } from "./TryIt";
+import { TryIt, WhileItRuns, tooBig } from "./TryIt";
 
 describe("clip shapes", () => {
   it("fits each shape inside a box and writes lengths the way the dashboard does", () => {
@@ -176,16 +177,6 @@ describe("hero captions", () => {
 });
 
 describe("try it on your own video", () => {
-  it("plans even cuts of five seconds to a minute, about five of them", () => {
-    expect(planCuts(0)).toEqual([]);
-    expect(planCuts(35).map((c) => Math.round(c.seconds))).toEqual([7, 7, 7, 7, 7]);
-    expect(planCuts(3)).toEqual([{ start: 0, seconds: 3 }]);
-    const hour = planCuts(3600);
-    expect(hour).toHaveLength(60);
-    expect(hour.every((c) => c.seconds <= 60)).toBe(true);
-    expect(planCuts(4 * 3600)).toHaveLength(100);
-    expect(planCuts(600).every((c) => c.seconds <= 60)).toBe(true);
-  });
   it("writes sizes and lengths plainly", () => {
     expect(formatBytes(970_000)).toBe("970 KB");
     expect(formatBytes(48_200_000)).toBe("48 MB");
@@ -194,13 +185,41 @@ describe("try it on your own video", () => {
     expect(formatDuration(724)).toBe("12 min 4 s");
     expect(formatDuration(3780)).toBe("1 h 3 min");
   });
-  it("offers a file picker for videos and a sample, with every step waiting", () => {
+  it("asks for their own first video and says the real toolkit runs it after sign-up, with every step waiting", () => {
     const { container } = render(<TryIt />);
     expect(screen.getByLabelText("Choose a video")).toHaveAttribute("accept", "video/*");
-    expect(screen.getByRole("button", { name: "Use a sample" })).toBeInTheDocument();
-    expect(screen.getByText(/nothing is uploaded/)).toBeInTheDocument();
-    const steps = within(screen.getByRole("list", { name: "What the automation does" })).getAllByRole("listitem");
-    expect(steps.map((s) => s.getAttribute("data-step"))).toEqual([...TRY_STEPS]);
-    expect(container.querySelectorAll(".try-step.wait")).toHaveLength(TRY_STEPS.length);
+    expect(screen.queryByRole("button", { name: /sample/i })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Drop in your first video, get early access sooner" })).toBeInTheDocument();
+    expect(screen.getByText(/Sign up and the real toolkit cuts your video/)).toBeInTheDocument();
+    expect(screen.getByText(/moves to the front of the early-access list/)).toBeInTheDocument();
+    expect(screen.getByText("Up to 10 minutes and 1 GB.")).toBeInTheDocument();
+    // nothing claims to run in the browser any more
+    expect(container.textContent).not.toMatch(/nothing is uploaded|in your browser|preview/i);
+    const steps = within(screen.getByRole("list", { name: "What the toolkit does with your video" })).getAllByRole("listitem");
+    expect(steps.map((s) => s.getAttribute("data-step"))).toEqual([...DEMO_STEPS]);
+    expect(container.querySelectorAll(".try-step.wait")).toHaveLength(DEMO_STEPS.length);
+  });
+  it("while the toolkit works, says not to wait and hands over the clips link", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    const { rerender } = render(<WhileItRuns id="run1" k="a/b" emails={false} />);
+    expect(screen.getByText(/can take the toolkit a while, so you don’t need to wait here/)).toBeInTheDocument();
+    expect(screen.queryByText(/email/)).toBeNull();
+    expect(screen.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=a%2Fb");
+    fireEvent.click(screen.getByRole("button", { name: "Copy link" }));
+    expect(await screen.findByRole("button", { name: "Copied" })).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/clips/run1?k=a%2Fb`);
+    rerender(<WhileItRuns id="run1" k="a/b" emails />);
+    expect(screen.getByText(/We’ll email you when your clips are ready/)).toBeInTheDocument();
+  });
+  it("is left out until the site has a toolkit to run on", () => {
+    const { container } = render(<TryIt enabled={false} />);
+    expect(container.querySelector("#try-it")).toBeNull();
+  });
+  it("turns away files over the limits before anything is sent", () => {
+    expect(tooBig(2 * 1024 ** 3, 30)).toBe("That file is 2.1 GB. The demo takes files up to 1 GB.");
+    expect(tooBig(5e6, 11 * 60)).toBe("That video is 11 min long. The demo takes videos up to 10 minutes.");
+    expect(tooBig(5e6, 600)).toBeNull();
+    expect(tooBig(5e6, null)).toBeNull();
   });
 });

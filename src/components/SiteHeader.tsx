@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
+import { trialUrl } from "@/lib/trial";
+
+const TRIAL = trialUrl();
 
 const links = [
   { href: "/#features", label: "Features" },
@@ -33,9 +36,15 @@ export function SiteHeader() {
           {items}
         </nav>
         <div className="nav-r">
-          <Link className="btn dark sm" href="#early" onClick={() => setOpen(false)}>
-            Get early access
-          </Link>
+          {TRIAL ? (
+            <a className="btn dark sm" href={TRIAL}>
+              Start free trial
+            </a>
+          ) : (
+            <Link className="btn dark sm" href="#early" onClick={() => setOpen(false)}>
+              Get early access
+            </Link>
+          )}
           <button className="menu-btn" type="button" aria-expanded={open} aria-controls="mnav" aria-label="Menu" onClick={() => setOpen((o) => !o)}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               {open ? (

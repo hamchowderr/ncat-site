@@ -113,6 +113,8 @@ export type EarlyAccessInput = {
   jobs: string[];
   details: string;
   source: string;
+  /** What they tried in the demo first ("a 35 s video, cut into 5 clips"). They go to the front of the list. */
+  tried?: string;
   /** Hidden field. People leave it empty; bots fill it in. */
   website?: string;
 };
@@ -167,6 +169,7 @@ export function checkEarlyAccess(raw: unknown, only?: Field[]): Checked {
     details: str("details", 2000),
     source: one("source", SOURCES),
     website: str("website", 200),
+    ...(str("tried", 200) ? { tried: str("tried", 200) } : {}),
   };
   const errors: Errors = {};
   const want = (f: Field) => !only || only.includes(f);
@@ -191,8 +194,9 @@ export function earlyAccessEmail(v: EarlyAccessInput) {
     ["Their content", [["Makes", labels(CONTENT, v.content)], ["Posts to", labels(PLATFORMS, v.platforms)], ["Records per week", label(VOLUMES, v.volume)]]],
     ["Their setup", [["Would run it on", label(HOSTING, v.hosting)], ["NCA Toolkit", label(TOOLKIT, v.toolkit)], ["Finishes in", labels(EDITORS, v.editors)]]],
     ["What to automate", [["Jobs", labels(JOBS, v.jobs)], ["In their words", v.details], ["Heard about it from", label(SOURCES, v.source)]]],
+    ...(v.tried ? ([["Tried the demo first", [["On", v.tried]]]] as [string, [string, string][]][]) : []),
   ];
-  const tags = [label(ROLES, v.role), label(TEAM_SIZES, v.teamSize), label(HOSTING, v.hosting)].filter(Boolean);
+  const tags = [v.tried ? "Tried the demo" : "", label(ROLES, v.role), label(TEAM_SIZES, v.teamSize), label(HOSTING, v.hosting)].filter(Boolean);
   const text = sections
     .map(([h, rows]) => [h.toUpperCase(), ...rows.filter(([, x]) => x).map(([k, x]) => `${k}: ${x}`)].join("\n"))
     .join("\n\n");

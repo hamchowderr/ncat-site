@@ -1,3 +1,7 @@
+import { TRIAL_LABEL, trialUrl } from "@/lib/trial";
+
+const TRIAL = trialUrl();
+
 const SELF = [
   "Your own version of the platform",
   "Runs on a rented server or your own always-on machine, such as a Mac Mini",
@@ -55,9 +59,15 @@ export function PricingPlans() {
             <p className="plan-price">Credits</p>
             <p className="plan-tba">Details coming</p>
             <p className="plan-desc">Don’t want to manage a server? We run the toolkit for you.</p>
-            <a className="btn ghost" href="#early">
-              Tell me you’re interested
-            </a>
+            {TRIAL ? (
+              <a className="btn ghost" href={TRIAL}>
+                {TRIAL_LABEL}
+              </a>
+            ) : (
+              <a className="btn ghost" href="#early">
+                Tell me you’re interested
+              </a>
+            )}
             <ul className="ticks">
               {HOSTED.map((s) => (
                 <li key={s}>{s}</li>

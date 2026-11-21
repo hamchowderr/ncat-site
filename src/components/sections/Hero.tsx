@@ -5,6 +5,9 @@ import { FillText } from "@/components/FillText";
 import { HeroIcons } from "@/components/HeroIcons";
 import { HeroStage } from "@/components/HeroStage";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { TRIAL_LABEL, TRIAL_NOTE, trialUrl } from "@/lib/trial";
+
+const TRIAL = trialUrl();
 
 const WORDS = ["clipped", "captioned", "transcribed", "resized"];
 
@@ -38,12 +41,26 @@ export function Hero() {
           text="Pick a [ready-made automation] and switch it on. From then on, every new recording is [filed, transcribed, cut and captioned] by itself, on a [server you own], with [no AI tokens] spent on each video."
         />
         <div className="hero-cta">
-          <a className="btn primary" href="#early">
-            Get early access
-          </a>
-          <a className="btn ghost" href="#templates">
-            See the automations
-          </a>
+          {TRIAL ? (
+            <>
+              <a className="btn primary" href={TRIAL}>
+                {TRIAL_LABEL}
+              </a>
+              <a className="btn ghost" href="#early">
+                Get early access
+              </a>
+              <span className="hero-note">{TRIAL_NOTE}</span>
+            </>
+          ) : (
+            <>
+              <a className="btn primary" href="#early">
+                Get early access
+              </a>
+              <a className="btn ghost" href="#templates">
+                See the automations
+              </a>
+            </>
+          )}
         </div>
       </div>
       <HeroStage />

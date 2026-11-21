@@ -5,7 +5,8 @@ Marketing website for Kontifi (Otaku Solutions). The dashboard itself is the pri
 ## Stack
 - Next.js 16 App Router, React 19, TypeScript, pnpm. Plain CSS in `src/app/globals.css` (design tokens on `:root`); no Tailwind.
 - Deployed on Vercel. Fonts via `next/font` (Geist, JetBrains Mono, Archivo).
-- Early-access form posts to `src/app/api/early-access/route.ts`, which emails the sign-up through toSend. Env vars are in `.env.example`.
+- Early-access form posts to `src/app/api/early-access/route.ts`, which keeps the sign-up in Blob and emails it through toSend. Env vars are in `.env.example`.
+- The homepage demo (`TryIt.tsx`, `src/lib/demo/`, `/api/demo/*`, `/clips/[id]`) runs a visitor’s video through the real toolkit after sign-up. Nothing on the site may pretend to process a video in the browser.
 
 ## Layout
 - `src/app/` pages: `/` (home), `/pricing`, plus icon, share image, sitemap, robots, 404.

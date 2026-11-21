@@ -13,7 +13,7 @@ for (const { path, h1 } of pages) {
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(h1);
-    await expect(page.locator("#early form")).toBeVisible();
+    await expect(page.locator(".early-cta a")).toBeVisible();
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
     expect(errors).toEqual([]);
@@ -82,7 +82,8 @@ async function answerFirstSteps(form: import("@playwright/test").Locator) {
 
 test("early-access form checks each step, then sends", async ({ page }) => {
   await page.goto("/pricing");
-  const form = page.locator("#early form");
+  await page.locator(".early-cta").getByRole("link", { name: "Get early access" }).click();
+  const form = page.locator("dialog[open] form");
   await form.getByRole("button", { name: "Next" }).click();
   await expect(form.getByText("Add your name.")).toBeVisible();
   await expect(form.getByRole("heading", { name: /About you/ })).toBeVisible();
@@ -566,4 +567,21 @@ test("the feeds section shows the agent badge and the brand every clip carries, 
     const b = (await li.boundingBox())!;
     expect(b.x + b.width).toBeLessThanOrEqual(vw);
   }
+});
+
+test("the early-access form asks a flood from one address to wait", async ({ page }) => {
+  await page.goto("/");
+  // Six quick sign-ups from one browser, through the real route: the sixth waits.
+  // Each run is its own visitor, so the desktop, phone and retry runs don't share an allowance.
+  const address = `198.51.100.${Math.floor(Math.random() * 250) + 1}-${Date.now()}`;
+  const statuses = await page.evaluate(async (from) => {
+    const seen: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const res = await fetch("/api/early-access", { method: "POST", headers: { "content-type": "application/json", "x-real-ip": from }, body: "{}" });
+      seen.push(res.status);
+    }
+    return seen;
+  }, address);
+  expect(statuses.slice(0, 5).every((status) => status !== 429)).toBe(true);
+  expect(statuses[5]).toBe(429);
 });
