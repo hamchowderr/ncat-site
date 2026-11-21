@@ -184,7 +184,7 @@ export function UseCases() {
             <h3>{c.title}</h3>
             <p>{c.body}</p>
             <p className="case-without">
-              <span>Without Kontifi</span>
+              <span>Without Takewon</span>
               {c.without}
             </p>
           </div>

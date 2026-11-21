@@ -44,7 +44,7 @@ export function Footer() {
       <div className="wrap foot-row">
         <div className="foot-about">
           <Link className="brand" href="/">
-            <BrandMark /> Kontifi
+            <BrandMark /> Takewon
           </Link>
           <p>Your content, social media ready. By Otaku Solutions.</p>
           <ul className="foot-social" aria-label="Follow">

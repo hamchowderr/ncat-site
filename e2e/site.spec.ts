@@ -495,7 +495,7 @@ test("the engine section lays the five ways on one rail, ending on the shell, wi
   const items = ways.locator(".ways-list > li");
   await expect(items).toHaveCount(5);
   await expect(items.last()).toHaveClass(/ours/);
-  await expect(items.last()).toContainText("Kontifi, the fine-tuned shell");
+  await expect(items.last()).toContainText("Takewon, the fine-tuned shell");
   const boxes = await Promise.all((await items.all()).map((i) => i.boundingBox()));
   if (isMobile) {
     // one under another on a phone
@@ -515,7 +515,7 @@ test("the Editing with AI tab says what it costs today and what changes", async 
   await tab.click();
   const panel = page.locator("#case-panel");
   await expect(panel).toContainText("Stop spending your AI limits on the same edit.");
-  await expect(panel.locator(".case-without")).toContainText("Without Kontifi");
+  await expect(panel.locator(".case-without")).toContainText("Without Takewon");
   await expect(panel.locator(".case-outs li")).toHaveCount(4);
 });
 
