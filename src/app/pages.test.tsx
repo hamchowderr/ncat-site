@@ -1,14 +1,15 @@
 import { readFileSync } from "node:fs";
-import { render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { PhoneFold } from "@/components/PhoneFold";
+import { FeatureVideo } from "@/components/FeatureVideo";
 
 const css = readFileSync("src/app/globals.css", "utf8");
-const phone = css.slice(css.indexOf("/* ---------- Phones: a shorter page"));
+const phone = css.slice(css.indexOf("/* ---------- Phones: a layout made for the phone"));
 
 describe("where the engine section lives", () => {
   it("is not on the home page", () => {
-    const home = readFileSync("src/app/page.tsx", "utf8");
-    expect(home).not.toMatch(/Engine/);
+    expect(readFileSync("src/app/page.tsx", "utf8")).not.toMatch(/Engine/);
   });
 
   it("is on the About page, after the quote and before early access", () => {
@@ -25,26 +26,60 @@ describe("where the engine section lives", () => {
   });
 });
 
-describe("the home page on a phone", () => {
-  it("keeps every phone rule inside one phone-width block, so desktop is untouched", () => {
-    expect(phone).toMatch(/^\/\* ---------- Phones[^]*?\*\/\s*@media \(max-width: 640px\) \{/);
-    // the block is the last thing in the stylesheet and closes cleanly
-    const opens = (phone.match(/\{/g) ?? []).length;
-    const closes = (phone.match(/\}/g) ?? []).length;
-    expect(opens).toBe(closes);
+describe("a feature tile on a phone", () => {
+  it("is a row that opens and closes its recording and words", () => {
+    render(
+      <PhoneFold id="t" title="Your brand, set once" icon={<span />} level={4}>
+        <p>Logo, colour, font and music</p>
+      </PhoneFold>,
+    );
+    const head = screen.getByRole("button", { name: "Your brand, set once" });
+    expect(head.closest("h4")).not.toBeNull();
+    expect(head).toHaveAttribute("aria-expanded", "false");
+    expect(head).toHaveAttribute("aria-controls", "t-fold");
+    expect(document.querySelector(".fold")).not.toHaveAttribute("data-open");
+    fireEvent.click(head);
+    expect(head).toHaveAttribute("aria-expanded", "true");
+    expect(document.querySelector(".fold")).toHaveAttribute("data-open");
+    fireEvent.click(head);
+    expect(head).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("crops recordings to the working area in a square frame", () => {
-    expect(phone).toMatch(/\.shot video \{\s*aspect-ratio: 1 \/ 1;\s*object-fit: cover;\s*object-position: var\(--focus, 80%\) 50%;/);
+  it("can start open", () => {
+    render(
+      <PhoneFold id="t" title="Meeting recordings" icon={<span />} level={3} defaultOpen>
+        <p>x</p>
+      </PhoneFold>,
+    );
+    expect(screen.getByRole("button", { name: "Meeting recordings" })).toHaveAttribute("aria-expanded", "true");
+  });
+});
+
+describe("a feature recording", () => {
+  it("has a Watch full screen button under it", () => {
+    render(<FeatureVideo name="brand" label="Screen recording: brand" />);
+    const fig = document.querySelector("figure.shot")!;
+    const btn = screen.getByRole("button", { name: "Watch full screen" });
+    expect(fig.contains(btn)).toBe(true);
+    expect(fig.querySelector("video")!.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+describe("the phone stylesheet", () => {
+  it("keeps every phone rule after one marker, inside phone-width blocks, so desktop is untouched", () => {
+    expect(phone.length).toBeGreaterThan(100);
+    const outside = phone.replace(/@media \(max-width: 640px\)[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, "");
+    // only the comment and the rule hiding the phone-only pieces on wide screens sit outside them
+    expect(outside.replace(/\/\*[^]*?\*\//g, "").trim()).toMatch(/^\.fold-title,\s*\.shot-full \{\s*display: none;\s*\}$/);
   });
 
-  it("turns the feature tiles and the 'Also in the dashboard' cards into swipe rows", () => {
-    expect(phone).toMatch(/\.tiles,\s*\.also \{[^}]*overflow-x: auto;[^}]*scroll-snap-type: x mandatory;/);
-    expect(phone).toMatch(/\.tiles > \*,\s*\.also > li \{\s*flex: 0 0 86%;\s*scroll-snap-align: start;/);
+  it("never scrolls anything sideways on a phone and never crops a recording", () => {
+    expect(phone).not.toMatch(/overflow-x: auto|scroll-snap/);
+    expect(phone).not.toMatch(/object-fit: cover/);
   });
 
-  it("hides the tick lists under each feature and plays the split scene over less scroll", () => {
+  it("folds the tiles, hides closed rows' bodies and the tick lists", () => {
+    expect(phone).toMatch(/\.fold:not\(\[data-open\]\) \.fold-body \{\s*display: none;/);
     expect(phone).toMatch(/\.story-row \.ticks \{\s*display: none;/);
-    expect(phone).toMatch(/\.split\.is-live \{\s*height: 320vh;/);
   });
 });

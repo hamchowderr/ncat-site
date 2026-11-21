@@ -1,76 +1,103 @@
 import { expect, test } from "@playwright/test";
 
-/** The home page on a phone: shorter, with recordings large enough to read and the card rows swiped sideways. */
+/** The home page on a phone: its own layout, with nothing that scrolls sideways. */
 test.describe("home page on a phone", () => {
   test.skip(({ isMobile }) => !isMobile, "phone layout only");
 
-  test("feature cards and 'Also in the dashboard' are swipe rows, one card at a time with the next peeking in", async ({ page }) => {
+  test("nothing on the page scrolls sideways", async ({ page }) => {
     await page.goto("/");
-    const vw = page.viewportSize()!.width;
-    for (const sel of ["#features .tiles", "#around .tiles", "#around .also"]) {
-      const row = page.locator(sel);
-      await row.scrollIntoViewIfNeeded();
-      const style = await row.evaluate((el) => {
-        const s = getComputedStyle(el);
-        return { display: s.display, overflowX: s.overflowX, snap: s.scrollSnapType };
-      });
-      expect(style, sel).toEqual({ display: "flex", overflowX: "auto", snap: "x mandatory" });
-      const cards = row.locator(":scope > *");
-      const first = (await cards.first().boundingBox())!;
-      const second = (await cards.nth(1).boundingBox())!;
-      // the first card fills most of the screen and the next one starts inside it, so there is clearly more
-      expect(first.width / vw, sel).toBeGreaterThan(0.75);
-      expect(first.width / vw, sel).toBeLessThan(0.92);
-      expect(second.x, sel).toBeLessThan(vw);
-      // the cards sit side by side, not stacked (a card still fading in may sit a few pixels low)
-      expect(Math.abs(second.y - first.y), sel).toBeLessThan(40);
-      // and the row really scrolls sideways
-      const before = await row.evaluate((el) => el.scrollLeft);
-      await row.evaluate((el) => el.scrollBy({ left: el.clientWidth, behavior: "instant" as ScrollBehavior }));
-      await expect.poll(() => row.evaluate((el) => el.scrollLeft), { message: sel }).toBeGreaterThan(before);
-    }
-    // the page itself never scrolls sideways
+    await page.waitForTimeout(500);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
+    const sideways = await page.evaluate(() =>
+      [...document.querySelectorAll("main *")]
+        .filter((e) => /auto|scroll/.test(getComputedStyle(e).overflowX) && e.scrollWidth > e.clientWidth + 2)
+        .map((e) => e.className),
+    );
+    expect(sideways).toEqual([]);
   });
 
-  test("recordings are cropped to the working area so the dashboard reads larger", async ({ page }) => {
+  test("one recording in shows the finished clips large, the wide one on top and the tall ones two to a row", async ({ page }) => {
     await page.goto("/");
-    const v = page.locator("#templates .shot video");
-    await v.scrollIntoViewIfNeeded();
-    await expect.poll(() => v.evaluate((x: HTMLVideoElement) => x.videoWidth)).toBe(1600);
-    const box = (await v.boundingBox())!;
-    // a square frame showing the 16:10 recording at its full height: 1.6 times the scale it had shown whole
-    expect(Math.abs(box.width - box.height)).toBeLessThan(2);
-    const scale = box.height / 1000;
-    const wholeScale = box.width / 1600;
-    expect(scale / wholeScale).toBeGreaterThan(1.55);
-    // the side menu is cropped off: the frame is focused on the right-hand part of the window
-    expect(await v.evaluate((x) => getComputedStyle(x).objectPosition)).toBe("80% 50%");
-  });
-
-  test("each feature keeps its paragraph but drops the tick list, and the page is far shorter", async ({ page }) => {
-    await page.goto("/");
-    for (const id of ["templates", "runs", "review", "editors"]) {
-      const row = page.locator(`#${id}`);
-      await expect(row.locator(".row-text > p").first()).toBeVisible();
-      await expect(row.locator(".ticks")).toBeHidden();
+    const split = page.locator(".split");
+    await expect(split).not.toHaveClass(/is-live/);
+    const vw = page.viewportSize()!.width;
+    const clips = page.locator(".split-clip");
+    await expect(clips).toHaveCount(5);
+    await clips.first().scrollIntoViewIfNeeded();
+    const boxes = await Promise.all((await clips.all()).map((c) => c.boundingBox()));
+    // LinkedIn spans the stage; the four tall clips are each almost half the screen wide
+    expect(boxes[0]!.width / vw).toBeGreaterThan(0.8);
+    for (const b of boxes.slice(1)) expect(b!.width / vw).toBeGreaterThan(0.38);
+    // two to a row, side by side, tops level
+    expect(Math.abs(boxes[1]!.y - boxes[2]!.y)).toBeLessThan(2);
+    expect(boxes[2]!.x).toBeGreaterThan(boxes[1]!.x + boxes[1]!.width);
+    expect(boxes[3]!.y).toBeGreaterThan(boxes[1]!.y + boxes[1]!.height);
+    // each names its platform beside its logo
+    for (const d of await page.locator(".split-dest").all()) {
+      await expect(d.locator(".split-ready")).toBeVisible();
+      await expect(d.locator(".split-logo")).toBeVisible();
     }
-    // the phone page used to run about 26,000px; with the engine gone and the swipe rows it is well under 20,000
-    const h = await page.evaluate(() => document.documentElement.scrollHeight);
-    expect(h).toBeLessThan(20000);
+    // and the clips play while they are on screen
+    const v = page.locator(".split-video").nth(1);
+    await v.scrollIntoViewIfNeeded();
+    await expect.poll(() => v.evaluate((x: HTMLVideoElement) => !x.paused && x.currentTime > 0), { timeout: 15_000 }).toBe(true);
+    // the section is not a long pinned scroll
+    const [h, vh] = await page.evaluate(() => [document.querySelector<HTMLElement>(".split")!.offsetHeight, window.innerHeight]);
+    expect(h).toBeLessThan(vh * 3);
+  });
+
+  test("the feature tiles are one list of rows that open one by one, the first already open", async ({ page }) => {
+    await page.goto("/");
+    for (const sel of ["#features .tiles", "#around .tiles"]) {
+      const heads = page.locator(`${sel} .fold-head`);
+      const n = await heads.count();
+      expect(n, sel).toBeGreaterThan(3);
+      await expect(heads.first()).toHaveAttribute("aria-expanded", "true");
+      for (let i = 1; i < n; i++) await expect(heads.nth(i)).toHaveAttribute("aria-expanded", "false");
+      // a closed row hides its recording; opening it shows the whole-window recording and its words
+      const second = page.locator(`${sel} .fold`).nth(1);
+      await expect(second.locator(".shot video")).toBeHidden();
+      await heads.nth(1).click();
+      await expect(heads.nth(1)).toHaveAttribute("aria-expanded", "true");
+      await expect(second.locator(".shot video")).toBeVisible();
+      await expect(second.locator(".tile p")).toBeVisible();
+      const b = (await second.locator(".shot video").boundingBox())!;
+      expect(Math.abs(b.width / b.height - 16 / 10)).toBeLessThan(0.02);
+      // and closes again
+      await heads.nth(1).click();
+      await expect(second.locator(".shot video")).toBeHidden();
+      // the rows sit one under another
+      const ys = await heads.evaluateAll((hs) => hs.map((h) => h.getBoundingClientRect().top));
+      for (let i = 1; i < ys.length; i++) expect(ys[i]).toBeGreaterThan(ys[i - 1]!);
+    }
+  });
+
+  test("each recording has a Watch full screen button, and the four main features drop their tick lists", async ({ page }) => {
+    await page.goto("/");
+    const row = page.locator("#templates");
+    await row.scrollIntoViewIfNeeded();
+    const btn = row.getByRole("button", { name: "Watch full screen" });
+    await expect(btn).toBeVisible();
+    const v = (await row.locator(".shot video").boundingBox())!;
+    const b = (await btn.boundingBox())!;
+    // under the recording, never on top of it
+    expect(b.y).toBeGreaterThanOrEqual(v.y + v.height);
+    for (const id of ["templates", "runs", "review", "editors"]) {
+      await expect(page.locator(`#${id} .row-text > p`).first()).toBeVisible();
+      await expect(page.locator(`#${id} .ticks`)).toBeHidden();
+    }
   });
 });
 
-test("a wide screen keeps the stacked tiles, whole-window recordings and tick lists", async ({ page, isMobile }) => {
+test("a wide screen keeps the scroll scene, the tiles in full and no fold rows or full-screen buttons", async ({ page, isMobile }) => {
   test.skip(isMobile, "wide screen only");
   await page.goto("/");
+  await expect(page.locator(".split.is-live")).toHaveCount(1);
+  await expect(page.locator(".fold-head").first()).toBeHidden();
+  await expect(page.getByRole("button", { name: "Watch full screen" }).first()).toBeHidden();
   const tiles = page.locator("#features .tiles");
   await tiles.scrollIntoViewIfNeeded();
   expect(await tiles.evaluate((el) => getComputedStyle(el).display)).toBe("grid");
-  expect(await page.locator("#around .also").evaluate((el) => getComputedStyle(el).display)).toBe("grid");
-  const v = page.locator("#features .tiles .shot video").first();
-  const box = (await v.boundingBox())!;
-  expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
-  await expect(page.locator(".story-row .ticks").first()).toBeAttached();
+  for (const v of await page.locator("#features .tiles .shot video").all()) await expect(v).toBeVisible();
   expect(await page.locator(".story-row .ticks").first().evaluate((el) => getComputedStyle(el).display)).not.toBe("none");
 });

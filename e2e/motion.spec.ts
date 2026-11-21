@@ -13,7 +13,8 @@ async function scrollSplit(page: Page, p: number) {
   await page.waitForTimeout(1600);
 }
 
-test("one recording splits into clips that each take their platform's shape and land by its logo", async ({ page }) => {
+test("one recording splits into clips that each take their platform's shape and land by its logo", async ({ page, isMobile }) => {
+  test.skip(isMobile, "a phone shows the still, finished scene (tested in phone.spec.ts)");
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const clips = page.locator(".split-clip");
@@ -94,11 +95,11 @@ test("one recording splits into clips that each take their platform's shape and 
 });
 
 test("the scroll scene takes a long scroll and eases into each change instead of jumping", async ({ page, isMobile }) => {
+  test.skip(isMobile, "a phone shows the still, finished scene (tested in phone.spec.ts)");
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const [h, vh] = await page.evaluate(() => [document.querySelector<HTMLElement>(".split")!.offsetHeight, window.innerHeight]);
-  // a shorter run on a phone, so the page there is not mostly this one scene
-  expect(h).toBeGreaterThanOrEqual(vh * (isMobile ? 3 : 4));
+  expect(h).toBeGreaterThanOrEqual(vh * 4);
   await scrollSplit(page, 0);
   // jump straight to the end: a moment later the scene is still on its way there
   await page.evaluate(() => {
@@ -110,7 +111,8 @@ test("the scroll scene takes a long scroll and eases into each change instead of
   await expect(page.locator(".split-steps li.on")).toHaveCount(5, { timeout: 4000 });
 });
 
-test("the scroll scene holds on its finished moment before the page scrolls on", async ({ page }) => {
+test("the scroll scene holds on its finished moment before the page scrolls on", async ({ page, isMobile }) => {
+  test.skip(isMobile, "a phone shows the still, finished scene (tested in phone.spec.ts)");
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const place = () => page.locator(".split-next").evaluate((el) => (el as HTMLElement).style.transform);
@@ -137,12 +139,13 @@ test("the scroll scene holds on its finished moment before the page scrolls on",
 
 test.describe("with reduced motion, the scroll scene", () => {
   test.use({ reducedMotion: "reduce" });
-  test("is a plain row of the finished clips, not a long pinned scroll", async ({ page }) => {
+  test("is a plain row of the finished clips, not a long pinned scroll", async ({ page, isMobile }) => {
     await page.goto("/");
     const split = page.locator(".split");
     await split.scrollIntoViewIfNeeded();
     await expect(page.locator(".split.is-live")).toHaveCount(0);
-    expect((await split.boundingBox())!.height).toBeLessThan(1400);
+    // a phone shows the clips two to a row, large, so the section is taller there but still no pinned scroll
+    expect((await split.boundingBox())!.height).toBeLessThan(isMobile ? 2000 : 1400);
     for (const c of await page.locator(".split-clip").all()) {
       const b = (await c.boundingBox())!;
       expect(b.width / b.height).toBeCloseTo(RATIO[(await c.getAttribute("data-frame"))!], 1);

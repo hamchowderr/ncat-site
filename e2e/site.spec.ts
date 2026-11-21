@@ -6,6 +6,12 @@ const pages = [
   { path: "/about", h1: "Built for everyone who hit the same wall." },
 ];
 
+/** On a phone the feature tiles are folded rows; open them all so every recording can be measured. */
+async function openFolds(page: import("@playwright/test").Page) {
+  await page.locator(".fold:not([data-open]) .fold-head").evaluateAll((bs) => bs.forEach((b) => (b as HTMLButtonElement).click()));
+  await expect(page.locator(".fold:not([data-open])")).toHaveCount(0);
+}
+
 for (const { path, h1 } of pages) {
   test(`${path} renders without errors or sideways scroll`, async ({ page }) => {
     const errors: string[] = [];
@@ -113,16 +119,18 @@ test("the hero plays real dashboard recordings", async ({ page, request }) => {
   }
 });
 
-test("every logo and picture loads", async ({ page }) => {
+test("every logo and picture loads", async ({ page, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   for (const img of await page.locator("img").all()) {
     await img.scrollIntoViewIfNeeded();
     await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { message: await img.getAttribute("src") ?? "" }).toBe(true);
   }
 });
 
-test("every feature is a dashboard recording, the whole app window on a wide screen and its working area on a phone, all the same shape", async ({ page, request, isMobile }) => {
+test("every feature is a dashboard recording, shown whole, the whole app window uncropped, all the same shape", async ({ page, request, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   // on desktop the stack replaces the plain rows once it has loaded; measure the final ones
   if (!isMobile) await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
   const shots = page.locator("#features .shot video");
@@ -145,11 +153,9 @@ test("every feature is a dashboard recording, the whole app window on a wide scr
     // and is a recording made to be read at this size
     await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1600, 1000]);
   }
-  // a wide screen shows the whole window; a phone crops off the side menu in a square frame so the screen reads larger
-  for (const r of ratios) expect(Math.abs(r - (isMobile ? 1 : 16 / 10))).toBeLessThan(0.02);
-  const fit = await shots.first().evaluate((v) => getComputedStyle(v).objectFit);
-  if (isMobile) expect(fit).toBe("cover");
-  else expect(fit).not.toBe("cover");
+  for (const r of ratios) expect(Math.abs(r - 16 / 10)).toBeLessThan(0.02);
+  // never cropped, on any screen
+  for (const v of await shots.all()) expect(await v.evaluate((x) => getComputedStyle(x).objectFit)).not.toBe("cover");
   for (const v of await shots.all()) {
     for (const attr of ["src", "poster"]) {
       const url = (await v.getAttribute(attr))!;
@@ -161,6 +167,7 @@ test("every feature is a dashboard recording, the whole app window on a wide scr
 
 test("each feature recording takes most of its row, alternating sides, so its text is readable", async ({ page, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   for (const id of ["#features .tiles", "#around .tiles"]) {
     const tiles = page.locator(`${id} .tile`);
     const n = await tiles.count();
@@ -448,8 +455,9 @@ test("social logos rain down beside the headline, never across it, and move when
   }
 });
 
-test("the newer features each show a recording that plays on screen, with real app logos", async ({ page, request, isMobile }) => {
+test("the newer features each show a whole-window recording that plays on screen, with real app logos", async ({ page, request, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   const section = page.getByRole("region", { name: "Everything around the clip, too" });
   const shots = section.locator(".shot video");
   await expect(shots).toHaveCount(6);
@@ -457,7 +465,7 @@ test("the newer features each show a recording that plays on screen, with real a
     await v.scrollIntoViewIfNeeded();
     await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
     const box = (await v.boundingBox())!;
-    expect(Math.abs(box.width / box.height - (isMobile ? 1 : 16 / 10))).toBeLessThan(0.02);
+    expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
     for (const attr of ["src", "poster"]) {
       const url = (await v.getAttribute(attr))!;
       expect((await request.get(url)).status(), url).toBe(200);
