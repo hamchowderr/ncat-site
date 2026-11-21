@@ -385,7 +385,9 @@ test("when the toolkit can't finish, it says why plainly and lets them start ove
 });
 
 test("every Get early access button opens the pop-up, and Escape closes it", async ({ page, isMobile }) => {
-  await page.goto("/");
+  // the buttons are plain links to the form until the page's script takes them over; a click before that just
+  // jumps to the form, so wait for the script to load first
+  await page.goto("/", { waitUntil: "networkidle" });
   if (!isMobile) {
     await page.locator(".nav-r").getByRole("link", { name: "Get early access" }).click();
     await expect(page.locator("dialog[open]")).toBeVisible();
@@ -455,7 +457,9 @@ test("the team chat scene changes app, and its logo, each time the conversation 
     said.push((await chat.locator(".msg-bubble").first().textContent())!);
     await expect(chat.locator(".chat-chan svg")).toBeVisible();
     await expect(chat.locator(".ava-bot svg.lucide-bot")).toBeAttached();
-    await page.clock.runFor(9000);
+    // jump the clock one loop ahead: runFor would play every animation frame of the whole page on the way,
+    // which took over 20 s and timed out on slower CI machines
+    await page.clock.fastForward(9000);
   }
   expect(seen).toEqual(["slack", "discord", "teams", "telegram"]);
   expect(new Set(said).size).toBe(4);
