@@ -20,7 +20,7 @@ export async function sendMail(setup: MailSetup, mail: Mail): Promise<boolean> {
     method: "POST",
     headers: { Authorization: `Bearer ${setup.key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: { email: setup.from, name: "Kontifi site" },
+      from: { email: setup.from, name: "Kontentifi site" },
       to: [mail.to],
       ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
       subject: mail.subject,
@@ -46,7 +46,7 @@ export function paragraphs(lines: string[]): { text: string; html: string } {
 export function earlyAccessThanks(name: string, trialUrl: string | null) {
   const first = name.split(" ")[0] || "there";
   return {
-    subject: "You’re on the list for Kontifi",
+    subject: "You’re on the list for Kontentifi",
     ...paragraphs([
       `Hi ${first},`,
       "Thanks for telling me what you make. Your answers came through, and I read every one of these myself and reply by email.",

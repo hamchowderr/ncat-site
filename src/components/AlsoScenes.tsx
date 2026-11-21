@@ -99,7 +99,7 @@ function ChatScene() {
             </p>
           )}
           <p className="msg-bubble">
-            <b>@Kontifi</b> {ask.ask}
+            <b>@Kontentifi</b> {ask.ask}
           </p>
         </div>
       </div>
@@ -108,7 +108,7 @@ function ChatScene() {
           <Bot size={14} strokeWidth={2.2} />
         </span>
         <div>
-          <p className="msg-who">Kontifi</p>
+          <p className="msg-who">Kontentifi</p>
           <p className="msg-bubble">
             {reply.slice(0, reply.lastIndexOf(" ") + 1)}
             <span className="nowrap">
@@ -136,7 +136,7 @@ function ChatScene() {
           <div>
             <p className="msg-who">{third.who}</p>
             <p className="msg-bubble">
-              <b>@Kontifi</b> {third.ask}
+              <b>@Kontentifi</b> {third.ask}
             </p>
           </div>
         </div>

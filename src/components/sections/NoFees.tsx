@@ -51,7 +51,7 @@ export function NoFees() {
               See pricing
             </Link>
           </Reveal>
-          <div className="compare" aria-label="How the usual stack is billed compared with Kontifi">
+          <div className="compare" aria-label="How the usual stack is billed compared with Kontentifi">
             <div className="bill">
               <p className="bill-h">
                 The usual stack <span>Billed every month</span>
@@ -70,7 +70,7 @@ export function NoFees() {
               </div>
             </div>
             <div className="ours">
-              <p className="ours-h">Kontifi</p>
+              <p className="ours-h">Kontentifi</p>
               <p className="once">
                 Paid
                 <br />

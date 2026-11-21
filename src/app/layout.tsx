@@ -16,11 +16,11 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "Kontifi: Your content, social media ready.", template: "%s · Kontifi" },
+  title: { default: "Kontentifi: Your content, social media ready.", template: "%s · Kontentifi" },
   description,
-  openGraph: { type: "website", siteName: "Kontifi", title: "Kontifi", description, url: "/" },
+  openGraph: { type: "website", siteName: "Kontentifi", title: "Kontentifi", description, url: "/" },
   robots: isIndexable() ? undefined : { index: false, follow: false },
-  twitter: { card: "summary_large_image", title: "Kontifi", description, creator: "@hamchowderr" },
+  twitter: { card: "summary_large_image", title: "Kontentifi", description, creator: "@hamchowderr" },
 };
 
 export const viewport: Viewport = { themeColor: "#ffffff", colorScheme: "light", viewportFit: "cover" };

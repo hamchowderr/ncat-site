@@ -11,7 +11,7 @@ export function PlatformExpert() {
             <span className="agent-badge-icon" aria-hidden="true">
               <Bot size={16} strokeWidth={2.2} />
             </span>
-            Kontifi’s agent
+            Kontentifi’s agent
           </p>
           <h2 id="platforms-title">It knows every feed you post to</h2>
           <p>

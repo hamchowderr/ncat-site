@@ -26,7 +26,7 @@ describe("Engine and shell", () => {
       "An AI agent on your computer",
       "n8n with the engine",
       "social-clips, our free version",
-      "Kontifi, the fine-tuned shell",
+      "Kontentifi, the fine-tuned shell",
     ]);
     expect(items.filter((li) => li.classList.contains("ours"))).toEqual([items[4]]);
     expect(WAYS.filter((w) => w.ours)).toHaveLength(1);
@@ -65,13 +65,13 @@ describe("Use cases", () => {
     expect(panel).toHaveTextContent(/server or always-on machine/);
   });
 
-  it("shows what each profile does without Kontifi", () => {
+  it("shows what each profile does without Kontentifi", () => {
     render(<UseCases />);
     for (const c of CASES) {
       expect(c.without.length).toBeGreaterThan(20);
       fireEvent.click(screen.getByRole("tab", { name: c.tab }));
       const line = document.querySelector(".case-without")!;
-      expect(line).toHaveTextContent("Without Kontifi");
+      expect(line).toHaveTextContent("Without Kontentifi");
       expect(line).toHaveTextContent(c.without);
     }
   });
