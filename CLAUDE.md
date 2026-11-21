@@ -22,7 +22,7 @@ Marketing website for Takewon. The dashboard itself is the private `ncat-dash` r
 - Every change ships with automated tests (component and browser), without being asked.
 - Design work uses the Impeccable skill (`.agents/skills/impeccable`).
 - Real logos for every company or platform named; no stand-ins.
-- Never invent a price, credit amount or stat. The product is named Takewon (Chowderr, 2026-11-21; it was Kontifi before). Never mention Otaku Solutions or chowderr.dev on the site (Chowderr, 2026-11-21).
+- Never invent a price, credit amount or stat. The product is named Takewon; Chowderr owns takewon.com (2026-11-21). Never mention Otaku Solutions or chowderr.dev on the site (Chowderr, 2026-11-21).
 - Never say "no server required"; it runs on a rented server or the buyer's own always-on machine.
 - Never mention Make or Zapier.
 - Avoid heavy box outlines; group with space and soft tones. Nothing should overlay content.
