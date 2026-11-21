@@ -1,6 +1,6 @@
 # ncat-site
 
-Marketing website for Kontentifi by Otaku Solutions: your content, organized and clipped automatically, built on the free, open-source [NCA Toolkit](https://github.com/stephengpope/no-code-architects-toolkit).
+Marketing website for Takewon by Otaku Solutions: your content, organized and clipped automatically, built on the free, open-source [NCA Toolkit](https://github.com/stephengpope/no-code-architects-toolkit).
 
 ```bash
 pnpm install

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Kontentifi: Your content, social media ready.";
+export const alt = "Takewon: Your content, social media ready.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -12,7 +12,7 @@ export default function OpengraphImage() {
           <div style={{ width: 56, height: 56, borderRadius: 14, background: "#5b3df5", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{ width: 0, height: 0, borderLeft: "18px solid #ffffff", borderTop: "12px solid transparent", borderBottom: "12px solid transparent", marginLeft: 4 }} />
           </div>
-          Kontentifi
+          Takewon
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ display: "flex", fontSize: 28, fontWeight: 700, color: "#3d24c4", letterSpacing: 1 }}>SOCIAL MEDIA READY</div>

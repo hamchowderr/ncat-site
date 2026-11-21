@@ -5,7 +5,7 @@ import { A16zMark, ClaudeMark, KinnMark } from "@/components/brand/Venues";
 import { FillText } from "@/components/FillText";
 import { Reveal } from "@/components/Reveal";
 
-/** The story behind Kontentifi, told as five chapters. Every fact here comes from the two talks. */
+/** The story behind Takewon, told as five chapters. Every fact here comes from the two talks. */
 export const CHAPTERS: { n: string; when: string; title: string; body: string; scene: "video" | "walls" | "engine" | "rooms" | "shell" }[] = [
   {
     n: "01",
@@ -38,8 +38,8 @@ export const CHAPTERS: { n: string; when: string; title: string; body: string; s
   {
     n: "05",
     when: "Which is why",
-    title: "Kontentifi is the missing piece",
-    body: "The engine has no interface. You either wire it up in n8n or write scripts. Kontentifi is the fine-tuned shell around it: ready-made automations, an agent that sets up new ones, review before anything goes out. You pay once and own your version.",
+    title: "Takewon is the missing piece",
+    body: "The engine has no interface. You either wire it up in n8n or write scripts. Takewon is the fine-tuned shell around it: ready-made automations, an agent that sets up new ones, review before anything goes out. You pay once and own your version.",
     scene: "shell",
   },
 ];
@@ -53,7 +53,7 @@ export function AboutHero() {
           Built for everyone who hit <span className="about-wall">the same wall</span>.
         </h1>
         <p className="hero-sub">
-          Kontentifi didn’t start as a product. It started as a free engine, a community of creators tired of paying for every step, and two talks that kept
+          Takewon didn’t start as a product. It started as a free engine, a community of creators tired of paying for every step, and two talks that kept
           ending with the same question.
         </p>
       </div>
@@ -162,7 +162,7 @@ function ChapterScene({ name }: { name: (typeof CHAPTERS)[number]["scene"] }) {
           <small>Free engine</small>
         </span>
       </span>
-      <span className="shell-label">Kontentifi</span>
+      <span className="shell-label">Takewon</span>
       <span className="shell-alt">
         <FileLogo name="n8n" size={20} /> or scripts, without it
       </span>
@@ -189,7 +189,7 @@ export function AboutWho() {
           <h2 id="who-title">Tylan “Chowderr” Miller</h2>
           <p>
             Founder and CTO of Otaku Solutions. I worked for Stephen in his community, so I know the NCA Toolkit and the tools around it inside out,
-            along with the walls people hit with them. Kontentifi is everything I kept seeing people need around that free engine.
+            along with the walls people hit with them. Takewon is everything I kept seeing people need around that free engine.
           </p>
           <p className="who-links">
             <a href="https://otakusolutions.io">Otaku Solutions</a>
@@ -222,7 +222,7 @@ export function AboutWho() {
                 <FileLogo name="n8n" size={20} />
                 <span>
                   <b>n8n</b>
-                  <small>bundled with the toolkit, optional with Kontentifi</small>
+                  <small>bundled with the toolkit, optional with Takewon</small>
                 </span>
               </a>
             </li>

@@ -221,7 +221,7 @@ describe("the feeds section is clearly about the agent, and shows the brand", ()
   it("wears a robot agent badge and says every clip comes out in your brand", () => {
     const { container } = render(<PlatformExpert />);
     const badge = container.querySelector(".agent-badge")!;
-    expect(badge).toHaveTextContent("Kontentifi’s agent");
+    expect(badge).toHaveTextContent("Takewon’s agent");
     expect(badge.querySelector("svg.lucide-bot")).not.toBeNull();
     expect(container.querySelector(".sec-head")).toHaveTextContent("your caption style, logo, colours and font");
     expect([...container.querySelectorAll(".shift-brand li")].map((l) => l.textContent?.trim())).toEqual([

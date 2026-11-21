@@ -24,7 +24,7 @@ describe("About page", () => {
       "Everyone hit the same walls",
       "Built a free engine",
       "Two rooms full of creators",
-      "Kontentifi is the missing piece",
+      "Takewon is the missing piece",
     ]);
     expect(CHAPTERS.map((c) => c.n)).toEqual(["01", "02", "03", "04", "05"]);
     const text = document.body.textContent!;
@@ -133,7 +133,7 @@ describe("Fixes from the 2026-11-19 review", () => {
     vi.useRealTimers();
   });
 
-  it("marks Kontentifi's agent with a robot, never the sparkle star", () => {
+  it("marks Takewon's agent with a robot, never the sparkle star", () => {
     for (const name of ["chat", "steps"] as const) {
       const { container } = render(<AlsoScene name={name} />);
       expect(container.querySelector(".lucide-bot"), name).not.toBeNull();
@@ -142,10 +142,10 @@ describe("Fixes from the 2026-11-19 review", () => {
     expect(readFileSync("src/components/AlsoScenes.tsx", "utf8")).not.toMatch(/Sparkles/);
   });
 
-  it("shows the monthly bill rolling on next to the one Kontentifi payment", () => {
+  it("shows the monthly bill rolling on next to the one Takewon payment", () => {
     const { container } = render(<NoFees />);
     expect(container.querySelector(".bill")).toHaveTextContent("Billed every month");
-    expect(container.querySelector(".ours")).toHaveTextContent("Kontentifi");
+    expect(container.querySelector(".ours")).toHaveTextContent("Takewon");
     expect(container.querySelector(".ours")).toHaveTextContent("No meter.");
   });
 

@@ -1,6 +1,6 @@
 # ncat-site
 
-Marketing website for Kontentifi (Otaku Solutions). The dashboard itself is the private `ncat-dash` repo; buyers get that repo, never this one.
+Marketing website for Takewon (Otaku Solutions). The dashboard itself is the private `ncat-dash` repo; buyers get that repo, never this one.
 
 ## Stack
 - Next.js 16 App Router, React 19, TypeScript, pnpm. Plain CSS in `src/app/globals.css` (design tokens on `:root`); no Tailwind.
@@ -22,7 +22,7 @@ Marketing website for Kontentifi (Otaku Solutions). The dashboard itself is the 
 - Every change ships with automated tests (component and browser), without being asked.
 - Design work uses the Impeccable skill (`.agents/skills/impeccable`).
 - Real logos for every company or platform named; no stand-ins.
-- Never invent a price, credit amount or stat. The product is named Kontentifi (Chowderr, 2026-11-19).
+- Never invent a price, credit amount or stat. The product is named Takewon; Chowderr owns takewon.com (2026-11-21).
 - Never say "no server required"; it runs on a rented server or the buyer's own always-on machine.
 - Never mention Make or Zapier.
 - Avoid heavy box outlines; group with space and soft tones. Nothing should overlay content.

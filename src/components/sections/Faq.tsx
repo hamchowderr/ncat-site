@@ -47,7 +47,7 @@ export const FAQ: { q: string; a: React.ReactNode }[] = [
   { q: "Do I need n8n?", a: "No. Automations run inside the shell itself. n8n comes with the toolkit, and if you already use it, it can still start an automation." },
   {
     q: "Is this the official NCA Toolkit?",
-    a: "No. The NCA Toolkit is a free, open-source project by Stephen G. Pope. Kontentifi, the shell around it, is a separate product by Otaku Solutions.",
+    a: "No. The NCA Toolkit is a free, open-source project by Stephen G. Pope. Takewon, the shell around it, is a separate product by Otaku Solutions.",
   },
 ];
 
