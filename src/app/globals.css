@@ -2402,7 +2402,8 @@ fieldset[aria-invalid="true"] .pill span {
   padding: clamp(20px, 3vw, 36px) clamp(12px, 2.4vw, 28px) clamp(16px, 2vw, 24px);
 }
 .split-name,
-.split-playhead {
+.split-playhead,
+.split-now {
   display: none;
 }
 .split-row {
@@ -2536,30 +2537,31 @@ fieldset[aria-invalid="true"] .pill span {
   background: var(--ink);
   z-index: 2;
 }
-/* On a phone the scene is still: the wide LinkedIn clip across the top, then the four tall ones two to a row,
-   each as wide as its column so its captions can be read, with its platform beside the logo underneath. */
+/* On a phone with motion off the scene is still: the wide LinkedIn clip across the top, then the four tall ones
+   two to a row, each as wide as its column, with its platform beside the logo underneath. */
 @media (max-width: 600px) {
-  .split-stage {
+  .split:not(.is-live) .split-stage {
     padding: 14px 14px 20px;
+    margin-top: 28px;
   }
-  .split-row {
+  .split:not(.is-live) .split-row {
     --h: 9999px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px 12px;
     align-items: start;
   }
-  .split-col {
+  .split:not(.is-live) .split-col {
     justify-content: flex-start;
   }
-  .split-col:first-child {
+  .split:not(.is-live) .split-col:first-child {
     grid-column: 1 / -1;
   }
-  .split-clip {
+  .split:not(.is-live) .split-clip {
     width: 100%;
     border-radius: 14px;
   }
-  .split-dest {
+  .split:not(.is-live) .split-dest {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: auto auto;
@@ -2570,30 +2572,73 @@ fieldset[aria-invalid="true"] .pill span {
     margin-top: 12px;
     text-align: left;
   }
-  .split-logo {
+  .split:not(.is-live) .split-logo {
     grid-row: 1 / 3;
     width: 34px;
     height: 34px;
     margin: 0;
   }
-  .split-logo .bi {
+  .split:not(.is-live) .split-logo .bi {
     width: 19px;
     height: 19px;
   }
-  .split-ready {
+  .split:not(.is-live) .split-ready {
+    display: block;
     font-size: 14px;
     line-height: 1.25;
   }
-  .split-shape {
+  .split:not(.is-live) .split-shape {
     font-size: 12.5px;
+  }
+
+  /* Playing by the scroll on a phone: the headline and steps scroll away and only the stage pins, so the
+     scene has the whole screen and the finished clips come out large. The step it is on is written across the
+     top of the stage instead. */
+  .split.is-live .split-pin {
+    position: static;
+    height: 100%;
+    display: block;
+    padding: 0;
+  }
+  .split.is-live .split-pin > .wrap:last-child {
+    position: sticky;
+    top: 68px;
+    height: calc(100vh - 68px);
+    height: calc(100svh - 68px);
+    padding-block: 12px;
+  }
+  .split.is-live .split-stage {
+    max-height: none;
+    padding: 0;
+  }
+  .split.is-live .split-now {
+    display: block;
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .split.is-live .split-ready {
+    display: none;
+  }
+  .split.is-live .split-dest {
+    margin-top: 0;
+  }
+  .split.is-live .split-logo {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 2px;
+  }
+  .split.is-live .split-logo .bi {
+    width: 18px;
+    height: 18px;
+  }
+  .split.is-live .split-shape {
+    font-size: 11.5px;
     line-height: 1.25;
-  }
-  .split-steps {
-    gap: 10px 16px;
-    font-size: 14px;
-  }
-  .split-stage {
-    margin-top: 28px;
   }
 }
 

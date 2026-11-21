@@ -56,9 +56,6 @@ function DestLogo({ platform }: { platform: string }) {
 /** How far through the section's scroll the scene finishes; the rest is a pause on the finished scene. */
 export const HOLD_AT = 0.8;
 
-/** Screens this narrow get the still, finished scene instead of the scroll-played one. */
-export const PHONE = "(max-width: 600px)";
-
 const clamp = (v: number) => Math.min(1, Math.max(0, v));
 const local = (p: number, a: number, b: number) => clamp((p - a) / (b - a));
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -74,36 +71,8 @@ export function SplitScene() {
     () => false,
   );
   const reduce = useReducedMotion();
-  // on a phone the scene is too small to play by the scroll: it shows the finished clips, large, two to a row
-  const phone = useSyncExternalStore(
-    (cb) => {
-      const m = window.matchMedia(PHONE);
-      m.addEventListener("change", cb);
-      return () => m.removeEventListener("change", cb);
-    },
-    () => window.matchMedia(PHONE).matches,
-    () => false,
-  );
-  const live = mounted && !reduce && !phone;
+  const live = mounted && !reduce;
   const [step, setStep] = useState(SPLIT_STEPS.length - 1);
-
-  // the finished clips play while they are on screen, unless motion is off
-  useEffect(() => {
-    if (live || !mounted || reduce || typeof IntersectionObserver === "undefined") return;
-    const videos = Array.from(stage.current?.querySelectorAll<HTMLVideoElement>(".split-video") ?? []);
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          const v = e.target as HTMLVideoElement;
-          if (e.isIntersecting) v.play()?.catch(() => {});
-          else v.pause();
-        }
-      },
-      { threshold: 0.5 },
-    );
-    videos.forEach((v) => io.observe(v));
-    return () => io.disconnect();
-  }, [live, mounted, reduce]);
 
   useEffect(() => {
     if (!live) return;
@@ -119,6 +88,8 @@ export function SplitScene() {
     const name = st.querySelector<HTMLElement>(".split-name");
     const foot = st.querySelector<HTMLElement>(".split-foot");
     const next = st.querySelector<HTMLElement>(".split-next");
+    const head = el.querySelector<HTMLElement>(".split-head");
+    const now = st.querySelector<HTMLElement>(".split-now");
     let raf = 0;
     // the scene follows the scroll with a little lag, so each change eases in rather than jumping
     let shown = -1;
@@ -127,7 +98,10 @@ export function SplitScene() {
       raf = 0;
       const box = el.getBoundingClientRect();
       // the scene finishes at 80% of the scroll and holds its last moment for the rest, before the page moves on
-      const target = clamp(-box.top / Math.max(1, box.height - window.innerHeight) / HOLD_AT);
+      // on a phone only the stage pins (the headline scrolls away first, so the clips get the whole screen),
+      // and the scene starts once the stage is pinned
+      const lead = st.clientWidth < 600 && head ? head.offsetHeight : 0;
+      const target = clamp((-box.top - lead) / Math.max(1, box.height - lead - window.innerHeight) / HOLD_AT);
       shown = shown < 0 || Math.abs(target - shown) < 0.0005 ? target : shown + (target - shown) * 0.09;
       const p = shown;
       if (p !== target) raf = requestAnimationFrame(paint);
@@ -138,11 +112,12 @@ export function SplitScene() {
       const gapCards = narrow ? 12 : 22;
       const cols = narrow ? 3 : 5;
       const rows = Math.ceil(SPLIT_CLIPS.length / cols);
-      const destH = narrow ? 64 : 92;
-      const rowGap = 18;
+      // on a phone the logo and shape under each clip, and the editor line, are measured so the clips get every pixel left
+      const destH = narrow ? (dests[0]?.offsetHeight ?? 48) + 12 : 92;
+      const rowGap = narrow ? 14 : 18;
       // room above for the next recording, and below for the editor route and the token count
-      const topBand = narrow ? 40 : 52;
-      const footH = narrow ? 112 : 72;
+      const topBand = narrow ? 44 : 52;
+      const footH = narrow ? (foot?.offsetHeight ?? 96) + 10 : 72;
 
       // the long recording, across the middle
       const SW = W - 2 * pad;
@@ -230,6 +205,11 @@ export function SplitScene() {
         if (p >= s.at) current = i;
       });
       setStep(current);
+      if (now) {
+        // the step it is on, written across the top of the stage on a phone, until the next recording takes that place
+        now.textContent = SPLIT_STEPS[current].label;
+        now.style.opacity = String(1 - local(p, 0.8, 0.84));
+      }
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(paint);
@@ -266,6 +246,7 @@ export function SplitScene() {
         </div>
         <div className="wrap">
           <div className="split-stage" ref={stage} aria-hidden="true">
+            <span className="split-now" />
             <span className="split-name">{SPLIT_RECORDING.label}</span>
             <span className="split-playhead" />
             <span className="split-next">

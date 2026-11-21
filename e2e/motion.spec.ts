@@ -14,7 +14,6 @@ async function scrollSplit(page: Page, p: number) {
 }
 
 test("one recording splits into clips that each take their platform's shape and land by its logo", async ({ page, isMobile }) => {
-  test.skip(isMobile, "a phone shows the still, finished scene (tested in phone.spec.ts)");
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const clips = page.locator(".split-clip");
@@ -95,7 +94,6 @@ test("one recording splits into clips that each take their platform's shape and 
 });
 
 test("the scroll scene takes a long scroll and eases into each change instead of jumping", async ({ page, isMobile }) => {
-  test.skip(isMobile, "a phone shows the still, finished scene (tested in phone.spec.ts)");
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const [h, vh] = await page.evaluate(() => [document.querySelector<HTMLElement>(".split")!.offsetHeight, window.innerHeight]);
@@ -112,7 +110,6 @@ test("the scroll scene takes a long scroll and eases into each change instead of
 });
 
 test("the scroll scene holds on its finished moment before the page scrolls on", async ({ page, isMobile }) => {
-  test.skip(isMobile, "a phone shows the still, finished scene (tested in phone.spec.ts)");
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const place = () => page.locator(".split-next").evaluate((el) => (el as HTMLElement).style.transform);
