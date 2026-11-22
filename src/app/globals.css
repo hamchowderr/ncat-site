@@ -4504,6 +4504,100 @@ html:has(.ea-dialog[open]) {
 .early-cta {
   margin-top: 26px;
 }
+
+/* The feeds' logos around the ask. White chips, soft shadow, no outline. */
+.mid-cta-in {
+  position: relative;
+  overflow: hidden;
+}
+.mid-feeds {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mid-feed {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 28px -12px rgba(41, 22, 140, 0.28);
+}
+.mid-feed .bi,
+.mid-feed .fl {
+  width: 30px;
+  height: 30px;
+}
+
+/* rails: three logos on each side of the words, at staggered heights, floating gently */
+.mid-cta-rails .mid-feed {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(14px) scale(0.85) rotate(var(--tilt, 0deg));
+  transition: opacity 0.5s var(--ease), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i) * 90ms);
+}
+.mid-cta-rails.is-in .mid-feed {
+  opacity: 1;
+  transform: translateY(0) scale(1) rotate(var(--tilt, 0deg));
+}
+.mid-cta-rails .mid-feed[data-feed="tiktok"] { left: 7%; top: 16%; --tilt: -8deg; }
+.mid-cta-rails .mid-feed[data-feed="instagram"] { right: 8%; top: 13%; --tilt: 7deg; }
+.mid-cta-rails .mid-feed[data-feed="youtube"] { left: 15%; top: 50%; --tilt: 5deg; }
+.mid-cta-rails .mid-feed[data-feed="linkedin"] { right: 15%; top: 47%; --tilt: -6deg; }
+.mid-cta-rails .mid-feed[data-feed="facebook"] { left: 6%; bottom: 12%; --tilt: -4deg; }
+.mid-cta-rails .mid-feed[data-feed="x"] { right: 7%; bottom: 14%; --tilt: 8deg; }
+@media (prefers-reduced-motion: no-preference) {
+  .mid-cta-rails.is-in .mid-feed .bi,
+  .mid-cta-rails.is-in .mid-feed .fl {
+    animation: mid-bob 4.8s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.8s);
+  }
+}
+@keyframes mid-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+/* Where there is no room beside the words, the floating logos line up in one row above the headline. */
+@media (max-width: 1099px) {
+  .mid-cta-rails .mid-feeds {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .mid-cta-rails .mid-feed {
+    position: static;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+  .mid-cta-rails .mid-feed .bi,
+  .mid-cta-rails .mid-feed .fl {
+    width: 24px;
+    height: 24px;
+  }
+}
+@media (max-width: 640px) {
+  .mid-cta-rails .mid-feeds {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .mid-cta-rails .mid-feed {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+  .mid-cta-rails .mid-feed .bi,
+  .mid-cta-rails .mid-feed .fl {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+
 .early-in h2 {
   font-size: clamp(2rem, 4.2vw, 3.25rem);
 }
@@ -4963,3 +5057,4 @@ html:has(.ea-dialog[open]) {
     height: 14px;
   }
 }
+

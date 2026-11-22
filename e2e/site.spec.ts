@@ -698,3 +698,61 @@ test("the Also in Takewon cards fill every row, with no empty gap", async ({ pag
   // each row's cards plus the gaps between them reach across the whole grid
   for (const w of rows) expect(w).toBeGreaterThan(gw - 40);
 });
+
+test("each page has its own share card and description", async ({ page, request }) => {
+  const want = {
+    "/": { title: "Takewon: Your content, social media ready.", desc: /sized for TikTok, Instagram, YouTube, LinkedIn, Facebook and X/ },
+    "/about": { title: "About Takewon", desc: /Why Takewon exists/ },
+    "/pricing": { title: "Takewon pricing", desc: /Pay once and own your version of Takewon/ },
+  } as const;
+  const images = new Set<string>();
+  for (const [path, w] of Object.entries(want)) {
+    await page.goto(path);
+    const meta = (p: string) => page.locator(`meta[property="${p}"], meta[name="${p}"]`).first().getAttribute("content");
+    expect(await meta("og:title"), path).toBe(w.title);
+    expect(await meta("og:description"), path).toMatch(w.desc);
+    expect(await meta("description"), path).toMatch(w.desc);
+    expect(await meta("twitter:card"), path).toBe("summary_large_image");
+    for (const key of ["og:image", "twitter:image"]) {
+      const url = new URL((await meta(key))!);
+      const res = await request.get(url.pathname);
+      expect(res.status(), `${path} ${key}`).toBe(200);
+      expect(res.headers()["content-type"]).toContain("image/png");
+      const png = await res.body();
+      // a PNG's width and height sit at bytes 16 and 20
+      expect([png.readUInt32BE(16), png.readUInt32BE(20)], `${path} ${key}`).toEqual([1200, 630]);
+      if (key === "og:image") images.add(url.pathname.split("?")[0]!);
+    }
+    expect(await meta("og:image:alt"), path).toContain(w.title.replace("Takewon: ", ""));
+  }
+  expect(images.size).toBe(3);
+});
+
+test("the ask after the scene has the six feeds' real logos around it", async ({ page }) => {
+  await page.goto("/");
+  const box = page.locator(".mid-cta-in");
+  for (let k = 0; k < 4; k++) {
+    await page.evaluate(() => {
+      const e = document.querySelector(".mid-cta-in")!;
+      document.documentElement.style.scrollBehavior = "auto";
+      scrollTo(0, e.getBoundingClientRect().top + scrollY - 150);
+    });
+    await page.waitForTimeout(300);
+  }
+  await expect(box).toHaveClass(/is-in/);
+  const feeds = box.locator(".mid-feed");
+  await expect(feeds).toHaveCount(6);
+  expect(await feeds.evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.feed))).toEqual(["tiktok", "instagram", "youtube", "linkedin", "facebook", "x"]);
+  await expect(feeds.last()).toHaveCSS("opacity", "1");
+  // no logo covers the words or the button, and every logo stays inside the panel
+  const pb = (await box.boundingBox())!;
+  const words = await box.locator("h2, p, .btn").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
+  for (const f of await feeds.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()))) {
+    expect(f.left).toBeGreaterThanOrEqual(pb.x - 1);
+    expect(f.right).toBeLessThanOrEqual(pb.x + pb.width + 1);
+    for (const w of words) {
+      const overlap = f.left < w.right && w.left < f.right && f.top < w.bottom && w.top < f.bottom;
+      expect(overlap).toBe(false);
+    }
+  }
+});

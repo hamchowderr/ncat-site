@@ -12,15 +12,15 @@ const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "600"], variab
 const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-archivo" });
 
 const description =
-  "Pick a ready-made automation and switch it on. From then on every recording is filed, transcribed, cut and captioned with plain editing steps on a server you own, with no AI tokens spent on each video. Built on the free NCA Toolkit.";
+  "Pick a ready-made automation and switch it on. Every new recording comes out cut, captioned and sized for TikTok, Instagram, YouTube, LinkedIn, Facebook and X, on a server you own, with no fee for each video.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: "Takewon: Your content, social media ready.", template: "%s · Takewon" },
   description,
-  openGraph: { type: "website", siteName: "Takewon", title: "Takewon", description, url: "/" },
+  openGraph: { type: "website", siteName: "Takewon", title: "Takewon: Your content, social media ready.", description, url: "/" },
   robots: isIndexable() ? undefined : { index: false, follow: false },
-  twitter: { card: "summary_large_image", title: "Takewon", description, creator: "@hamchowderr" },
+  twitter: { card: "summary_large_image", title: "Takewon: Your content, social media ready.", description, creator: "@hamchowderr" },
 };
 
 export const viewport: Viewport = { themeColor: "#ffffff", colorScheme: "light", viewportFit: "cover" };
