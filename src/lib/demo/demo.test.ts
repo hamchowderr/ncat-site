@@ -85,7 +85,8 @@ describe("a real run of the visitor's video", () => {
     s.later(5000);
     view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
-    expect(view.view.steps[1]).toMatchObject({ label: "Read by the toolkit", state: "done", detail: "2 min 30 s long, 1920 × 1080" });
+    expect(view.view.steps[1]).toMatchObject({ label: "Checked", state: "done", detail: "2 min 30 s long, 1920 × 1080" });
+    expect(view.view.steps.map((s) => s.label).join(" ")).not.toMatch(/toolkit/i);
     const cuts = s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose");
     expect(cuts).toHaveLength(3);
     expect((cuts[1].body.filters as { filter: string }[])[0].filter).toContain(",setpts=PTS+49.5/TB,ass='https://media.example/words.ass',setpts=PTS-STARTPTS[v]");
@@ -118,7 +119,7 @@ describe("a real run of the visitor's video", () => {
     const view = await demoStatus(id, key, s.deps);
     if (!view.ok) throw new Error();
     expect(s.tk.sent.filter((j) => j.endpoint === "/v1/ffmpeg/compose")).toHaveLength(MAX_CLIPS);
-    expect(view.view.steps[2].detail).toBe("The first 3 of 10 clips, up to a minute each. On the dashboard every clip is made.");
+    expect(view.view.steps[2].detail).toBe("The first 3 of 10 clips, up to a minute each. In Takewon every clip is made.");
   });
 
   it("shows clips without captions, and says so, when the words can't be found", async () => {
@@ -175,7 +176,7 @@ describe("a real run of the visitor's video", () => {
     const lostToolkit: Toolkit = { send: async () => ({ kind: "queued", toolkitJobId: "x" }), status: async () => ({ state: "unknown" }) };
     let d: Demo = await advance(demo, lostToolkit, "https://site.example/hook?id=d1", 0);
     d = await advance(d, lostToolkit, "https://site.example/hook?id=d1", 6 * 60_000);
-    expect(viewOf(d)).toMatchObject({ stage: "failed", error: "The toolkit couldn’t read that video. Try another file, such as an MP4 or MOV." });
+    expect(viewOf(d)).toMatchObject({ stage: "failed", error: "That video couldn’t be read. Try another file, such as an MP4 or MOV." });
     void s;
   });
 });

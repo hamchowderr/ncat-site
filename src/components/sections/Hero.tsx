@@ -26,7 +26,6 @@ export function Hero() {
       <div className="wrap hero-top">
         <HeroIcons />
         <p className="slogan">
-          <span className="slogan-dot" aria-hidden="true" />
           Organized and{" "}
           <span className="rot" aria-hidden="true">
             <span key={WORDS[word]} className="rot-word">
@@ -55,9 +54,6 @@ export function Hero() {
             <>
               <a className="btn primary" href="#early">
                 Get early access
-              </a>
-              <a className="btn ghost" href="#templates">
-                See the automations
               </a>
             </>
           )}

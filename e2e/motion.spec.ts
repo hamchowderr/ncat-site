@@ -13,20 +13,29 @@ async function scrollSplit(page: Page, p: number) {
   await page.waitForTimeout(1600);
 }
 
-test("one recording splits into clips that each take their platform's shape and land by its logo", async ({ page }) => {
+test("one recording splits into clips that each take their platform's shape and land by its logo", async ({ page, isMobile }) => {
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const clips = page.locator(".split-clip");
   await expect(clips).toHaveCount(5);
 
   // at the start it is one long recording: the pieces sit side by side at one height
+  // (on a phone, one tall strip down the screen: the pieces stacked at one width)
   await scrollSplit(page, 0.02);
   const start = await Promise.all((await clips.all()).map(async (c) => (await c.boundingBox())!));
   for (const b of start) {
-    expect(Math.abs(b.y - start[0].y)).toBeLessThan(1);
-    expect(Math.abs(b.height - start[0].height)).toBeLessThan(1);
+    if (isMobile) {
+      expect(Math.abs(b.x - start[0].x)).toBeLessThan(1);
+      expect(Math.abs(b.width - start[0].width)).toBeLessThan(1);
+    } else {
+      expect(Math.abs(b.y - start[0].y)).toBeLessThan(1);
+      expect(Math.abs(b.height - start[0].height)).toBeLessThan(1);
+    }
   }
-  for (let i = 1; i < start.length; i++) expect(start[i].x).toBeGreaterThanOrEqual(start[i - 1].x + start[i - 1].width - 1);
+  for (let i = 1; i < start.length; i++) {
+    if (isMobile) expect(start[i].y).toBeGreaterThanOrEqual(start[i - 1].y + start[i - 1].height - 1);
+    else expect(start[i].x).toBeGreaterThanOrEqual(start[i - 1].x + start[i - 1].width - 1);
+  }
   await expect(page.locator(".split-dest").first()).toHaveCSS("opacity", "0");
   await expect(page.locator(".split-steps li.on")).toHaveCount(1);
   // the strip is frames of the real recording, and nothing plays yet
@@ -45,8 +54,16 @@ test("one recording splits into clips that each take their platform's shape and 
   await expect(saidFirst).toHaveCSS("opacity", "1");
   const sb = (await saidFirst.boundingBox())!;
   const cb = (await clips.first().boundingBox())!;
-  expect(sb.y).toBeGreaterThanOrEqual(cb.y + cb.height);
-  expect(Math.abs(sb.x - cb.x)).toBeLessThan(2);
+  if (isMobile) {
+    // beside its piece, readable, inside the stage
+    expect(sb.x).toBeGreaterThanOrEqual(cb.x + cb.width);
+    expect(sb.y).toBeGreaterThanOrEqual(cb.y - 1);
+    expect(sb.y + sb.height).toBeLessThanOrEqual(cb.y + cb.height + 1);
+    expect(await saidFirst.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(14);
+  } else {
+    expect(sb.y).toBeGreaterThanOrEqual(cb.y + cb.height);
+    expect(Math.abs(sb.x - cb.x)).toBeLessThan(2);
+  }
 
   // when they are ready, each clip has its platform's shape, sits inside the scene, and its logo shows under it
   await scrollSplit(page, 0.8);
@@ -93,7 +110,7 @@ test("one recording splits into clips that each take their platform's shape and 
   expect(firstClip.width).toBeGreaterThan(0);
 });
 
-test("the scroll scene takes a long scroll and eases into each change instead of jumping", async ({ page }) => {
+test("the scroll scene takes a long scroll and eases into each change instead of jumping", async ({ page, isMobile }) => {
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const [h, vh] = await page.evaluate(() => [document.querySelector<HTMLElement>(".split")!.offsetHeight, window.innerHeight]);
@@ -109,7 +126,7 @@ test("the scroll scene takes a long scroll and eases into each change instead of
   await expect(page.locator(".split-steps li.on")).toHaveCount(5, { timeout: 4000 });
 });
 
-test("the scroll scene holds on its finished moment before the page scrolls on", async ({ page }) => {
+test("the scroll scene holds on its finished moment before the page scrolls on", async ({ page, isMobile }) => {
   await page.goto("/");
   await expect(page.locator(".split.is-live")).toHaveCount(1);
   const place = () => page.locator(".split-next").evaluate((el) => (el as HTMLElement).style.transform);
@@ -136,12 +153,13 @@ test("the scroll scene holds on its finished moment before the page scrolls on",
 
 test.describe("with reduced motion, the scroll scene", () => {
   test.use({ reducedMotion: "reduce" });
-  test("is a plain row of the finished clips, not a long pinned scroll", async ({ page }) => {
+  test("is a plain row of the finished clips, not a long pinned scroll", async ({ page, isMobile }) => {
     await page.goto("/");
     const split = page.locator(".split");
     await split.scrollIntoViewIfNeeded();
     await expect(page.locator(".split.is-live")).toHaveCount(0);
-    expect((await split.boundingBox())!.height).toBeLessThan(1400);
+    // a phone shows the clips two to a row, large, so the section is taller there but still no pinned scroll
+    expect((await split.boundingBox())!.height).toBeLessThan(isMobile ? 2000 : 1400);
     for (const c of await page.locator(".split-clip").all()) {
       const b = (await c.boundingBox())!;
       expect(b.width / b.height).toBeCloseTo(RATIO[(await c.getAttribute("data-frame"))!], 1);
@@ -237,7 +255,7 @@ async function dropRecording(page: import("@playwright/test").Page) {
 }
 
 type Step = { label: string; state: string; detail?: string };
-const LABELS = ["Uploaded", "Read by the toolkit", "Cut at the pauses, made vertical", "Captioned", "Ready to download"];
+const LABELS = ["Uploaded", "Checked", "Cut at the pauses, made vertical", "Captioned", "Ready to download"];
 const steps = (states: string[], details: (string | undefined)[] = []): Step[] =>
   LABELS.map((label, i) => ({ label, state: states[i], ...(details[i] ? { detail: details[i] } : {}) }));
 
@@ -275,7 +293,7 @@ async function fakeDemo(page: import("@playwright/test").Page, finish: "done" | 
         : asked === 2
           ? { stage: "running", steps: steps(["done", "done", "doing", "wait", "wait"], [file, "35 s long, 1440 × 900", "1 clip, up to a minute each, 1080 × 1920."]), clips: [] }
           : finish === "failed"
-            ? { stage: "failed", steps: steps(["done", "failed", "wait", "wait", "wait"], [file]), clips: [], error: "The toolkit couldn’t read that video. Try another file, such as an MP4 or MOV." }
+            ? { stage: "failed", steps: steps(["done", "failed", "wait", "wait", "wait"], [file]), clips: [], error: "That video couldn’t be read. Try another file, such as an MP4 or MOV." }
             : {
                 stage: "done",
                 steps: steps(["done", "done", "done", "done", "done"], [file, "35 s long, 1440 × 900", "1 clip, up to a minute each, 1080 × 1920.", "Every word transcribed and burned in."]),
@@ -319,7 +337,7 @@ test("the section asks for their own first video, and nothing is sent before the
   await expect(page.locator(".try-drop-note")).toHaveText(/^\d+ (KB|MB), 35 s$/);
   await expect(page.getByRole("button", { name: "Sign up and run it" })).toBeVisible();
   // said before they sign up: it takes a while, and they don't have to sit and watch
-  await expect(page.locator(".try-drop-hint")).toHaveText("The toolkit can take a while on it, and you don’t have to wait on this page.");
+  await expect(page.locator(".try-drop-hint")).toHaveText("This can take a while, and you don’t have to wait on this page.");
   // every step waits: nothing has run, and nothing pretends to
   await expect(page.locator(".try-step.wait")).toHaveCount(5);
   expect(sent).toEqual([]);
@@ -352,10 +370,12 @@ test("signing up uploads the video to the real toolkit, shows its real steps, th
   const last = (await wait.getByRole("button", { name: "Copy link" }).boundingBox())!;
   expect(Math.abs(first.x - box.x - (box.x + box.width - last.x - last.width))).toBeLessThan(4);
   // the toolkit's own answers, step by step
-  await expect(page.locator('[data-step="Read by the toolkit"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
+  await expect(page.locator('[data-step="Checked"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
   await expect(page.locator(".try-step.done")).toHaveCount(5, { timeout: 15_000 });
   const next = page.locator(".try-next");
-  await expect(next).toContainText("Here are your clips, made by the toolkit.");
+  await expect(next).toContainText("Here are your clips.");
+  for (const t of await page.locator("[data-step]").allInnerTexts()) expect(t).not.toMatch(/toolkit/i);
+  await expect(next).not.toContainText(/toolkit/i);
   await expect(wait).toHaveCount(0);
   // No email is promised while the site has no way to send one (toSend is not set up here).
   await expect(next).not.toContainText("in your email");
@@ -376,7 +396,7 @@ test("when the toolkit can't finish, it says why plainly and lets them start ove
   await page.getByRole("button", { name: "Sign up and run it" }).click();
   await signUp(page);
   const alert = page.locator(".try-next[role=alert]");
-  await expect(alert).toContainText("The toolkit couldn’t read that video.", { timeout: 15_000 });
+  await expect(alert).toContainText("That video couldn’t be read.", { timeout: 15_000 });
   await expect(alert).toContainText("You’re still on the list.");
   await alert.getByRole("button", { name: "Start over" }).click();
   await expect(page.locator(".try-drop .btn.primary")).toHaveText("Choose a video");
@@ -384,7 +404,9 @@ test("when the toolkit can't finish, it says why plainly and lets them start ove
 });
 
 test("every Get early access button opens the pop-up, and Escape closes it", async ({ page, isMobile }) => {
-  await page.goto("/");
+  // the buttons are plain links to the form until the page's script takes them over; a click before that just
+  // jumps to the form, so wait for the script to load first
+  await page.goto("/", { waitUntil: "networkidle" });
   if (!isMobile) {
     await page.locator(".nav-r").getByRole("link", { name: "Get early access" }).click();
     await expect(page.locator("dialog[open]")).toBeVisible();
@@ -403,43 +425,26 @@ test("every Get early access button opens the pop-up, and Escape closes it", asy
   await expect(page.locator("dialog[open] form")).toBeVisible();
 });
 
-test("the features lead lights up one platform at a time in its own colour, with the logos in rails outside the text", async ({ page, isMobile }) => {
+test("the features heading uses the one accent colour and the lead reads as plain text", async ({ page }) => {
   await page.goto("/");
-  const ink = page.locator("#features-title .plat-ink");
-  await expect(ink).toHaveText("No AI on every video.");
-  const lead = page.locator(".features .pl-lead");
-  const phrase = (p: string) => lead.locator(`.pl-phrase[data-platform="${p}"]`);
-  const logo = (p: string) => page.locator(`.features .pl-rail-logo[data-platform="${p}"]`);
-  // before it scrolls in, it waits in grey with the logos tucked away
-  await expect(phrase("youtube").locator(".pl-words")).toHaveCSS("opacity", "0.3");
-  await expect(logo("youtube")).toHaveCSS("opacity", "0");
-  await lead.scrollIntoViewIfNeeded();
-  await page.evaluate(() => window.scrollBy(0, 300));
-  const colours: Record<string, string> = { youtube: "rgb(255, 0, 0)", facebook: "rgb(8, 102, 255)", linkedin: "rgb(10, 102, 194)", tiktok: "rgb(0, 0, 0)", x: "rgb(0, 0, 0)" };
-  for (const [p, rgb] of Object.entries(colours)) {
-    await expect(phrase(p)).toHaveClass(/is-on/);
-    await expect(phrase(p).locator(".pl-words")).toHaveCSS("color", rgb);
-    await expect(phrase(p).locator(".pl-words")).toHaveCSS("opacity", "1");
+  const accent = page.locator("#features-title .accent-ink");
+  await expect(accent).toHaveText("No AI on every video.");
+  await expect(accent).toHaveCSS("color", "rgb(91, 61, 245)");
+  await expect(accent).not.toHaveCSS("background-clip", "text");
+  const lead = page.locator(".features .sec-lead");
+  await expect(lead).toContainText("Most of that work is plain editing");
+  await expect(lead).toHaveCSS("opacity", "1");
+});
+
+test("the hero line is readable before anyone scrolls", async ({ page }) => {
+  await page.goto("/");
+  // the words not yet filled are the soft ink, never a pale grey, and the rotating word always shows
+  const colours = await page.$$eval(".hero-sub .fw:not(.on)", (els) => [...new Set(els.map((e) => getComputedStyle(e).color))]);
+  expect(colours).toEqual(["rgb(79, 82, 96)"]);
+  for (let i = 0; i < 6; i++) {
+    expect(Number(await page.locator(".rot-word").evaluate((e) => getComputedStyle(e).opacity))).toBeGreaterThanOrEqual(0.3);
+    await page.waitForTimeout(150);
   }
-  await expect(phrase("instagram").locator(".pl-words")).toHaveCSS("background-clip", "text");
-  // every logo shows, big enough to recognise, and none of them overlaps the text
-  const text = (await lead.boundingBox())!;
-  const sides = new Set<string>();
-  for (const p of ["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]) {
-    await expect(logo(p)).toHaveCSS("opacity", "1");
-    const box = (await logo(p).boundingBox())!;
-    expect(box.width).toBeGreaterThan(30);
-    const outside = box.x + box.width <= text.x || box.x >= text.x + text.width || box.y + box.height <= text.y;
-    expect(outside, p).toBe(true);
-    sides.add(box.x + box.width <= text.x ? "left" : box.x >= text.x + text.width ? "right" : "above");
-  }
-  expect([...sides].sort()).toEqual(isMobile ? ["above"] : ["left", "right"]);
-  // scattered, not stacked: each its own size and tilt, each coming in its own way
-  const looks = await page.$$eval(".features .pl-rail-logo", (els) => els.map((e) => { const c = getComputedStyle(e); return { w: c.width, r: c.rotate, a: c.animationName }; }));
-  expect(new Set(looks.map((l) => l.w)).size).toBeGreaterThanOrEqual(5);
-  expect(new Set(looks.map((l) => l.r)).size).toBe(6);
-  expect(new Set(looks.map((l) => l.a.split(",")[0].trim())).size).toBe(6);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
 
 test("the team chat scene changes app, and its logo, each time the conversation replays", async ({ page }) => {
@@ -454,7 +459,9 @@ test("the team chat scene changes app, and its logo, each time the conversation 
     said.push((await chat.locator(".msg-bubble").first().textContent())!);
     await expect(chat.locator(".chat-chan svg")).toBeVisible();
     await expect(chat.locator(".ava-bot svg.lucide-bot")).toBeAttached();
-    await page.clock.runFor(9000);
+    // jump the clock one loop ahead: runFor would play every animation frame of the whole page on the way,
+    // which took over 20 s and timed out on slower CI machines
+    await page.clock.fastForward(9000);
   }
   expect(seen).toEqual(["slack", "discord", "teams", "telegram"]);
   expect(new Set(said).size).toBe(4);
@@ -476,4 +483,30 @@ test("each step of one recording in has its own icon that moves in its own way",
 test("a clips link without its key shows nothing", async ({ page }) => {
   const res = await page.goto("/clips/run1?k=wrong");
   expect(res?.status()).toBe(404);
+});
+
+test("the next recording runs through the same five steps one by one, without spilling out of its bar", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".split.is-live")).toHaveCount(1);
+  await scrollSplit(page, 1);
+  const next = page.locator(".split-next");
+  await expect(next).toBeVisible();
+  // watch it for a few seconds: it starts the steps again and lights them in order
+  const seen = new Set<number>();
+  for (let i = 0; i < 40 && seen.size < 4; i++) {
+    seen.add(await next.locator(".split-next-steps li.on").count());
+    await page.waitForTimeout(250);
+  }
+  expect(seen.size).toBeGreaterThanOrEqual(4);
+  for (const label of ["Cut at the pauses", "Reshaped and captioned"]) {
+    await expect(next.locator(".split-next-now")).toHaveText(label, { timeout: 12000 });
+  }
+  await expect(next.locator(".split-next-now")).toHaveText("Same steps, nobody touching it.", { timeout: 12000 });
+  // the whole line is readable, and the bar stays inside the scene
+  const text = next.locator(".split-next-text");
+  expect(await text.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+  expect(await next.locator(".split-next-now").evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+  const stage = (await page.locator(".split-stage").boundingBox())!;
+  const bar = (await next.boundingBox())!;
+  expect(bar.x + bar.width).toBeLessThanOrEqual(stage.x + stage.width + 1);
 });

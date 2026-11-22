@@ -74,11 +74,12 @@ describe("Fixes from the 2026-11-19 review", () => {
     for (const c of CASES) for (const w of c.tab.split(" ")) expect(w[0], c.tab).toBe(w[0].toUpperCase());
   });
 
-  it("draws a scene for each of the five extras", () => {
+  it("draws a scene for each of the four extras", () => {
     const { container } = render(<AroundTheClip />);
-    expect(ALSO).toHaveLength(5);
-    expect(container.querySelectorAll(".also-card .scene")).toHaveLength(5);
-    for (const name of ["chat", "clients", "steps", "files", "tours"] as const) {
+    expect(ALSO).toHaveLength(4);
+    expect(container.querySelectorAll(".also-card .scene")).toHaveLength(4);
+    expect(ALSO.map((a) => a.title)).not.toContain("Your own steps");
+    for (const name of ["chat", "clients", "files", "tours"] as const) {
       const { container: c } = render(<AlsoScene name={name} />);
       expect(c.querySelector(`.scene-${name}`)).toHaveAttribute("aria-hidden", "true");
     }
@@ -134,7 +135,7 @@ describe("Fixes from the 2026-11-19 review", () => {
   });
 
   it("marks Takewon's agent with a robot, never the sparkle star", () => {
-    for (const name of ["chat", "steps"] as const) {
+    for (const name of ["chat"] as const) {
       const { container } = render(<AlsoScene name={name} />);
       expect(container.querySelector(".lucide-bot"), name).not.toBeNull();
       expect(container.querySelector(".lucide-sparkles"), name).toBeNull();

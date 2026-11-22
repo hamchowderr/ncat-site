@@ -39,7 +39,7 @@ function cornerLight(f: Buffer) {
 }
 
 const HERO = ["live-run", "review", "outputs", "agent-builds"];
-const FEATURES = ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule", "zoom", "library", "calendar", "moments", "follow", "mcp"];
+const FEATURES = ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule", "zoom", "library", "calendar", "moments", "follow", "steps", "mcp"];
 
 // The recordings move a camera in to each action, so most frames are close-ups. Every clip
 // opens on the whole app window, recorded from a production build: that first frame shows
@@ -84,6 +84,31 @@ describe.skipIf(!hasFfmpeg)("team logo in the recordings", () => {
   for (const name of [...HERO, ...FEATURES.filter((n) => n !== "brand" && n !== "calendar").map((n) => `features/${n}`)]) {
     it(`${name} opens with Northlight Media's logo, not the plain mark`, () => {
       expect(coralIn(name)).toBeGreaterThan(200);
+    });
+  }
+});
+
+/** Share of strongly coral/orange pixels (the team logo) in one corner box of a clip's frame at 1 s. */
+function coralShare(file: string, side: "left" | "right") {
+  const w = 120;
+  const raw = execFileSync("ffmpeg", ["-v", "error", "-ss", "1", "-i", `public/media/${file}.mp4`, "-frames:v", "1", "-vf", `scale=${w}:-2`, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]);
+  const h = raw.length / 3 / w;
+  const box = Math.round(w * 0.3);
+  let hit = 0;
+  for (let y = 0; y < Math.min(box, h); y++)
+    for (let i = 0; i < box; i++) {
+      const x = side === "left" ? i : w - 1 - i;
+      const p = (y * w + x) * 3;
+      if (raw[p] > 200 && raw[p + 1] < 160 && raw[p + 2] < 140) hit++;
+    }
+  return hit / (box * box);
+}
+
+describe.skipIf(!hasFfmpeg)("feed clips", () => {
+  for (const name of ["linkedin", "tiktok", "instagram", "youtube", "facebook"]) {
+    it(`${name} carries the team logo top left, not top right`, () => {
+      expect(coralShare(`split/${name}`, "left")).toBeGreaterThan(0.02);
+      expect(coralShare(`split/${name}`, "right")).toBeLessThan(0.005);
     });
   }
 });

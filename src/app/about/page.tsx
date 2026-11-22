@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AboutHero, AboutQuote, AboutStory, AboutWho } from "@/components/sections/AboutStory";
+import { Engine } from "@/components/sections/Engine";
 import { EarlyAccess } from "@/components/sections/EarlyAccess";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export default function AboutPage() {
       <AboutHero />
       <AboutStory />
       <AboutQuote />
+      <Engine />
       <AboutWho />
       <EarlyAccess />
     </>

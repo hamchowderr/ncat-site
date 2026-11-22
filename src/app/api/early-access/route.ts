@@ -1,3 +1,4 @@
+import { CONTACT_EMAIL } from "@/lib/contact";
 import { NextResponse } from "next/server";
 import { checkEarlyAccess, earlyAccessEmail } from "@/lib/early-access";
 import { addressOf, looksLikeBot, mayEmail, takeSignUp } from "@/lib/guard";
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
   if (setup && kept && !(await mayEmail(checked.value.email))) return NextResponse.json({ ok: true });
   if (!setup) {
     if (kept) return NextResponse.json({ ok: true });
-    return NextResponse.json({ ok: false, error: "The list is not open yet. Message Chowderr on any of the links below." }, { status: 503 });
+    return NextResponse.json({ ok: false, error: `The list is not open yet. Email ${CONTACT_EMAIL} and you’ll hear back.` }, { status: 503 });
   }
   const mail = earlyAccessEmail(checked.value);
   const sent = await sendMail(setup, {
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
     html: mail.html,
   });
   if (!sent && !kept) {
-    return NextResponse.json({ ok: false, error: "That did not send. Try again, or message Chowderr on any of the links below." }, { status: 502 });
+    return NextResponse.json({ ok: false, error: `That did not send. Try again, or email ${CONTACT_EMAIL}.` }, { status: 502 });
   }
   // The visitor's own copy. A failure here does not undo the sign-up.
   await sendMail(setup, {

@@ -3,10 +3,15 @@ import { MovingIcon } from "@/components/MovingIcon";
 import CameraIcon from "@/components/itshover/camera-icon";
 import ClockIcon from "@/components/itshover/clock-icon";
 import FileDescriptionIcon from "@/components/itshover/file-description-icon";
+import LayersIcon from "@/components/itshover/layers-icon";
+import Stack3Icon from "@/components/itshover/stack-3-icon";
+import PaintIcon from "@/components/itshover/paint-icon";
 import PlayerIcon from "@/components/itshover/player-icon";
 import PlugConnectedIcon from "@/components/itshover/plug-connected-icon";
+import RefreshIcon from "@/components/itshover/refresh-icon";
 import UsersIcon from "@/components/itshover/users-icon";
 import { FeatureVideo } from "@/components/FeatureVideo";
+import { PhoneFold } from "@/components/PhoneFold";
 import { Reveal } from "@/components/Reveal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
 import { BrandIcon, FileLogo } from "@/components/brand/Logo";
@@ -17,7 +22,43 @@ const TILE_SURFACE = { "--spotlight-card-surface": "transparent", "--spotlight-c
 
 type Tile = { id: string; title: string; icon: React.ReactNode; body: string; video: string; alt: string; logos?: { name: string; mark: React.ReactNode }[] };
 
-export const AROUND_TILES: Tile[] = [
+/** The parts you would otherwise do by hand, first, then everything around the clip. */
+const HAND_TILES: Tile[] = [
+  {
+    id: "brand",
+    title: "Your brand, set once",
+    icon: <MovingIcon icon={PaintIcon} size={18} trigger=".tile" />,
+    body: "Logo, colour, font and music are saved in settings and used by every step that needs them. No step ever asks again.",
+    video: "brand",
+    alt: "Screen recording: the logo, brand colour and theme music are saved in Settings, then the Add a logo step shows it is handled for you.",
+  },
+  {
+    id: "files",
+    title: "Organized in your own storage",
+    icon: <MovingIcon icon={LayersIcon} size={18} trigger=".tile" />,
+    body: "Every upload and every output is filed in your bucket, with its length, picture size and the run that made it.",
+    video: "files",
+    alt: "Screen recording: a new TikTok clips folder is made in the Files screen, a captioned clip is renamed and moved into it.",
+  },
+  {
+    id: "alerts",
+    title: "Retries, then an alert",
+    icon: <MovingIcon icon={RefreshIcon} size={18} trigger=".tile" />,
+    body: "If the toolkit is busy or offline, the step waits and tries again. If it still fails you get an alert saying what went wrong.",
+    video: "alerts",
+    alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails, and the Inbox in the side menu says what went wrong. Sped up while it waits.",
+  },
+  {
+    id: "schedule",
+    title: "On a schedule, in your time zone",
+    icon: <MovingIcon icon={ClockIcon} size={18} trigger=".tile" />,
+    body: "Run it every morning or every Friday at 9. The canvas shows what starts it and when it last ran.",
+    video: "schedule",
+    alt: "Screen recording: an automation's trigger is changed to a Schedule, every day at 09:00 America/Los_Angeles, and switched on.",
+  },
+];
+
+const CLIP_TILES: Tile[] = [
   {
     id: "meetings",
     title: "Meeting recordings come in by themselves",
@@ -64,10 +105,18 @@ export const AROUND_TILES: Tile[] = [
     alt: "Screen recording: a Follow the speaker automation runs on a news conference recording and the finished vertical clip plays, keeping the astronaut who is talking in frame.",
   },
   {
+    id: "steps",
+    title: "Your own steps",
+    icon: <MovingIcon icon={Stack3Icon} size={18} trigger=".tile" />,
+    body: "When no ready-made step does what you need, describe it. The agent writes the step, tries it on one of your files, saves it for your team and adds it to an automation. From then on it runs on every video with no AI used.",
+    video: "steps",
+    alt: "Screen recording: someone asks the agent for a step that draws a progress bar along the bottom of a video. The agent writes it, tries it on Crew interview, saves it for the team, then adds it to the Clips from new recordings automation after Caption video.",
+  },
+  {
     id: "mcp",
     title: "Use it from the AI apps you already use",
     icon: <MovingIcon icon={PlugConnectedIcon} size={18} trigger=".tile" />,
-    body: "The dashboard is an MCP server. Connect any MCP client to see your uploads and runs, build automations as drafts for you to publish, and start runs, signed in as you on the team you pick.",
+    body: "Takewon is an MCP server. Connect any MCP client to see your uploads and runs, build automations as drafts for you to publish, and start runs, signed in as you on the team you pick.",
     video: "mcp",
     alt: "Screen recording: the MCP settings page with the server address and the steps for Claude, ChatGPT, Cursor, Claude Code, n8n and other apps.",
     logos: [
@@ -78,6 +127,8 @@ export const AROUND_TILES: Tile[] = [
     ],
   },
 ];
+
+export const AROUND_TILES: Tile[] = [...HAND_TILES, ...CLIP_TILES];
 
 /** Shipped features without their own recording here, said plainly. */
 export const ALSO: { title: string; body: string; scene: AlsoSceneName; logos?: { name: string; mark: React.ReactNode }[] }[] = [
@@ -93,7 +144,6 @@ export const ALSO: { title: string; body: string; scene: AlsoSceneName; logos?: 
     ],
   },
   { title: "Clients and a client portal", scene: "clients", body: "Group work by client, track each project's deliverables, and give clients one link to review and approve their own." },
-  { title: "Your own steps", scene: "steps", body: "Describe a step you need and the agent writes it, tries it on a file and saves it for your team." },
   { title: "Big files and versions", scene: "files", body: "Upload files over 5 GB in parts, and compare two versions of a review clip side by side." },
   { title: "Guided tours", scene: "tours", body: "New teammates get a short tour of each page the first time they open it." },
 ];
@@ -104,39 +154,44 @@ export function AroundTheClip() {
       <div className="wrap">
         <Reveal className="sec-head">
           <h2 id="around-title">Everything around the clip, too</h2>
-          <p className="sec-lead">Recordings arrive on their own, get filed and searchable, and go out on a plan.</p>
+          <p className="sec-lead">
+            The parts you would otherwise do by hand are done for you. Recordings arrive on their own, get filed and searchable, and go out on a plan.
+          </p>
         </Reveal>
-        <div className="tiles">
+        {/* the list fades in as one, so no row waits invisible inside the panel while you scroll */}
+        <Reveal className="tiles">
           {AROUND_TILES.map((t, i) => (
-            <Reveal key={t.id} delay={(i % 2) * 0.08}>
-              <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
-                <FeatureVideo name={t.video} label={t.alt} />
-                <div className="tile-text">
-                  <div className="tile-head">
-                    <span className="tile-icon" aria-hidden="true">
-                      {t.icon}
-                    </span>
-                    <h3>{t.title}</h3>
+            <div key={t.id}>
+              <PhoneFold id={`tile-${t.id}`} title={t.title} icon={t.icon} level={3} defaultOpen={i === 0}>
+                <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
+                  <FeatureVideo name={t.video} label={t.alt} />
+                  <div className="tile-text">
+                    <div className="tile-head">
+                      <span className="tile-icon" aria-hidden="true">
+                        {t.icon}
+                      </span>
+                      <h3>{t.title}</h3>
+                    </div>
+                    <p>{t.body}</p>
+                    {t.logos && (
+                      <ul className="logo-chips" aria-label={`${t.title}: apps`}>
+                        {t.logos.map((l) => (
+                          <li key={l.name}>
+                            {l.mark} {l.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  <p>{t.body}</p>
-                  {t.logos && (
-                    <ul className="logo-chips" aria-label={`${t.title}: apps`}>
-                      {t.logos.map((l) => (
-                        <li key={l.name}>
-                          {l.mark} {l.name}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </SpotlightCard>
-            </Reveal>
+                </SpotlightCard>
+              </PhoneFold>
+            </div>
           ))}
-        </div>
-        <Reveal>
-          <h3 className="tiles-title">Also in the dashboard</h3>
         </Reveal>
-        <ul className="also" aria-label="Also in the dashboard">
+        <Reveal>
+          <h3 className="tiles-title">Also in Takewon</h3>
+        </Reveal>
+        <ul className="also" aria-label="Also in Takewon">
           {ALSO.map((a, i) => (
             <li key={a.title} className={`also-card also-${a.scene}`}>
               <Reveal className="also-in" delay={(i % 3) * 0.06}>

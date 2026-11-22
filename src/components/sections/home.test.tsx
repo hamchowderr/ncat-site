@@ -1,12 +1,13 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { HeroStage, STAGE } from "@/components/HeroStage";
-import { Features, LEAD } from "./Features";
+import { Features, LEAD_TEXT } from "./Features";
 import { Hero } from "./Hero";
 import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
-import { HowItWorks } from "./HowItWorks";
-import { UseCases } from "./UseCases";
+import { AroundTheClip } from "./AroundTheClip";
+import { MidCta } from "./MidCta";
+import { CASES, UseCases } from "./UseCases";
 
 describe("Hero", () => {
   it("fills the line under the headline in as you scroll, with the work it does in colour", () => {
@@ -27,6 +28,8 @@ describe("Hero", () => {
     expect(slogan.textContent).toMatch(/^Organized and .*automatically$/);
     const h1 = container.querySelector("h1")!;
     expect(slogan.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // sentence case, with no pulsing dot
+    expect(slogan.querySelector(".slogan-dot")).toBeNull();
   });
 
   it("keeps the hero to the headline, the line under it and the two buttons, with no list of automations", () => {
@@ -97,41 +100,35 @@ describe("logos", () => {
 });
 
 describe("Features", () => {
-  it("reads as one heading, with its second line in the platforms' colours", () => {
+  it("reads as one heading, with its second line in the one accent colour, never a gradient", () => {
     render(<Features />);
-    const h = screen.getByRole("heading", { level: 2, name: "Ready-made automations. No AI on every video." });
-    expect(h.querySelector(".plat-ink")).toHaveTextContent("No AI on every video.");
+    const h = screen.getByRole("heading", {
+      level: 2,
+      name: "Ready-made automations. No AI on every video.",
+    });
+    expect(h.querySelector(".accent-ink")).toHaveTextContent("No AI on every video.");
+    expect(h.querySelector(".plat-ink")).toBeNull();
   });
 
-  it("reads the lead one platform at a time, with the real logos in rails outside the text, never inside it", () => {
+  it("gives the lead as one calm paragraph, not a phrase per platform colour", () => {
     const { container } = render(<Features />);
-    const lead = container.querySelector(".pl-lead")!;
-    expect(lead).toHaveTextContent(
-      "Clipping apps run AI on every video and bill you for it, and editing with an AI assistant spends tokens on every cut. Most of that work is plain editing: cut, resize, caption, join and level the audio. Here it is set up once and runs the same way every time.",
-    );
-    const phrases = Array.from(lead.querySelectorAll<HTMLElement>(".pl-phrase"));
-    expect(phrases.map((p) => p.dataset.platform)).toEqual(["tiktok", "instagram", "youtube", "facebook", "linkedin", "x"]);
-    expect(LEAD).toHaveLength(6);
-    // no logo sits among the words
-    expect(lead.querySelector(".pl-logo, svg, img")).toBeNull();
-    const rail = (side: string) => Array.from(container.querySelectorAll<HTMLElement>(`.pl-rail-${side} .pl-rail-logo`)).map((l) => l.dataset.platform);
-    expect(rail("left")).toEqual(["tiktok", "youtube", "linkedin"]);
-    expect(rail("right")).toEqual(["instagram", "facebook", "x"]);
-    for (const r of container.querySelectorAll(".pl-rail")) expect(r).toHaveAttribute("aria-hidden", "true");
-    const wrap = container.querySelector(".pl-wrap")!;
-    expect(wrap.firstElementChild).toHaveClass("pl-rail-left");
-    expect(wrap.lastElementChild).toHaveClass("pl-rail-right");
-    // drawn in the platforms' own colours, not one ink
-    expect(wrap.querySelector('[data-platform="youtube"] path[fill="#ff0000"]')).not.toBeNull();
-    expect(wrap.querySelector('[data-platform="facebook"] path[fill="#0866ff"]')).not.toBeNull();
-    expect(wrap.querySelector('[data-platform="tiktok"] path[fill="#25f4ee"]')).not.toBeNull();
-    expect(wrap.querySelector('[data-platform="instagram"] radialGradient')).not.toBeNull();
+    const lead = container.querySelector(".features .sec-lead")!;
+    expect(lead).toHaveTextContent(LEAD_TEXT);
+    expect(LEAD_TEXT).toMatch(/^Clipping apps run AI on every video/);
+    expect(lead.querySelector("span, svg, img")).toBeNull();
+    expect(container.querySelector(".pl-lead, .pl-rail")).toBeNull();
   });
 
   it("shows a silent, described screen recording for every feature", () => {
-    const { container } = render(<Features />);
-    const videos = Array.from(container.querySelectorAll("video"));
-    expect(videos.length).toBe(8);
+    const { container } = render(
+      <>
+        <Features />
+        <AroundTheClip />
+      </>,
+    );
+    const videos = Array.from(container.querySelectorAll<HTMLVideoElement>(".story-row video, .around .tiles video"));
+    // four story rows, then the eleven tiles of the one "around the clip" list
+    expect(videos.length).toBe(15);
     for (const v of videos) {
       expect(v.getAttribute("aria-label")).toMatch(/^Screen recording: .{30,}/);
       expect(v.getAttribute("src")).toMatch(/^\/media\/features\/[a-z]+\.mp4$/);
@@ -144,7 +141,12 @@ describe("Features", () => {
   });
 
   it("describes the current dashboard: the Inbox for failed runs and the Review list", () => {
-    const { container } = render(<Features />);
+    const { container } = render(
+      <>
+        <Features />
+        <AroundTheClip />
+      </>,
+    );
     const label = (name: string) => container.querySelector(`video[src="/media/features/${name}.mp4"]`)!.getAttribute("aria-label");
     expect(label("alerts")).toMatch(/Inbox/);
     expect(label("alerts")).not.toMatch(/bell/i);
@@ -165,6 +167,17 @@ describe("Features", () => {
 });
 
 describe("UseCases", () => {
+  it("also renders every case as a card for the phone stack, in order, with what goes in and comes out", () => {
+    const { container } = render(<UseCases />);
+    const cards = Array.from(container.querySelectorAll(".case-stack > .case-card"));
+    expect(cards.map((c) => c.querySelector(".case-card-tab")!.textContent)).toEqual(CASES.map((c) => c.tab));
+    cards.forEach((card, i) => {
+      expect(card.querySelector("h3")!.textContent).toBe(CASES[i].title);
+      expect(card.querySelectorAll(".case-card-outs li")).toHaveLength(CASES[i].outputs.length);
+      expect((card as HTMLElement).style.getPropertyValue("--i")).toBe(String(i));
+    });
+  });
+
   it("switches who it is for", () => {
     render(<UseCases />);
     fireEvent.click(screen.getByRole("tab", { name: "Podcast Teams" }));
@@ -186,16 +199,17 @@ describe("UseCases", () => {
 });
 
 describe("story and icons", () => {
-  it("tells the features as numbered steps, each with an icon", () => {
+  it("tells the features in order by their titles alone, with no uppercase label above each", () => {
     const { container } = render(<Features />);
-    const steps = [...container.querySelectorAll(".story-step")].map((s) => s.textContent);
-    expect(steps).toEqual(["Pick", "Runs by itself", "Approve", "Finish"]);
-    for (const s of container.querySelectorAll(".story-step")) expect(s.querySelector("svg")).not.toBeNull();
-    for (const t of container.querySelectorAll(".tile-head")) expect(t.querySelector(".tile-icon svg")).not.toBeNull();
+    expect(container.querySelector(".story-step")).toBeNull();
+    expect([...container.querySelectorAll(".story-row h3")].map((h) => h.textContent)).toEqual([
+      "Start from a ready-made automation",
+      "Every new recording runs by itself",
+      "Nothing goes out until someone says yes",
+      "Finish it in the editor you already use",
+    ]);
   });
   it("uses moving icons that play when their card is hovered", () => {
-    const { container } = render(<HowItWorks />);
-    for (const li of container.querySelectorAll(".steps li")) expect(li.querySelector(".mi svg")).not.toBeNull();
     const hero = render(<Hero />).container;
     expect(hero.querySelectorAll(".hero-icons .hi .mi svg")).toHaveLength(12);
     expect(hero.querySelector(".hero-icons")).toHaveAttribute("aria-hidden", "true");
@@ -207,11 +221,7 @@ describe("story and icons", () => {
     // each logo falls once down each side
     for (const name of new Set(names)) expect(names.filter((n) => n === name)).toHaveLength(2);
   });
-  it("gives every how-it-works step and every use case an icon", () => {
-    const { container } = render(<HowItWorks />);
-    const items = container.querySelectorAll(".steps li");
-    expect(items.length).toBe(3);
-    for (const li of items) expect(li.querySelector(".step-icon svg")).not.toBeNull();
+  it("gives every use case an icon", () => {
     const cases = render(<UseCases />).container;
     expect(cases.querySelector(".case-icon svg")).not.toBeNull();
   });
@@ -235,18 +245,14 @@ describe("the feeds section is clearly about the agent, and shows the brand", ()
   });
 });
 
-describe("Use AI once, not on every video", () => {
-  it("puts the AI into building the factory once, then ends ready or handed to an editor", () => {
-    const { container } = render(<HowItWorks />);
-    expect(container.querySelector("h2")).toHaveTextContent("Use AI once. Not on every video.");
-    expect(container.querySelector(".sec-lead")).toHaveTextContent("Build your content factory once");
-    expect([...container.querySelectorAll(".steps h3")].map((h) => h.textContent)).toEqual([
-      "Build it once",
-      "It runs by itself",
-      "Ready, or handed off",
-    ]);
-    expect([...container.querySelectorAll(".step-ends span")].map((e) => e.textContent)).toEqual(["Ready to post", "Ready for your editor"]);
-    expect(container.textContent).not.toMatch(/Set it up once/);
+describe("the ask straight after the scene", () => {
+  it("says use AI once, then every recording runs by itself, and opens early access", () => {
+    const { container } = render(<MidCta />);
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Use AI once. Every recording after that runs by itself.");
+    expect(container.querySelector("p")).toHaveTextContent("Build your content factory once");
+    expect(container.querySelector("p")).toHaveTextContent("server or an always-on machine you own");
+    expect(screen.getByRole("link", { name: "Get early access" })).toHaveAttribute("href", "#early");
+    expect(container.textContent).not.toMatch(/Set it up once|no server required/i);
   });
 });
 

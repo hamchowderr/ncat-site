@@ -188,12 +188,8 @@ export function AboutWho() {
           <p className="about-kicker">Who’s behind it</p>
           <h2 id="who-title">Tylan “Chowderr” Miller</h2>
           <p>
-            Founder and CTO of Otaku Solutions. I worked for Stephen in his community, so I know the NCA Toolkit and the tools around it inside out,
+            I worked for Stephen in his community, so I know the NCA Toolkit and the tools around it inside out,
             along with the walls people hit with them. Takewon is everything I kept seeing people need around that free engine.
-          </p>
-          <p className="who-links">
-            <a href="https://otakusolutions.io">Otaku Solutions</a>
-            <a href="https://chowderr.dev">chowderr.dev</a>
           </p>
         </Reveal>
         <Reveal className="credits" delay={0.08}>

@@ -1,10 +1,24 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+/** Picks an option of a tab row: the tab itself on wide screens, its dot in the phone stepper on phones. */
+async function pickTab(page: Page, isMobile: boolean, name: string) {
+  if (!isMobile) return page.getByRole("tab", { name }).click();
+  const dot = page.getByRole("button", { name: new RegExp(`^${name} \\(\\d+ of \\d+\\)$`) });
+  await dot.scrollIntoViewIfNeeded();
+  await dot.click();
+}
 
 const pages = [
   { path: "/", h1: "Your content, social media ready." },
   { path: "/pricing", h1: "Pay once. Own your version." },
   { path: "/about", h1: "Built for everyone who hit the same wall." },
 ];
+
+/** On a phone the feature tiles are folded rows; open them all so every recording can be measured. */
+async function openFolds(page: import("@playwright/test").Page) {
+  await page.locator(".fold:not([data-open]) .fold-head").evaluateAll((bs) => bs.forEach((b) => (b as HTMLButtonElement).click()));
+  await expect(page.locator(".fold:not([data-open])")).toHaveCount(0);
+}
 
 for (const { path, h1 } of pages) {
   test(`${path} renders without errors or sideways scroll`, async ({ page }) => {
@@ -14,6 +28,9 @@ for (const { path, h1 } of pages) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(h1);
     await expect(page.locator(".early-cta a")).toBeVisible();
+    // the site names Takewon only: no company or personal site (Chowderr, 2026-11-21)
+    const html = await page.content();
+    expect(html).not.toMatch(/Otaku Solutions|otakusolutions\.io|chowderr\.dev/i);
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
     expect(errors).toEqual([]);
@@ -25,7 +42,7 @@ test("every internal link points at a real page or section", async ({ page, requ
     await page.goto(path);
     const hrefs = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")!));
     for (const href of new Set(hrefs)) {
-      if (/^https?:/.test(href)) continue;
+      if (/^(https?|mailto):/.test(href)) continue;
       const [p, hash] = href.split("#");
       if (p) expect((await request.get(p)).status(), href).toBe(200);
       if (hash) {
@@ -100,12 +117,12 @@ test("early-access form checks each step, then sends", async ({ page }) => {
   expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
 });
 
-test("the hero plays real dashboard recordings", async ({ page, request }) => {
+test("the hero plays real dashboard recordings", async ({ page, request, isMobile }) => {
   await page.goto("/");
   const video = page.locator(".stage video");
   await expect(video).toHaveAttribute("src", "/media/live-run.mp4");
   await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.readyState)).toBeGreaterThan(1);
-  await page.getByRole("tab", { name: "Or build your own" }).click();
+  await pickTab(page, isMobile, "Or build your own");
   await expect(video).toHaveAttribute("src", "/media/agent-builds.mp4");
   for (const f of ["agent-builds", "live-run", "review", "outputs"]) {
     expect((await request.get(`/media/${f}.mp4`)).status(), f).toBe(200);
@@ -113,8 +130,9 @@ test("the hero plays real dashboard recordings", async ({ page, request }) => {
   }
 });
 
-test("every logo and picture loads", async ({ page }) => {
+test("every logo and picture loads", async ({ page, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   for (const img of await page.locator("img").all()) {
     await img.scrollIntoViewIfNeeded();
     await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { message: await img.getAttribute("src") ?? "" }).toBe(true);
@@ -123,10 +141,11 @@ test("every logo and picture loads", async ({ page }) => {
 
 test("every feature is a dashboard recording, shown whole, the whole app window uncropped, all the same shape", async ({ page, request, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   // on desktop the stack replaces the plain rows once it has loaded; measure the final ones
   if (!isMobile) await expect(page.locator("#features .scroll-stack")).toHaveCount(1);
   const shots = page.locator("#features .shot video");
-  await expect(shots).toHaveCount(8);
+  await expect(shots).toHaveCount(4);
   const ratios: number[] = [];
   for (const img of await shots.all()) {
     await img.scrollIntoViewIfNeeded();
@@ -146,6 +165,8 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
     await expect.poll(() => img.evaluate((v: HTMLVideoElement) => [v.videoWidth, v.videoHeight])).toEqual([1600, 1000]);
   }
   for (const r of ratios) expect(Math.abs(r - 16 / 10)).toBeLessThan(0.02);
+  // never cropped, on any screen
+  for (const v of await shots.all()) expect(await v.evaluate((x) => getComputedStyle(x).objectFit)).not.toBe("cover");
   for (const v of await shots.all()) {
     for (const attr of ["src", "poster"]) {
       const url = (await v.getAttribute(attr))!;
@@ -157,6 +178,7 @@ test("every feature is a dashboard recording, shown whole, the whole app window 
 
 test("each feature recording takes most of its row, alternating sides, so its text is readable", async ({ page, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   for (const id of ["#features .tiles", "#around .tiles"]) {
     const tiles = page.locator(`${id} .tile`);
     const n = await tiles.count();
@@ -247,7 +269,9 @@ test("every platform lives in the shape-changing clip, with no second grid of ti
   await expect(page.locator(".shift-ratio")).toHaveText("−16 LUFS");
 });
 
-test("every tab label fits inside its tab track, with nothing cut off", async ({ page }) => {
+test("every tab label fits inside its tab track, with nothing cut off", async ({ page, isMobile }) => {
+  // phones show the stepper instead of the tab rows; it has its own test
+  test.skip(isMobile);
   await page.goto("/");
   for (const track of [page.locator(".stage-tabs"), page.locator(".seg")]) {
     await track.scrollIntoViewIfNeeded();
@@ -262,15 +286,19 @@ test("every tab label fits inside its tab track, with nothing cut off", async ({
   }
 });
 
-test("use-case tabs switch panels", async ({ page }) => {
+test("use-case tabs switch panels", async ({ page, isMobile }) => {
+  // phones show every case as a stacked card instead of tabs; phone.spec.ts checks those
+  test.skip(isMobile);
   await page.goto("/");
-  const tab = page.getByRole("tab", { name: "Podcast Teams" });
-  await tab.click();
+  // located by CSS so it is found on phones too, where the tab row is hidden behind the stepper
+  const tab = page.locator('[role="tab"]', { hasText: "Podcast Teams" });
+  await pickTab(page, isMobile, "Podcast Teams");
   await expect(tab).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("tabpanel").filter({ hasText: "The call ends. The episode gets to work." })).toBeVisible();
 });
 
 test("each use case shows what goes in and what comes out as styled cards, logos small", async ({ page, isMobile }) => {
+  test.skip(isMobile, "phones show the stacked case cards instead");
   await page.goto("/");
   const panel = page.getByRole("tabpanel").filter({ has: page.locator(".case-flow") });
   await panel.scrollIntoViewIfNeeded();
@@ -371,7 +399,7 @@ test.describe("with reduced motion, nothing waits to appear", () => {
   test("features are plain rows and every section is already visible", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#features .scroll-stack")).toHaveCount(0);
-    for (const sel of ["#features .sec-head", "#use-cases .sec-head", ".steps .step-in"]) {
+    for (const sel of ["#features .sec-head", "#use-cases .sec-head", ".mid-cta h2"]) {
       const el = page.locator(sel).first();
       expect(await el.evaluate((e) => Number(getComputedStyle(e).opacity)), sel).toBe(1);
     }
@@ -444,11 +472,12 @@ test("social logos rain down beside the headline, never across it, and move when
   }
 });
 
-test("the newer features each show a whole-window recording that plays on screen, with real app logos", async ({ page, request }) => {
+test("the newer features each show a whole-window recording that plays on screen, with real app logos", async ({ page, request, isMobile }) => {
   await page.goto("/");
+  if (isMobile) await openFolds(page);
   const section = page.getByRole("region", { name: "Everything around the clip, too" });
   const shots = section.locator(".shot video");
-  await expect(shots).toHaveCount(6);
+  await expect(shots).toHaveCount(11);
   for (const v of await shots.all()) {
     await v.scrollIntoViewIfNeeded();
     await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
@@ -469,7 +498,7 @@ test("the newer features each show a whole-window recording that plays on screen
     expect(b.width).toBeGreaterThan(14);
     expect(b.height).toBeGreaterThan(14);
   }
-  await expect(section.getByRole("list", { name: "Also in the dashboard" }).getByRole("listitem")).toHaveCount(5);
+  await expect(section.getByRole("list", { name: "Also in Takewon" }).getByRole("listitem")).toHaveCount(4);
   // the meeting apps sit side by side, Microsoft Teams next to Google Meet, each chip only as wide as its name
   const meet = section.getByRole("list", { name: /Meeting recordings.*: apps/ });
   const chips = await Promise.all(["Zoom", "Google Meet", "Microsoft Teams"].map((n) => meet.getByRole("listitem").filter({ hasText: n }).boundingBox()));
@@ -487,8 +516,16 @@ test("the newer features each show a whole-window recording that plays on screen
   expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > innerWidth + 1)).toBe(false);
 });
 
-test("the engine section lays the five ways on one rail, ending on the shell, with nothing overflowing", async ({ page, isMobile }) => {
+test("the engine section lives on the About page, not the home page", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator("#engine")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Free engine. Fine-tuned shell." })).toHaveCount(0);
+  await page.goto("/about");
+  await expect(page.locator("#engine")).toHaveCount(1);
+});
+
+test("the engine section lays the five ways on one rail, ending on the shell, with nothing overflowing", async ({ page, isMobile }) => {
+  await page.goto("/about");
   const ways = page.locator(".ways");
   await ways.scrollIntoViewIfNeeded();
   await expect(page.getByRole("heading", { name: "Free engine. Fine-tuned shell." })).toBeVisible();
@@ -508,11 +545,11 @@ test("the engine section lays the five ways on one rail, ending on the shell, wi
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
 
-test("the Editing with AI tab says what it costs today and what changes", async ({ page }) => {
+test("the Editing with AI tab says what it costs today and what changes", async ({ page, isMobile }) => {
+  // phones show every case as a stacked card instead of tabs; phone.spec.ts checks those
+  test.skip(isMobile);
   await page.goto("/");
-  const tab = page.getByRole("tab", { name: "Editing With AI" });
-  await tab.scrollIntoViewIfNeeded();
-  await tab.click();
+  await pickTab(page, isMobile, "Editing With AI");
   const panel = page.locator("#case-panel");
   await expect(panel).toContainText("Stop spending your AI limits on the same edit.");
   await expect(panel.locator(".case-without")).toContainText("Without Takewon");
@@ -537,16 +574,35 @@ test("the About page is in the menu and tells the five chapters", async ({ page,
   await expect(page.locator(".chapter-shell h3")).toBeVisible();
 });
 
-test("the how-it-works section says use AI once, not on every video, and ends ready or handed off", async ({ page }) => {
+test("the ask comes straight after the scene, and How it works leads to the scene itself", async ({ page, isMobile }) => {
   await page.goto("/");
   const how = page.locator("#how-it-works");
-  await how.scrollIntoViewIfNeeded();
-  await expect(how.getByRole("heading", { level: 2 })).toHaveText("Use AI once. Not on every video.");
-  await expect(how.locator(".steps li")).toHaveCount(3);
-  await expect(how.locator(".step-ends span")).toHaveText(["Ready to post", "Ready for your editor"]);
-  const box = await how.locator(".step-ends").boundingBox();
+  await expect(how.getByRole("heading", { level: 2 })).toHaveText("One recording in. A clip for every feed out.");
+  const ask = page.locator(".mid-cta");
+  await expect(ask.getByRole("heading", { level: 2 })).toHaveText("Use AI once. Every recording after that runs by itself.");
+  expect(await page.evaluate(() => document.querySelector(".split")!.nextElementSibling!.className)).toBe("mid-cta");
+  await ask.scrollIntoViewIfNeeded();
+  const btn = (await ask.getByRole("link", { name: "Get early access" }).boundingBox())!;
+  expect(btn.height).toBeGreaterThanOrEqual(44);
+  if (isMobile) expect(btn.width).toBeGreaterThan(page.viewportSize()!.width * 0.7);
+  await expect(page.getByText("Use AI once. Not on every video.")).toHaveCount(0);
+});
+
+test("the page ends on one centred ask, with the button before the email address", async ({ page }) => {
+  await page.goto("/");
+  const early = page.locator("#early");
+  await early.scrollIntoViewIfNeeded();
   const vw = page.viewportSize()!.width;
-  expect(box!.x + box!.width).toBeLessThanOrEqual(vw);
+  const btn = (await early.locator(".early-cta a").boundingBox())!;
+  const socials = (await early.locator(".socials").boundingBox())!;
+  expect(btn.y + btn.height).toBeLessThanOrEqual(socials.y);
+  expect(Math.abs(btn.x + btn.width / 2 - vw / 2)).toBeLessThan(24);
+  const mail = early.locator(".socials a");
+  await expect(mail).toHaveCount(1);
+  await expect(mail).toHaveAttribute("href", "mailto:hello@takewon.com");
+  await expect(mail).toBeVisible();
+  await expect(page.locator("#faq a[href^='mailto:']")).toHaveText("hello@takewon.com");
+  await expect(page.locator("footer.foot").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "mailto:hello@takewon.com");
 });
 
 test("the feeds section shows the agent badge and the brand every clip carries, inside the screen", async ({ page }) => {
@@ -584,4 +640,61 @@ test("the early-access form asks a flood from one address to wait", async ({ pag
   }, address);
   expect(statuses.slice(0, 5).every((status) => status !== 429)).toBe(true);
   expect(statuses[5]).toBe(429);
+});
+
+// Old names are built from pieces so the repo-wide name check stays clean.
+const OLD_NAMES = new RegExp(["NCA (Toolkit )?Dash" + "board", "Kon" + "tifi", "Kon" + "tentifi"].join("|"), "i");
+
+test("the pages call the product Takewon, never the dashboard or an old name", async ({ page }) => {
+  for (const path of ["/", "/pricing", "/about"]) {
+    await page.goto(path);
+    const text = await page.locator("body").innerText();
+    const labels = await page.$$eval("[aria-label], [alt], [title]", (els) => els.map((e) => [e.getAttribute("aria-label"), e.getAttribute("alt"), e.getAttribute("title")].filter(Boolean).join(" ")));
+    for (const words of [text, ...labels]) {
+      expect(words, path).not.toMatch(/\bdashboard\b/i);
+      expect(words, path).not.toMatch(OLD_NAMES);
+    }
+  }
+});
+
+test("the footer's resources are only the two talks", async ({ page }) => {
+  await page.goto("/");
+  const links = page.getByRole("navigation", { name: "Resources" }).getByRole("link");
+  await expect(links).toHaveText(["Claude Code Creators Summit talk", "The KINN talk"]);
+  for (const path of ["/", "/pricing", "/about"]) {
+    await page.goto(path);
+    expect(await page.locator('a[href*="Y8og6PdvJ3D4y9VjdHRMX1"], a[href*="luma"]').count(), path).toBe(0);
+  }
+});
+
+test("the try-it demo never names the toolkit and the formats picture has no small print", async ({ page }) => {
+  await page.goto("/");
+  const demo = await page.locator("#try-it").innerText();
+  expect(demo).not.toMatch(/toolkit/i);
+  const body = await page.locator("body").innerText();
+  expect(body).not.toMatch(/Set once in Settings|Checked on \d/);
+});
+
+test("the hero has no See the automations button", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".hero-cta").getByText("See the automations")).toHaveCount(0);
+});
+
+test("the Also in Takewon cards fill every row, with no empty gap", async ({ page }) => {
+  await page.goto("/");
+  const grid = page.locator("ul.also");
+  await grid.scrollIntoViewIfNeeded();
+  const { gw, rows } = await grid.evaluate((g) => {
+    const gb = g.getBoundingClientRect();
+    const byRow = new Map<number, number>();
+    for (const li of Array.from(g.children)) {
+      const r = li.getBoundingClientRect();
+      const key = Math.round(r.top);
+      byRow.set(key, (byRow.get(key) ?? 0) + r.width);
+    }
+    return { gw: gb.width, rows: [...byRow.values()] };
+  });
+  expect(rows.length).toBeGreaterThan(0);
+  // each row's cards plus the gaps between them reach across the whole grid
+  for (const w of rows) expect(w).toBeGreaterThan(gw - 40);
 });

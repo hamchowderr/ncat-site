@@ -1,10 +1,9 @@
 import { AroundTheClip } from "@/components/sections/AroundTheClip";
 import { EarlyAccess } from "@/components/sections/EarlyAccess";
-import { Engine } from "@/components/sections/Engine";
 import { Faq } from "@/components/sections/Faq";
 import { Features } from "@/components/sections/Features";
 import { Hero } from "@/components/sections/Hero";
-import { HowItWorks } from "@/components/sections/HowItWorks";
+import { MidCta } from "@/components/sections/MidCta";
 import { NoFees } from "@/components/sections/NoFees";
 import { PlatformExpert } from "@/components/sections/PlatformExpert";
 import { Proof } from "@/components/sections/Proof";
@@ -20,11 +19,10 @@ export default function Home() {
       <Hero />
       <Proof />
       <SplitScene />
+      <MidCta />
       <Features />
       <AroundTheClip />
-      <HowItWorks />
       <TryIt enabled={demoEnabled()} emails={!!mailSetup()} />
-      <Engine />
       <PlatformExpert />
       <UseCases />
       <NoFees />

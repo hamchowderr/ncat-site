@@ -1,6 +1,7 @@
+import { CONTACT_EMAIL, CONTACT_HREF, TALKS } from "@/lib/contact";
 import { Reveal } from "@/components/Reveal";
 export const FAQ: { q: string; a: React.ReactNode }[] = [
-  { q: "Is it out yet?", a: "Not yet. The dashboard is working and in testing now. Get on the early access list and you’ll be first to try it." },
+  { q: "Is it out yet?", a: "Not yet. Takewon is working and in testing now. Get on the early access list and you’ll be first to try it." },
   {
     q: "If the NCA Toolkit is free, what am I paying for?",
     a: "The shell around it. The toolkit is a free, open-source engine: it cuts, captions, transcribes and reframes video through an API, but it has no screens and nothing that runs on its own. We built the fine-tuned shell that makes it run your content: ready-made automations, an agent that sets up new ones, recordings that come in from Zoom, Google Meet and Microsoft Teams, a library of everything you’ve recorded, approvals, your brand on every clip and hand-off to your editor. You never pay for the processing itself.",
@@ -30,7 +31,7 @@ export const FAQ: { q: string; a: React.ReactNode }[] = [
     a: (
       <>
         If you self-host, yes: you connect your toolkit with its address and key, and{" "}
-        <a href="https://claude.ai/artifact/Y8og6PdvJ3D4y9VjdHRMX1">the setup guide</a> walks you through setting one up with Claude. If you’d rather
+        <a href={`${TALKS.summit}#start`}>my Claude Code talk</a> walks you through setting one up with Claude. If you’d rather
         not run a server, a hosted option is planned. For now, the plan is that it comes with starting credits.
       </>
     ),
@@ -47,7 +48,7 @@ export const FAQ: { q: string; a: React.ReactNode }[] = [
   { q: "Do I need n8n?", a: "No. Automations run inside the shell itself. n8n comes with the toolkit, and if you already use it, it can still start an automation." },
   {
     q: "Is this the official NCA Toolkit?",
-    a: "No. The NCA Toolkit is a free, open-source project by Stephen G. Pope. Takewon, the shell around it, is a separate product by Otaku Solutions.",
+    a: "No. The NCA Toolkit is a free, open-source project by Stephen G. Pope. Takewon, the shell around it, is a separate product.",
   },
 ];
 
@@ -58,8 +59,7 @@ export function Faq() {
         <Reveal className="sec-head">
           <h2 id="faq-title">Got questions?</h2>
           <p>
-            Anything else, message me on <a href="https://www.instagram.com/hamchowderr">Instagram</a>,{" "}
-            <a href="https://www.linkedin.com/in/tylanmiller">LinkedIn</a> or <a href="https://x.com/hamchowderr">X</a>.
+            Anything else, email <a href={CONTACT_HREF}>{CONTACT_EMAIL}</a>.
           </p>
         </Reveal>
         <div className="faq-list">

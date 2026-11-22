@@ -42,7 +42,7 @@ describe("POST /api/early-access", () => {
     expect(sent.to).toEqual([{ email: "owner@example.com" }]);
     expect(sent.reply_to).toEqual({ email: "ava@studio.co", name: "Ava" });
     expect(sent.text).toContain("Caption every upload");
-    expect(sent.subject).toBe("[Editing agency · 6 to 20 · A rented server] Dashboard early access: Ava");
+    expect(sent.subject).toBe("[Editing agency · 6 to 20 · A rented server] Takewon early access: Ava");
   });
 
   it("returns field errors without sending", async () => {
@@ -66,13 +66,16 @@ describe("POST /api/early-access", () => {
     vi.stubEnv("TOSEND_API_KEY", "");
     const res = await post(valid);
     expect(res.status).toBe(503);
+    expect((await res.json()).error).toContain("hello@takewon.com");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("reports a failed send", async () => {
     fetchMock.mockResolvedValue(new Response("{}", { status: 500 }));
     vi.spyOn(console, "error").mockImplementation(() => {});
-    expect((await post(valid)).status).toBe(502);
+    const failed = await post(valid);
+    expect(failed.status).toBe(502);
+    expect((await failed.json()).error).toContain("hello@takewon.com");
     fetchMock.mockRejectedValue(new Error("offline"));
     expect((await post(valid)).status).toBe(502);
   });
@@ -141,7 +144,7 @@ describe("POST /api/early-access", () => {
     fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
     await post({ ...valid, tried: "a 35 s video, cut into 5 clips" });
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(sent.subject).toBe("[Tried the demo · Editing agency · 6 to 20 · A rented server] Dashboard early access: Ava");
+    expect(sent.subject).toBe("[Tried the demo · Editing agency · 6 to 20 · A rented server] Takewon early access: Ava");
     expect(sent.text).toContain("On: a 35 s video, cut into 5 clips");
     expect(JSON.parse(blob.put.mock.calls[0][1])).toMatchObject({ tried: "a 35 s video, cut into 5 clips" });
   });

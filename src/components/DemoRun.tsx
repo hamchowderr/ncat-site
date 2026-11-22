@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { DemoView, StepView } from "@/lib/demo/run";
 
 /** The real steps, in order, before anything has run. */
-export const DEMO_STEPS = ["Uploaded", "Read by the toolkit", "Cut at the pauses, made vertical", "Captioned", "Ready to download"] as const;
+export const DEMO_STEPS = ["Uploaded", "Checked", "Cut at the pauses, made vertical", "Captioned", "Ready to download"] as const;
 
 export const waitingSteps = (): StepView[] => DEMO_STEPS.map((label) => ({ label, state: "wait" }));
 
@@ -13,7 +13,7 @@ const POLL_MS = 4000;
 /** The list of steps, each with what the toolkit reported. */
 export function DemoSteps({ steps, uploadPercent }: { steps: StepView[]; uploadPercent?: number | null }) {
   return (
-    <ol className="try-run" aria-label="What the toolkit does with your video" aria-live="polite">
+    <ol className="try-run" aria-label="What happens to your video" aria-live="polite">
       {steps.map((s, i) => (
         <li key={s.label} className={`try-step ${s.state}`} data-step={s.label}>
           <span className="try-dot" aria-hidden="true" />

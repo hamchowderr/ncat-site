@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Bot, Check, FileVideo, MessageSquareText, Mic, Upload } from "lucide-react";
+import { ArrowRight, Bot, Check, FileVideo, Mic, Upload } from "lucide-react";
 import { DiscordMark, SlackMark, TeamsMark, TelegramMark } from "@/components/brand/AppLogos";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
-export type AlsoSceneName = "chat" | "clients" | "steps" | "files" | "tours";
+export type AlsoSceneName = "chat" | "clients" | "files" | "tours";
 
 /**
  * Small drawn scenes of each feature, built from the same pieces the dashboard uses
@@ -16,7 +16,6 @@ export function AlsoScene({ name }: { name: AlsoSceneName }) {
     <div className={`scene scene-${name}`} aria-hidden="true">
       {name === "chat" && <ChatScene />}
       {name === "clients" && <ClientsScene />}
-      {name === "steps" && <StepsScene />}
       {name === "files" && <FilesScene />}
       {name === "tours" && <ToursScene />}
     </div>
@@ -169,29 +168,6 @@ function ClientsScene() {
         </span>
         <span className="pa-ask">Ask for changes</span>
       </p>
-    </div>
-  );
-}
-
-function StepsScene() {
-  return (
-    <div className="steps-s">
-      <p className="ask">
-        <MessageSquareText size={14} strokeWidth={2.2} />
-        <span className="ask-type">Fade in from black for two seconds</span>
-      </p>
-      <div className="made">
-        <span className="made-icon">
-          <Bot size={15} strokeWidth={2.2} />
-        </span>
-        <span>
-          <b>Fade in</b>
-          <small>
-            <Check size={12} strokeWidth={2.6} /> Tried on a file
-          </small>
-        </span>
-        <span className="made-save">Saved</span>
-      </div>
     </div>
   );
 }

@@ -123,7 +123,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
         body: JSON.stringify({ id: booked.id, key: booked.key }),
       });
       const answer = (await started.json()) as { ok: boolean; error?: string };
-      if (!answer.ok) throw new Error(answer.error ?? "The toolkit couldn’t start. Try again.");
+      if (!answer.ok) throw new Error(answer.error ?? "It couldn’t start. Try again.");
       remember({ id: booked.id, k: booked.key, fileName: file.name });
       setPhase({ kind: "running", id: booked.id, k: booked.key });
     } catch (error) {
@@ -153,7 +153,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
         <div className="sec-head">
           <h2 id="try-title">Drop in your first video, get early access sooner</h2>
           <p>
-            Sign up and the real toolkit cuts your video at the pauses into vertical clips with captions, ready to download. Everyone who
+            Sign up and Takewon cuts your video at the pauses into vertical clips with captions, ready to download. Everyone who
             tries it moves to the front of the early-access list.
           </p>
         </div>
@@ -189,12 +189,12 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
                     Pick another
                   </button>
                 </div>
-                <p className="try-drop-hint">The toolkit can take a while on it, and you don’t have to wait on this page.</p>
+                <p className="try-drop-hint">This can take a while, and you don’t have to wait on this page.</p>
               </>
             ) : (
               <>
                 <p className="try-drop-title">{busy ? fileName : "Drop a video here"}</p>
-                <p className="try-drop-note">{busy ? "Your video is with the toolkit." : "Up to 10 minutes and 1 GB."}</p>
+                <p className="try-drop-note">{busy ? "Your video is being worked on." : "Up to 10 minutes and 1 GB."}</p>
                 {!busy && (
                   <div className="try-drop-actions">
                     <button type="button" className="btn primary" onClick={() => input.current?.click()}>
@@ -228,7 +228,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
         {finished && view && (
           <div className="try-next" aria-live="polite">
             <p className="try-next-lead">
-              Here are your clips, made by the toolkit.{emails ? " They’re in your email too." : ""} On the dashboard this runs by itself every
+              Here are your clips.{emails ? " They’re in your email too." : ""} In Takewon this runs by itself every
               time a new video comes in.
             </p>
             {view.partial && <p className="try-next-note">{view.partial}</p>}
@@ -237,7 +237,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
         )}
         {failed && (
           <div className="try-next" role="alert">
-            <p className="try-next-lead">{lost ?? view?.error ?? "The toolkit couldn’t finish this one."} You’re still on the list.</p>
+            <p className="try-next-lead">{lost ?? view?.error ?? "This one couldn’t be finished."} You’re still on the list.</p>
             <button
               type="button"
               className="btn ghost"
@@ -274,7 +274,7 @@ export function WhileItRuns({ id, k, emails }: { id: string; k: string; emails: 
   return (
     <div className="try-next try-wait" aria-live="polite">
       <p className="try-next-lead">
-        This can take the toolkit a while, so you don’t need to wait here.
+        This can take a while, so you don’t need to wait here.
         {emails ? " We’ll email you when your clips are ready." : ""} Keep your clips link to come back any time in the next 7 days. This
         page also picks up where it left off on this device.
       </p>

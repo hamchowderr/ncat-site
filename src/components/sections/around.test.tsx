@@ -8,13 +8,18 @@ describe("Everything around the clip", () => {
     render(<AroundTheClip />);
     const section = screen.getByRole("region", { name: "Everything around the clip, too" });
     for (const t of AROUND_TILES) {
-      expect(within(section).getByRole("heading", { level: 3, name: t.title })).toBeInTheDocument();
+      // the tile's own heading, plus the phone's fold row that opens it
+      const hs = within(section).getAllByRole("heading", { level: 3, name: t.title });
+      expect(hs.some((h) => h.closest(".tile"))).toBe(true);
+      expect(hs.some((h) => h.classList.contains("fold-title"))).toBe(true);
       const video = within(section).getByLabelText(t.alt);
       expect(video.getAttribute("src")).toBe(`/media/features/${t.video}.mp4`);
       expect(existsSync(`public/media/features/${t.video}.mp4`), t.video).toBe(true);
       expect(existsSync(`public/media/features/${t.video}.jpg`), t.video).toBe(true);
     }
-    expect(AROUND_TILES.map((t) => t.id)).toEqual(["meetings", "library", "calendar", "moments", "follow", "mcp"]);
+    // the parts you would otherwise do by hand come first, in the same section (one list, not two)
+    expect(AROUND_TILES.map((t) => t.id)).toEqual(["brand", "files", "alerts", "schedule", "meetings", "library", "calendar", "moments", "follow", "steps", "mcp"]);
+    expect(document.querySelectorAll(".around .tiles")).toHaveLength(1);
   });
 
   it("names the real apps each one works with", () => {
@@ -28,7 +33,7 @@ describe("Everything around the clip", () => {
 
   it("lists the rest plainly, with Slack, Discord, Microsoft Teams and Telegram marks on the team chat", () => {
     render(<AroundTheClip />);
-    const also = screen.getByRole("list", { name: "Also in the dashboard" });
+    const also = screen.getByRole("list", { name: "Also in Takewon" });
     expect(within(also).getAllByRole("listitem")).toHaveLength(ALSO.length);
     const chat = within(also).getByRole("heading", { name: "The agent in your team chat" });
     expect(chat.querySelectorAll("svg")).toHaveLength(4);
@@ -44,5 +49,17 @@ describe("Everything around the clip", () => {
     expect(text).toMatch(/any MCP client/);
     expect(text).not.toMatch(/Zapier|Make\.com|no server required/i);
     expect(text).toMatch(/Picking uses AI once per video/);
+  });
+});
+
+describe("Your own steps", () => {
+  it("is a real recording of the agent writing, trying, saving and using a step, not a drawing", () => {
+    const tile = AROUND_TILES.find((t) => t.id === "steps")!;
+    expect(tile.video).toBe("steps");
+    expect(tile.alt).toMatch(/^Screen recording:/);
+    expect(tile.body).toMatch(/tries it on one of your files/);
+    expect(tile.body).not.toMatch(/ffmpeg/i);
+    const { container } = render(<AroundTheClip />);
+    expect(container.querySelector(".scene-steps")).toBeNull();
   });
 });

@@ -73,6 +73,8 @@ export function SplitScene() {
   const reduce = useReducedMotion();
   const live = mounted && !reduce;
   const [step, setStep] = useState(SPLIT_STEPS.length - 1);
+  // how far the next recording has got through the same five steps; it loops while it is on screen
+  const [nextStep, setNextStep] = useState<number>(SPLIT_STEPS.length);
 
   useEffect(() => {
     if (!live) return;
@@ -88,9 +90,16 @@ export function SplitScene() {
     const name = st.querySelector<HTMLElement>(".split-name");
     const foot = st.querySelector<HTMLElement>(".split-foot");
     const next = st.querySelector<HTMLElement>(".split-next");
+    const now = st.querySelector<HTMLElement>(".split-now");
+    const rail = st.querySelector<HTMLElement>(".split-rail");
     let raf = 0;
     // the scene follows the scroll with a little lag, so each change eases in rather than jumping
     let shown = -1;
+    // on a phone the finished clips take turns at full size (TikTok first), the others waiting small underneath
+    let big = 1;
+    let settled = false;
+    let nextOn = false;
+    let nextAt = 0;
 
     const paint = () => {
       raf = 0;
@@ -103,20 +112,24 @@ export function SplitScene() {
       const W = st.clientWidth;
       const H = st.clientHeight;
       const narrow = W < 600;
+      settled = narrow && p >= 0.62;
+      st.classList.toggle("is-turns", settled);
       const pad = narrow ? 12 : 24;
       const gapCards = narrow ? 12 : 22;
       const cols = narrow ? 3 : 5;
       const rows = Math.ceil(SPLIT_CLIPS.length / cols);
-      const destH = narrow ? 64 : 92;
-      const rowGap = 18;
+      // on a phone the logo and shape under each clip, and the editor line, are measured so the clips get every pixel left
+      const destH = narrow ? (dests[0]?.offsetHeight ?? 48) + 12 : 92;
+      const rowGap = narrow ? 14 : 18;
       // room above for the next recording, and below for the editor route and the token count
-      const topBand = narrow ? 40 : 52;
-      const footH = narrow ? 112 : 72;
+      const topBand = narrow ? 62 : 60;
+      // measured from where the foot actually sits, so nothing above it can reach into it
+      const footH = narrow ? (foot ? H - foot.offsetTop : 110) + 8 : 72;
 
       // the long recording, across the middle
       const SW = W - 2 * pad;
       const stripH = Math.min(narrow ? 64 : 96, H * 0.18);
-      const stripY = H * 0.42 - stripH / 2;
+      const stripY = H * (narrow ? 0.34 : 0.42) - stripH / 2;
       const g = ease(local(p, 0.11, 0.22)) * (narrow ? 8 : 16);
 
       // the clips, in one row (three and two on a phone), centred in the scene
@@ -126,20 +139,72 @@ export function SplitScene() {
       const total = rows * (boxH + destH) + (rows - 1) * rowGap;
       const top = topBand + (room - total) / 2;
 
+      // a phone: one clip large across the stage, the other four in a row of small ones under it
+      const tw = (SW - 3 * 10) / 4;
+      const th = Math.min(tw * 1.78, 104, room * 0.22);
+      const thumbDest = 34;
+      const bigDest = 44 + 10;
+      const bigH = room - 8 - bigDest - 22 - th - thumbDest;
+      const thumbBottom = topBand + room - thumbDest;
+      const others = SPLIT_CLIPS.map((_, i) => i).filter((i) => i !== big);
+
+      // a phone: the recording runs down the stage as one tall film strip, its words read beside each
+      // piece, and the cut opens gaps between the pieces, so every step uses the whole screen
+      const nameH = narrow && name ? name.offsetHeight : 0;
+      const gapMax = 14;
+      const colTop = topBand + 8 + nameH + 10;
+      // the editor line at the foot only shows once the strip is gone, so the strip may use its space
+      const rowH = Math.min(96, (H - 12 - colTop - 4 * gapMax) / SPLIT_CLIPS.length);
+      const rowW = (rowH * 16) / 9;
+      const cutGap = ease(local(p, 0.11, 0.22)) * gapMax;
+
       let x = pad;
       const onScreen = box.bottom > 0 && box.top < window.innerHeight;
       SPLIT_CLIPS.forEach((c, i) => {
         const share = (c.to - c.from) / SPLIT_RECORDING.seconds;
         const sw = share * (SW - 4 * g);
-        const from = { x, y: stripY, w: sw, h: stripH };
+        const from = narrow ? { x: pad, y: colTop + i * (rowH + cutGap), w: rowW, h: rowH } : { x, y: stripY, w: sw, h: stripH };
         x += sw + g;
         const row = Math.floor(i / cols);
         const inRow = Math.min(cols, SPLIT_CLIPS.length - row * cols);
         const left = (W - (inRow * boxW + (inRow - 1) * gapCards)) / 2;
         const cx = left + boxW / 2 + (i % cols) * (boxW + gapCards);
         const cardBottom = top + row * (boxH + destH + rowGap) + boxH;
-        const fit = fitFrame(c.frame, boxW, boxH);
-        const to = { x: cx - fit.width / 2, y: cardBottom - fit.height, w: fit.width, h: fit.height };
+        let fit = fitFrame(c.frame, boxW, boxH);
+        let to = {
+          x: cx - fit.width / 2,
+          y: cardBottom - fit.height,
+          w: fit.width,
+          h: fit.height,
+        };
+        let dest = { x: cx - boxW / 2, y: cardBottom + 14, w: boxW };
+        if (narrow) {
+          if (i === big) {
+            fit = fitFrame(c.frame, SW, bigH);
+            // a wide clip sits in the middle of the space, with its label right under it
+            const bottom = topBand + 8 + (bigH + fit.height) / 2;
+            to = {
+              x: (W - fit.width) / 2,
+              y: bottom - fit.height,
+              w: fit.width,
+              h: fit.height,
+            };
+            dest = { x: pad, y: bottom + 10, w: SW };
+          } else {
+            const k = others.indexOf(i);
+            const tx = pad + k * (tw + 10) + tw / 2;
+            fit = fitFrame(c.frame, tw, th);
+            to = {
+              x: tx - fit.width / 2,
+              y: thumbBottom - fit.height,
+              w: fit.width,
+              h: fit.height,
+            };
+            dest = { x: tx - tw / 2, y: thumbBottom + 4, w: tw };
+          }
+          dests[i].classList.toggle("is-big", i === big);
+          clips[i].classList.toggle("is-big", i === big);
+        }
         const t = ease(local(p, 0.24 + i * 0.035, 0.38 + i * 0.035));
         const s = clips[i].style;
         s.transform = `translate(${mix(from.x, to.x, t)}px, ${mix(from.y, to.y, t)}px)`;
@@ -149,7 +214,9 @@ export function SplitScene() {
         const frameW = (mix(from.h, to.h, t) * 16) / 9;
         const fs = films[i].style;
         fs.backgroundSize = `${frameW * SPLIT_RECORDING.frames}px 100%`;
-        fs.backgroundPosition = `${-(c.from / SPLIT_RECORDING.seconds) * frameW * SPLIT_RECORDING.frames}px 0`;
+        // on a phone each piece is one frame wide, so it shows one whole frame from its middle
+        const mid = Math.floor((((c.from + c.to) / 2) / SPLIT_RECORDING.seconds) * SPLIT_RECORDING.frames);
+        fs.backgroundPosition = narrow ? `${-mid * frameW}px 0` : `${-(c.from / SPLIT_RECORDING.seconds) * frameW * SPLIT_RECORDING.frames}px 0`;
         fs.opacity = String(1 - local(p, 0.3 + i * 0.035, 0.38 + i * 0.035));
         // once a piece has its shape it plays as the finished clip, and stops when the scene is gone
         const v = videos[i];
@@ -161,25 +228,43 @@ export function SplitScene() {
 
         // the words spoken in this piece, under it, until they turn into its captions
         const w = said[i].style;
-        w.transform = `translate(${from.x}px, ${stripY + stripH + 10}px)`;
-        w.width = `${sw}px`;
-        w.opacity = String(local(p, 0.01 + i * 0.015, 0.05 + i * 0.015) * (1 - local(p, 0.24 + i * 0.035, 0.3 + i * 0.035)));
+        if (narrow) {
+          // beside its piece, appearing as the transcription line passes it
+          const wx = pad + rowW + 14;
+          w.width = `${SW - rowW - 14}px`;
+          w.transform = `translate(${wx}px, ${from.y + rowH / 2 - said[i].offsetHeight / 2}px)`;
+          w.opacity = String(local(p, 0.01 + i * 0.018, 0.03 + i * 0.018) * (1 - local(p, 0.24 + i * 0.035, 0.3 + i * 0.035)));
+        } else {
+          w.transform = `translate(${from.x}px, ${stripY + stripH + 10}px)`;
+          w.width = `${sw}px`;
+          w.opacity = String(local(p, 0.01 + i * 0.015, 0.05 + i * 0.015) * (1 - local(p, 0.24 + i * 0.035, 0.3 + i * 0.035)));
+        }
 
         const d = local(p, 0.58 + i * 0.025, 0.66 + i * 0.025);
         const ds = dests[i].style;
-        ds.transform = `translate(${cx - boxW / 2}px, ${cardBottom + 14 + (1 - d) * 14}px)`;
-        ds.width = `${boxW}px`;
+        ds.transform = `translate(${dest.x}px, ${dest.y + (1 - d) * 14}px)`;
+        ds.width = `${dest.w}px`;
         ds.opacity = String(d);
       });
 
       const sweep = local(p, 0, 0.1);
-      if (playhead) {
+      if (playhead && narrow) {
+        // the transcription line runs down the strip
+        const colH = SPLIT_CLIPS.length * rowH;
+        playhead.style.transform = `translate(${pad - 6}px, ${colTop + sweep * colH}px)`;
+        playhead.style.width = `${rowW + 12}px`;
+        playhead.style.height = "2px";
+        playhead.style.opacity = String(1 - local(p, 0.1, 0.14));
+      } else if (playhead) {
         playhead.style.transform = `translate(${pad + sweep * SW}px, ${stripY - 10}px)`;
+        playhead.style.width = "";
         playhead.style.height = `${stripH + 20}px`;
         playhead.style.opacity = String(1 - local(p, 0.1, 0.14));
       }
       if (name) {
-        name.style.transform = `translate(${pad}px, ${stripY - 34}px)`;
+        // above the strip, however many lines the label takes on a narrow screen
+        name.style.width = `${SW}px`;
+        name.style.transform = `translate(${pad}px, ${narrow ? colTop - name.offsetHeight - 10 : stripY - name.offsetHeight - 12}px)`;
         name.style.opacity = String(1 - local(p, 0.2, 0.26));
       }
       if (foot) {
@@ -190,24 +275,45 @@ export function SplitScene() {
       if (next) {
         // the next recording slides in along the top and starts the same run
         const n = ease(local(p, 0.84, 0.97));
-        next.style.width = `${Math.min(SW, 520)}px`;
+        next.style.width = `${Math.min(SW, 660)}px`;
         next.style.transform = `translate(${mix(W, pad, n)}px, ${narrow ? 6 : 10}px)`;
         next.style.opacity = String(local(p, 0.84, 0.88));
+        nextOn = p >= 0.9;
       }
       let current = 0;
       SPLIT_STEPS.forEach((s, i) => {
         if (p >= s.at) current = i;
       });
       setStep(current);
+      if (now) {
+        // the step it is on, written across the top of the stage on a phone, until the next recording takes that place
+        now.textContent = SPLIT_STEPS[current].label;
+        now.style.opacity = String(1 - local(p, 0.8, 0.84));
+      }
+      // on a phone the five steps ride along the top of the stage too, each icon moving in its own way as it is reached
+      if (rail) rail.style.opacity = String(1 - local(p, 0.8, 0.84));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(paint);
     };
     paint();
+    const turn = window.setInterval(() => {
+      if (!settled) return;
+      big = (big + 1) % SPLIT_CLIPS.length;
+      onScroll();
+    }, 3200);
+    // the next recording goes through the steps one by one, rests on "ready", then the one after it comes in
+    const run = window.setInterval(() => {
+      if (!nextOn) return;
+      nextAt = (nextAt + 1) % (SPLIT_STEPS.length + 3);
+      setNextStep(Math.min(nextAt, SPLIT_STEPS.length));
+    }, 900);
     const ro = new ResizeObserver(onScroll);
     ro.observe(st);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      window.clearInterval(turn);
+      window.clearInterval(run);
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener("scroll", onScroll);
@@ -215,7 +321,7 @@ export function SplitScene() {
   }, [live]);
 
   return (
-    <section ref={root} className={`split${live ? " is-live" : ""}`} aria-labelledby="split-title">
+    <section ref={root} className={`split${live ? " is-live" : ""}`} id="how-it-works" aria-labelledby="split-title">
       <div className="split-pin">
         <div className="wrap split-head">
           <h2 id="split-title">One recording in. A clip for every feed out.</h2>
@@ -235,15 +341,42 @@ export function SplitScene() {
         </div>
         <div className="wrap">
           <div className="split-stage" ref={stage} aria-hidden="true">
+            <ol className="split-rail">
+              {SPLIT_STEPS.map((s, i) => (
+                <li key={s.label} className={i <= step ? "on" : undefined} aria-current={i === step ? "step" : undefined}>
+                  <span className="split-n" data-move={s.move}>
+                    <s.icon size={13} strokeWidth={2.4} />
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <span className="split-now" />
             <span className="split-name">{SPLIT_RECORDING.label}</span>
             <span className="split-playhead" />
-            <span className="split-next">
+            <span className="split-next" data-at={nextStep}>
+              <span className="split-next-in">
+                <FileAudio size={15} strokeWidth={2.4} />
+              </span>
               <span className="split-next-wave">
                 {BARS.map((h, i) => (
                   <i key={i} style={{ height: `${Math.round(h * 100)}%` }} />
                 ))}
               </span>
-              <span className="split-next-text">Next recording came in. Same steps, nobody touching it.</span>
+              <span className="split-next-text">
+                <b>Next recording came in.</b>{" "}
+                <span className="split-next-now">
+                  {SPLIT_STEPS[nextStep]?.label ?? "Same steps, nobody touching it."}
+                </span>
+              </span>
+              <ol className="split-next-steps">
+                {SPLIT_STEPS.map((s, i) => (
+                  <li key={s.label} className={i < nextStep ? "on" : i === nextStep ? "now" : undefined}>
+                    <span className="split-n" data-move={s.move}>
+                      <s.icon size={11} strokeWidth={2.6} />
+                    </span>
+                  </li>
+                ))}
+              </ol>
             </span>
             <div className="split-row">
               {SPLIT_CLIPS.map((c) => {

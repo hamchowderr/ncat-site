@@ -1,3 +1,4 @@
+import { CONTACT_HREF, TALKS } from "@/lib/contact";
 import Link from "next/link";
 import { siInstagram, siX } from "simple-icons";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -16,17 +17,15 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Resources",
     links: [
-      { label: "Toolkit setup guide", href: "https://claude.ai/artifact/Y8og6PdvJ3D4y9VjdHRMX1" },
-      { label: "NCA Toolkit", href: "https://github.com/stephengpope/no-code-architects-toolkit" },
-      { label: "The KINN talk", href: "https://claude.ai/artifact/6Eub1y5ZXra6K9FbhypK2H" },
+      { label: "Claude Code Creators Summit talk", href: TALKS.summit },
+      { label: "The KINN talk", href: TALKS.kinn },
     ],
   },
   {
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Otaku Solutions", href: "https://otakusolutions.io" },
-      { label: "chowderr.dev", href: "https://chowderr.dev" },
+      { label: "Contact", href: CONTACT_HREF },
     ],
   },
 ];
@@ -46,7 +45,7 @@ export function Footer() {
           <Link className="brand" href="/">
             <BrandMark /> Takewon
           </Link>
-          <p>Your content, social media ready. By Otaku Solutions.</p>
+          <p>Your content, social media ready.</p>
           <ul className="foot-social" aria-label="Follow">
             {SOCIAL.map((s) => (
               <li key={s.label}>
