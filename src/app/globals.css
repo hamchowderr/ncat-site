@@ -2461,21 +2461,19 @@ fieldset[aria-invalid="true"] .pill span {
     font-size: 12.5px;
   }
 
-  /* Playing by the scroll on a phone: the headline and steps scroll away and only the stage pins, so the
-     scene has the whole screen and the finished clips come out large. The step it is on is written across the
-     top of the stage instead. */
+  /* Playing by the scroll on a phone: the headline pins with the stage, kept to two short lines, so
+     you always see what the scene is about; the stage takes the rest of the screen. The step it is on
+     is written across the top of the stage. */
   .split.is-live .split-pin {
-    position: static;
-    height: 100%;
-    display: block;
-    padding: 0;
+    padding: 10px 0 12px;
+  }
+  .split.is-live .split-head h2 {
+    font-size: 25px;
+    line-height: 1.12;
+    max-width: none;
   }
   .split.is-live .split-pin > .wrap:last-child {
-    position: sticky;
-    top: 68px;
-    height: calc(100vh - 68px);
-    height: calc(100svh - 68px);
-    padding-block: 12px;
+    margin-top: 12px;
   }
   .split.is-live .split-stage {
     max-height: none;

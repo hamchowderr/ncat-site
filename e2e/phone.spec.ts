@@ -27,14 +27,19 @@ test.describe("home page on a phone", () => {
       scrollTo(0, top + (el.offsetHeight - innerHeight) * 0.86);
     });
     const stage = page.locator(".split-stage");
-    // only the stage is pinned: the headline has scrolled away and the stage fills nearly all the screen under the bar
-    await expect.poll(async () => (await stage.boundingBox())!.height).toBeGreaterThan((vh - 68) * 0.85);
-    await expect(page.locator(".split-head h2")).not.toBeInViewport();
+    // the headline stays pinned above the stage, whole and on screen, and the stage takes most of the rest
+    await expect.poll(async () => (await stage.boundingBox())!.height).toBeGreaterThan((vh - 68) * 0.7);
+    const h2 = page.locator(".split-head h2");
+    await expect(h2).toBeInViewport({ ratio: 1 });
+    const hb = (await h2.boundingBox())!;
+    expect(hb.y).toBeGreaterThanOrEqual(68);
+    expect(hb.y + hb.height).toBeLessThanOrEqual((await stage.boundingBox())!.y);
+    expect(await h2.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
     // the finished clips take turns at full size: one is large enough to read its captions, the rest wait small
     const big = page.locator(".split-clip.is-big");
     await expect(big).toHaveCount(1);
     const vw = page.viewportSize()!.width;
-    await expect.poll(async () => (await big.boundingBox())!.height, { timeout: 8000 }).toBeGreaterThan(vh * 0.35);
+    await expect.poll(async () => (await big.boundingBox())!.height, { timeout: 8000 }).toBeGreaterThan(vh * 0.3);
     await page.waitForTimeout(800);
     const bb = (await big.boundingBox())!;
     if ((await big.getAttribute("data-frame")) !== "original") expect(bb.width / vw).toBeGreaterThan(0.4);

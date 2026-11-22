@@ -90,7 +90,6 @@ export function SplitScene() {
     const name = st.querySelector<HTMLElement>(".split-name");
     const foot = st.querySelector<HTMLElement>(".split-foot");
     const next = st.querySelector<HTMLElement>(".split-next");
-    const head = el.querySelector<HTMLElement>(".split-head");
     const now = st.querySelector<HTMLElement>(".split-now");
     const rail = st.querySelector<HTMLElement>(".split-rail");
     let raf = 0;
@@ -106,10 +105,7 @@ export function SplitScene() {
       raf = 0;
       const box = el.getBoundingClientRect();
       // the scene finishes at 80% of the scroll and holds its last moment for the rest, before the page moves on
-      // on a phone only the stage pins (the headline scrolls away first, so the clips get the whole screen),
-      // and the scene starts once the stage is pinned
-      const lead = st.clientWidth < 600 && head ? head.offsetHeight : 0;
-      const target = clamp((-box.top - lead) / Math.max(1, box.height - lead - window.innerHeight) / HOLD_AT);
+      const target = clamp(-box.top / Math.max(1, box.height - window.innerHeight) / HOLD_AT);
       shown = shown < 0 || Math.abs(target - shown) < 0.0005 ? target : shown + (target - shown) * 0.09;
       const p = shown;
       if (p !== target) raf = requestAnimationFrame(paint);
