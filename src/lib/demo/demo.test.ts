@@ -176,7 +176,7 @@ describe("a real run of the visitor's video", () => {
     const lostToolkit: Toolkit = { send: async () => ({ kind: "queued", toolkitJobId: "x" }), status: async () => ({ state: "unknown" }) };
     let d: Demo = await advance(demo, lostToolkit, "https://site.example/hook?id=d1", 0);
     d = await advance(d, lostToolkit, "https://site.example/hook?id=d1", 6 * 60_000);
-    expect(viewOf(d)).toMatchObject({ stage: "failed", error: "The toolkit couldn’t read that video. Try another file, such as an MP4 or MOV." });
+    expect(viewOf(d)).toMatchObject({ stage: "failed", error: "That video couldn’t be read. Try another file, such as an MP4 or MOV." });
     void s;
   });
 });

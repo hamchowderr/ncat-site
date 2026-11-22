@@ -20,7 +20,7 @@ export function DemoResults({ id, k, fileName, initial }: { id: string; k: strin
       <DemoSteps steps={v.steps} />
       {v.stage === "failed" && (
         <p className="try-error" role="alert">
-          {v.error ?? "The toolkit couldn’t finish this one."}
+          {v.error ?? "This one couldn’t be finished."}
         </p>
       )}
     </>

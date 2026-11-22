@@ -293,7 +293,7 @@ async function fakeDemo(page: import("@playwright/test").Page, finish: "done" | 
         : asked === 2
           ? { stage: "running", steps: steps(["done", "done", "doing", "wait", "wait"], [file, "35 s long, 1440 × 900", "1 clip, up to a minute each, 1080 × 1920."]), clips: [] }
           : finish === "failed"
-            ? { stage: "failed", steps: steps(["done", "failed", "wait", "wait", "wait"], [file]), clips: [], error: "The toolkit couldn’t read that video. Try another file, such as an MP4 or MOV." }
+            ? { stage: "failed", steps: steps(["done", "failed", "wait", "wait", "wait"], [file]), clips: [], error: "That video couldn’t be read. Try another file, such as an MP4 or MOV." }
             : {
                 stage: "done",
                 steps: steps(["done", "done", "done", "done", "done"], [file, "35 s long, 1440 × 900", "1 clip, up to a minute each, 1080 × 1920.", "Every word transcribed and burned in."]),
@@ -337,7 +337,7 @@ test("the section asks for their own first video, and nothing is sent before the
   await expect(page.locator(".try-drop-note")).toHaveText(/^\d+ (KB|MB), 35 s$/);
   await expect(page.getByRole("button", { name: "Sign up and run it" })).toBeVisible();
   // said before they sign up: it takes a while, and they don't have to sit and watch
-  await expect(page.locator(".try-drop-hint")).toHaveText("The toolkit can take a while on it, and you don’t have to wait on this page.");
+  await expect(page.locator(".try-drop-hint")).toHaveText("This can take a while, and you don’t have to wait on this page.");
   // every step waits: nothing has run, and nothing pretends to
   await expect(page.locator(".try-step.wait")).toHaveCount(5);
   expect(sent).toEqual([]);
@@ -396,7 +396,7 @@ test("when the toolkit can't finish, it says why plainly and lets them start ove
   await page.getByRole("button", { name: "Sign up and run it" }).click();
   await signUp(page);
   const alert = page.locator(".try-next[role=alert]");
-  await expect(alert).toContainText("The toolkit couldn’t read that video.", { timeout: 15_000 });
+  await expect(alert).toContainText("That video couldn’t be read.", { timeout: 15_000 });
   await expect(alert).toContainText("You’re still on the list.");
   await alert.getByRole("button", { name: "Start over" }).click();
   await expect(page.locator(".try-drop .btn.primary")).toHaveText("Choose a video");

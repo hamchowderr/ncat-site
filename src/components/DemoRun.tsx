@@ -13,7 +13,7 @@ const POLL_MS = 4000;
 /** The list of steps, each with what the toolkit reported. */
 export function DemoSteps({ steps, uploadPercent }: { steps: StepView[]; uploadPercent?: number | null }) {
   return (
-    <ol className="try-run" aria-label="What the toolkit does with your video" aria-live="polite">
+    <ol className="try-run" aria-label="What happens to your video" aria-live="polite">
       {steps.map((s, i) => (
         <li key={s.label} className={`try-step ${s.state}`} data-step={s.label}>
           <span className="try-dot" aria-hidden="true" />

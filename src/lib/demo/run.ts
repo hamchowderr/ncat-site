@@ -128,11 +128,11 @@ export async function look(demo: Demo, toolkit: Toolkit, now: number): Promise<{
       const answer = await toolkit.status(j.toolkitJobId).catch(() => ({ state: "working" as const }));
       if (answer.state === "finished") recordResult(d, j.id, answer, now);
       else if (answer.state === "unknown" && now - (j.sentAt ?? now) > LOST_AFTER_MS) {
-        recordResult(d, j.id, { ok: false, error: "The toolkit lost this job, most likely because it restarted." }, now);
+        recordResult(d, j.id, { ok: false, error: "This step was lost, most likely because the server restarted." }, now);
       }
     }
     if (j.state === "running" && now - (j.sentAt ?? now) > GIVE_UP_MS) {
-      recordResult(d, j.id, { ok: false, error: "The toolkit took too long." }, now);
+      recordResult(d, j.id, { ok: false, error: "This step took too long." }, now);
     }
   }
 
@@ -143,7 +143,7 @@ export async function look(demo: Demo, toolkit: Toolkit, now: number): Promise<{
   for (const j of jobsOf(d)) {
     if (j.state !== "pending") continue;
     if ((j.tries ?? 0) >= MAX_TRIES) {
-      Object.assign(j, { state: "failed", error: j.error ?? "The toolkit didn’t take this step." });
+      Object.assign(j, { state: "failed", error: j.error ?? "This step didn’t start." });
       continue;
     }
     Object.assign(j, { state: "sending", claimedAt: now, tries: (j.tries ?? 0) + 1 });
@@ -176,7 +176,7 @@ export function sent(demo: Demo, outcomes: SendOutcome[], now: number): boolean 
     const r = o.sent;
     if (r.kind === "busy") {
       j.busySince ??= now;
-      if (now - j.busySince > BUSY_GIVE_UP_MS) Object.assign(j, { state: "failed", error: "The toolkit was too busy to take this video." });
+      if (now - j.busySince > BUSY_GIVE_UP_MS) Object.assign(j, { state: "failed", error: "Too busy to take this video right now." });
       else Object.assign(j, { state: "pending", tries: Math.max(0, (j.tries ?? 1) - 1) });
     } else if (r.kind === "refused") Object.assign(j, { state: "failed", error: r.error });
     else if (r.kind === "answered") Object.assign(j, r.ok ? { state: "done", result: r.result } : { state: "failed", error: r.error });
@@ -203,7 +203,7 @@ function nextStage(d: Demo): Demo | null {
   if (settled(d.probe) && d.cuts.length === 0) {
     const [meta, pauses, words] = d.probe;
     const duration = meta.state === "done" ? durationOf(meta.result) : null;
-    if (duration === null) return fail(d, "The toolkit couldn’t read that video. Try another file, such as an MP4 or MOV.");
+    if (duration === null) return fail(d, "That video couldn’t be read. Try another file, such as an MP4 or MOV.");
     if (duration > MAX_SECONDS + 1) return fail(d, `That video is ${formatDuration(duration)} long. The demo takes videos up to 10 minutes.`);
     d.facts = { duration, ...(sizeOf(meta.result) ?? {}) };
     // Without the pauses the video is still cut, just evenly.
@@ -218,14 +218,14 @@ function nextStage(d: Demo): Demo | null {
   }
   if (settled(d.cuts) && captionedInCut(d)) {
     const made = d.cuts.filter((j) => j.state === "done" && collectUrls(j.result)[0]);
-    if (made.length === 0) return fail(d, d.cuts.find((j) => j.error)?.error ?? "The toolkit couldn’t cut the clips.");
+    if (made.length === 0) return fail(d, d.cuts.find((j) => j.error)?.error ?? "The clips couldn’t be cut.");
     d.clips = made.map((j) => ({ url: collectUrls(j.result)[0], captioned: burnsCaptions(j) }));
     return { ...d, stage: "done" };
   }
   // Runs started before captions were burned in during the cut caption each clip afterwards.
   if (settled(d.cuts) && d.captions.length === 0) {
     const made = d.cuts.filter((j) => j.state === "done" && collectUrls(j.result)[0]);
-    if (made.length === 0) return fail(d, d.cuts.find((j) => j.error)?.error ?? "The toolkit couldn’t cut the clips.");
+    if (made.length === 0) return fail(d, d.cuts.find((j) => j.error)?.error ?? "The clips couldn’t be cut.");
     d.captions = made.map((j, i) =>
       job(`${d.id}-captions-${i + 1}`, "/v1/video/caption", { video_url: collectUrls(j.result)[0], settings: DEMO_CAPTION_LOOK }),
     );

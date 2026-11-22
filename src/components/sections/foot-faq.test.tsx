@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Faq, FAQ } from "./Faq";
 import { Footer } from "./Footer";
 import { EarlyAccess } from "./EarlyAccess";
-import { CONTACT_EMAIL } from "@/lib/contact";
+import { CONTACT_EMAIL, TALKS } from "@/lib/contact";
 
 describe("Footer", () => {
   it("is the mark, one line and short link columns, with no small print underneath", () => {
@@ -24,6 +24,25 @@ describe("Footer", () => {
   it("has a Contact link that emails the Takewon address", () => {
     render(<Footer />);
     expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", `mailto:${CONTACT_EMAIL}`);
+  });
+});
+
+describe("Footer resources", () => {
+  it("lists only the two talks: the Claude Code Creators Summit and The KINN", () => {
+    render(<Footer />);
+    const links = Array.from(screen.getByRole("navigation", { name: "Resources" }).querySelectorAll("a"));
+    expect(links.map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
+      ["Claude Code Creators Summit talk", TALKS.summit],
+      ["The KINN talk", TALKS.kinn],
+    ]);
+  });
+});
+
+describe("no workshop page", () => {
+  it("never links the workshop prep page from the footer or the questions", () => {
+    const { container } = render(<><Footer /><Faq /></>);
+    expect(container.innerHTML).not.toContain("Y8og6PdvJ3D4y9VjdHRMX1");
+    expect(container.innerHTML).not.toMatch(/luma/i);
   });
 });
 

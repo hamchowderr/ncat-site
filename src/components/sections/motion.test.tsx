@@ -128,11 +128,16 @@ describe("one clip that changes shape", () => {
     expect(line()).toBe("Instagram Feed clips come out Portrait 4:5, up to 3 min each.");
     // what the platform itself takes, with a link to its own page
     expect(document.querySelector(".shift-takes")).toHaveTextContent("Instagram itself takes: Feed videos post as Reels, so 3 s to 15 min.");
-    expect(screen.getByRole("link", { name: "Instagram’s own specs" })).toHaveAttribute("href", expect.stringContaining("developers.facebook.com/docs/instagram-platform"));
     expect(document.querySelector(".shift-frame")).toHaveAttribute("data-frame", "4:5");
     fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowRight" });
     expect(screen.getByRole("tab", { name: "LinkedIn" })).toHaveFocus();
     expect(line()).toBe("LinkedIn clips keep their own shape, up to 15 min each.");
+  });
+
+  it("has no small print under the picture: no settings note, no checked-on date", () => {
+    const { container } = render(<ShapeShifter />);
+    expect(container).not.toHaveTextContent(/Set once in Settings|Checked on|own specs/);
+    expect(container.querySelector(".shift-note, .shift-brand-note")).toBeNull();
   });
 
   it("levels podcast episodes to each app's loudness, quoting only what the app itself says", () => {
@@ -141,12 +146,10 @@ describe("one clip that changes shape", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Apple Podcasts" }));
     expect(line()).toBe("Apple Podcasts episodes keep their own shape, with the sound levelled to −16 LUFS.");
     expect(document.querySelector(".shift-takes")).toHaveTextContent("around −16 LKFS (±1 dB)");
-    expect(screen.getByRole("link", { name: "Apple Podcasts’s own specs" })).toHaveAttribute("href", "https://podcasters.apple.com/support/893-audio-requirements");
     expect(document.querySelector(".shift-formats")).toHaveTextContent("Episodes, chapters, transcripts");
     fireEvent.click(screen.getByRole("tab", { name: "Spotify" }));
     expect(line()).toBe("Spotify episodes keep their own shape, with the sound levelled to −14 LUFS.");
     expect(document.querySelector(".shift-takes")).toHaveTextContent("It gives no loudness target for podcasts");
-    expect(screen.getByRole("link", { name: "Spotify’s own specs" })).toHaveAttribute("href", expect.stringContaining("support.spotify.com"));
   });
 });
 
@@ -190,12 +193,12 @@ describe("try it on your own video", () => {
     expect(screen.getByLabelText("Choose a video")).toHaveAttribute("accept", "video/*");
     expect(screen.queryByRole("button", { name: /sample/i })).toBeNull();
     expect(screen.getByRole("heading", { name: "Drop in your first video, get early access sooner" })).toBeInTheDocument();
-    expect(screen.getByText(/Sign up and the real toolkit cuts your video/)).toBeInTheDocument();
+    expect(screen.getByText(/Sign up and Takewon cuts your video/)).toBeInTheDocument();
     expect(screen.getByText(/moves to the front of the early-access list/)).toBeInTheDocument();
     expect(screen.getByText("Up to 10 minutes and 1 GB.")).toBeInTheDocument();
     // nothing claims to run in the browser any more
     expect(container.textContent).not.toMatch(/nothing is uploaded|in your browser|preview/i);
-    const steps = within(screen.getByRole("list", { name: "What the toolkit does with your video" })).getAllByRole("listitem");
+    const steps = within(screen.getByRole("list", { name: "What happens to your video" })).getAllByRole("listitem");
     expect(steps.map((s) => s.getAttribute("data-step"))).toEqual([...DEMO_STEPS]);
     expect(container.querySelectorAll(".try-step.wait")).toHaveLength(DEMO_STEPS.length);
   });
@@ -203,7 +206,7 @@ describe("try it on your own video", () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
     const { rerender } = render(<WhileItRuns id="run1" k="a/b" emails={false} />);
-    expect(screen.getByText(/can take the toolkit a while, so you don’t need to wait here/)).toBeInTheDocument();
+    expect(screen.getByText(/can take a while, so you don’t need to wait here/)).toBeInTheDocument();
     expect(screen.queryByText(/email/)).toBeNull();
     expect(screen.getByRole("link", { name: "Your clips link" })).toHaveAttribute("href", "/clips/run1?k=a%2Fb");
     fireEvent.click(screen.getByRole("button", { name: "Copy link" }));

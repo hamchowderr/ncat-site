@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL, CONTACT_HREF } from "@/lib/contact";
+import { CONTACT_EMAIL, CONTACT_HREF, TALKS } from "@/lib/contact";
 import { Reveal } from "@/components/Reveal";
 export const FAQ: { q: string; a: React.ReactNode }[] = [
   { q: "Is it out yet?", a: "Not yet. Takewon is working and in testing now. Get on the early access list and you’ll be first to try it." },
@@ -31,7 +31,7 @@ export const FAQ: { q: string; a: React.ReactNode }[] = [
     a: (
       <>
         If you self-host, yes: you connect your toolkit with its address and key, and{" "}
-        <a href="https://claude.ai/artifact/Y8og6PdvJ3D4y9VjdHRMX1">the setup guide</a> walks you through setting one up with Claude. If you’d rather
+        <a href={`${TALKS.summit}#start`}>my Claude Code talk</a> walks you through setting one up with Claude. If you’d rather
         not run a server, a hosted option is planned. For now, the plan is that it comes with starting credits.
       </>
     ),

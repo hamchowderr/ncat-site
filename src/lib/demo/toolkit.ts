@@ -22,7 +22,7 @@ export function toolkitSetup(): { baseUrl: string; apiKey: string } | null {
 /** A toolkit answer's message as plain text, kept short. */
 function messageOf(value: unknown): string {
   const text = typeof value === "string" ? value : value == null ? "" : JSON.stringify(value);
-  return text.slice(0, 300) || "The toolkit could not finish this step.";
+  return text.slice(0, 300) || "This step could not be finished.";
 }
 
 /** Reads a finished job's envelope ({ code, response, message }). */
@@ -60,7 +60,7 @@ export function httpToolkit(setup: { baseUrl: string; apiKey: string }, doFetch:
       }
       // Busy, restarting or its queue is full: try again on the next look.
       if (res.status === 429 || res.status >= 500) return { kind: "busy" };
-      if (!res.ok) return { kind: "refused", error: `The toolkit refused the job (HTTP ${res.status}). ${text.slice(0, 200)}` };
+      if (!res.ok) return { kind: "refused", error: `The job was refused (HTTP ${res.status}). ${text.slice(0, 200)}` };
       return { kind: "queued", toolkitJobId: json?.job_id ?? null };
     },
     async status(toolkitJobId) {

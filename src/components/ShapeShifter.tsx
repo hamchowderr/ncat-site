@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
 import {
-  CHECKED,
   CLIP_SHAPES,
   fitFrame,
   formatLimit,
@@ -304,15 +303,7 @@ export function ShapeShifter() {
                 Font
               </li>
             </ul>
-            <p className="shift-brand-note">Set once in Settings. Every clip picks them up by itself.</p>
           </div>
-          <p className="shift-note">
-            Checked on {CHECKED} against{" "}
-            <a href={place.source} target="_blank" rel="noreferrer">
-              {platform}’s own specs
-            </a>
-            .
-          </p>
         </div>
       </div>
     </div>

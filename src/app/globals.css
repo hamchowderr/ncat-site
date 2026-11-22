@@ -2802,11 +2802,6 @@ fieldset[aria-invalid="true"] .pill span {
   font: 700 12px/1 var(--display);
   color: var(--ink);
 }
-.shift-brand-note {
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--soft);
-}
 .agent-badge {
   display: inline-flex;
   align-items: center;
@@ -2914,14 +2909,6 @@ fieldset[aria-invalid="true"] .pill span {
   font-size: 15px;
   color: var(--soft);
   min-height: 3em;
-}
-.shift-note {
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--mute);
-}
-.shift-note a {
-  color: inherit;
 }
 @media (max-width: 760px) {
   .shift {

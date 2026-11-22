@@ -656,3 +656,21 @@ test("the pages call the product Takewon, never the dashboard or an old name", a
     }
   }
 });
+
+test("the footer's resources are only the two talks", async ({ page }) => {
+  await page.goto("/");
+  const links = page.getByRole("navigation", { name: "Resources" }).getByRole("link");
+  await expect(links).toHaveText(["Claude Code Creators Summit talk", "The KINN talk"]);
+  for (const path of ["/", "/pricing", "/about"]) {
+    await page.goto(path);
+    expect(await page.locator('a[href*="Y8og6PdvJ3D4y9VjdHRMX1"], a[href*="luma"]').count(), path).toBe(0);
+  }
+});
+
+test("the try-it demo never names the toolkit and the formats picture has no small print", async ({ page }) => {
+  await page.goto("/");
+  const demo = await page.locator("#try-it").innerText();
+  expect(demo).not.toMatch(/toolkit/i);
+  const body = await page.locator("body").innerText();
+  expect(body).not.toMatch(/Set once in Settings|Checked on \d/);
+});
