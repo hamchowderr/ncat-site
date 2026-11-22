@@ -679,3 +679,22 @@ test("the hero has no See the automations button", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".hero-cta").getByText("See the automations")).toHaveCount(0);
 });
+
+test("the Also in Takewon cards fill every row, with no empty gap", async ({ page }) => {
+  await page.goto("/");
+  const grid = page.locator("ul.also");
+  await grid.scrollIntoViewIfNeeded();
+  const { gw, rows } = await grid.evaluate((g) => {
+    const gb = g.getBoundingClientRect();
+    const byRow = new Map<number, number>();
+    for (const li of Array.from(g.children)) {
+      const r = li.getBoundingClientRect();
+      const key = Math.round(r.top);
+      byRow.set(key, (byRow.get(key) ?? 0) + r.width);
+    }
+    return { gw: gb.width, rows: [...byRow.values()] };
+  });
+  expect(rows.length).toBeGreaterThan(0);
+  // each row's cards plus the gaps between them reach across the whole grid
+  for (const w of rows) expect(w).toBeGreaterThan(gw - 40);
+});

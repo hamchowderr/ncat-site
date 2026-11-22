@@ -3384,9 +3384,10 @@ fieldset[aria-invalid="true"] .pill span {
 .also {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* two wide cards and two narrow ones, crossed, so every row is full */
   grid-template-areas:
     "chat chat clients"
-    "steps files tours";
+    "tours files files";
   gap: 16px;
 }
 .also-chat {
@@ -3394,9 +3395,6 @@ fieldset[aria-invalid="true"] .pill span {
 }
 .also-clients {
   grid-area: clients;
-}
-.also-steps {
-  grid-area: steps;
 }
 .also-files {
   grid-area: files;
@@ -3417,7 +3415,8 @@ fieldset[aria-invalid="true"] .pill span {
 .also-card:hover > .also-in {
   background: var(--panel-2);
 }
-.also-chat > .also-in {
+.also-chat > .also-in,
+.also-files > .also-in {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   align-items: center;
@@ -3876,16 +3875,17 @@ fieldset[aria-invalid="true"] .pill span {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "chat chat"
-      "clients steps"
-      "files tours";
+      "clients tours"
+      "files files";
   }
 }
 @media (max-width: 640px) {
   .also {
     grid-template-columns: 1fr;
-    grid-template-areas: "chat" "clients" "steps" "files" "tours";
+    grid-template-areas: "chat" "clients" "files" "tours";
   }
-  .also-chat > .also-in {
+  .also-chat > .also-in,
+  .also-files > .also-in {
     grid-template-columns: 1fr;
     padding: 14px 14px 26px;
   }
