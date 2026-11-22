@@ -1,4 +1,6 @@
-/** Sending through toSend (tosend.com). One place for the request, so both routes send the same way. */
+/** Sending through toSend (tosend.com) with its official SDK (npm "tosend"). One place for the request, so both routes send the same way. */
+import { ToSend, ToSendError } from "tosend";
+
 export type Mail = {
   to: { email: string; name?: string };
   replyTo?: { email: string; name?: string };
@@ -16,20 +18,20 @@ export function mailSetup(): MailSetup | null {
 }
 
 export async function sendMail(setup: MailSetup, mail: Mail): Promise<boolean> {
-  const res = await fetch("https://api.tosend.com/v2/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${setup.key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
+  try {
+    await new ToSend({ apiKey: setup.key, timeout: 15_000 }).send({
       from: { email: setup.from, name: "Takewon site" },
       to: [mail.to],
       ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
       subject: mail.subject,
       text: mail.text,
       html: mail.html,
-    }),
-  }).catch(() => null);
-  if (!res?.ok) console.error("mail: toSend send failed", res?.status);
-  return !!res?.ok;
+    });
+    return true;
+  } catch (error) {
+    console.error("mail: toSend send failed", error instanceof ToSendError ? error.code : error);
+    return false;
+  }
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);

@@ -31,7 +31,7 @@ describe("POST /api/early-access", () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); fetchMock.mockReset(); blob.put.mockReset(); blob.head.mockReset(); bot.checkBotId.mockClear(); forgetSignUps(); });
 
   it("emails the sign-up through toSend with a reply-to", async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
     const res = await post(valid);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
@@ -71,7 +71,7 @@ describe("POST /api/early-access", () => {
   });
 
   it("reports a failed send", async () => {
-    fetchMock.mockResolvedValue(new Response("{}", { status: 500 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 500 }));
     vi.spyOn(console, "error").mockImplementation(() => {});
     const failed = await post(valid);
     expect(failed.status).toBe(502);
@@ -80,7 +80,7 @@ describe("POST /api/early-access", () => {
     expect((await post(valid)).status).toBe(502);
   });
   it("sends the visitor a note that it arrived, with replies going to Chowderr", async () => {
-    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 200 }));
     await post(valid);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const note = JSON.parse(fetchMock.mock.calls[1][1].body);
@@ -94,7 +94,7 @@ describe("POST /api/early-access", () => {
 
   it("offers the 3-day trial in the note once it has an address", async () => {
     vi.stubEnv("NEXT_PUBLIC_TRIAL_URL", "https://app.example/sign-up");
-    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 200 }));
     await post(valid);
     const note = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(note.text).toContain("free for 3 days with no card: https://app.example/sign-up");
@@ -103,7 +103,7 @@ describe("POST /api/early-access", () => {
   it("keeps a private copy of each sign-up, without the bot field", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
     blob.put.mockResolvedValue({ pathname: "x" });
-    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 200 }));
     await post(valid);
     const [path, body, options] = blob.put.mock.calls[0];
     expect(path).toMatch(/^leads\/\d{4}-\d{2}-\d{2}\/early-access-[0-9a-f-]{36}\.json$/);
@@ -126,7 +126,7 @@ describe("POST /api/early-access", () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
     blob.put.mockResolvedValue({ pathname: "x" });
     vi.spyOn(console, "error").mockImplementation(() => {});
-    fetchMock.mockResolvedValue(new Response("{}", { status: 500 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 500 }));
     expect((await post(valid)).status).toBe(200);
   });
 
@@ -134,14 +134,14 @@ describe("POST /api/early-access", () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
     blob.put.mockRejectedValue(new Error("store gone"));
     vi.spyOn(console, "error").mockImplementation(() => {});
-    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 200 }));
     expect((await post(valid)).status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
   it("puts people who tried the demo first: tagged in the subject and kept with the sign-up", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
     blob.put.mockResolvedValue({ pathname: "x" });
-    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 200 }));
     await post({ ...valid, tried: "a 35 s video, cut into 5 clips" });
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(sent.subject).toBe("[Tried the demo · Editing agency · 6 to 20 · A rented server] Takewon early access: Ava");
@@ -150,7 +150,7 @@ describe("POST /api/early-access", () => {
   });
 
   it("leaves the tag off for everyone else", async () => {
-    fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response("{}", { status: 200 }));
     await post(valid);
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).subject).not.toContain("Tried the demo");
   });
@@ -166,7 +166,7 @@ describe("POST /api/early-access", () => {
     });
 
     it("skips BotID away from Vercel, and lets people through when it fails", async () => {
-      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      fetchMock.mockImplementation(async () => new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
       expect((await post(valid)).status).toBe(200);
       expect(bot.checkBotId).not.toHaveBeenCalled();
       vi.stubEnv("VERCEL", "1");
@@ -175,7 +175,7 @@ describe("POST /api/early-access", () => {
     });
 
     it("allows five sign-ups in ten minutes from one address, then asks them to wait", async () => {
-      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      fetchMock.mockImplementation(async () => new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
       for (let i = 0; i < 5; i++) expect((await post(valid)).status).toBe(200);
       const res = await post(valid);
       expect(res.status).toBe(429);
@@ -186,7 +186,7 @@ describe("POST /api/early-access", () => {
 
     it("keeps a repeat sign-up but emails nobody twice in a day", async () => {
       vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
-      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      fetchMock.mockImplementation(async () => new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
       blob.head.mockResolvedValueOnce({ uploadedAt: new Date() });
       const res = await post(valid);
       expect(res.status).toBe(200);
@@ -197,7 +197,7 @@ describe("POST /api/early-access", () => {
 
     it("emails a first sign-up, and notes it by a hash, never the address", async () => {
       vi.stubEnv("BLOB_READ_WRITE_TOKEN", "blob-token");
-      fetchMock.mockResolvedValue(new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
+      fetchMock.mockImplementation(async () => new Response(JSON.stringify({ message_id: "m1" }), { status: 200 }));
       blob.head.mockRejectedValueOnce(new Error("not found"));
       expect((await post(valid)).status).toBe(200);
       expect(fetchMock).toHaveBeenCalledTimes(2);
