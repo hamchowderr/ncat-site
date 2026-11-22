@@ -97,6 +97,29 @@ test.describe("home page on a phone", () => {
     expect(await page.locator(".split-now").evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
   });
 
+  test("the five steps show once on a phone: in the scene, not again in the heading above it", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".split.is-live")).toHaveCount(1);
+    await page.evaluate(() => {
+      const el = document.querySelector<HTMLElement>(".split")!;
+      const top = el.getBoundingClientRect().top + scrollY;
+      scrollTo(0, top + (el.offsetHeight - innerHeight) * 0.1);
+    });
+    await expect(page.locator(".split-rail")).toBeVisible();
+    // the heading list is still there for screen readers, but takes no room and shows nothing
+    const list = page.locator(".split-head .split-steps");
+    await expect(list).toHaveAttribute("aria-label", "What the automation does");
+    const b = (await list.boundingBox())!;
+    expect(b.width * b.height).toBeLessThanOrEqual(1);
+    const visibleSets = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>(".split-steps, .split-rail")].filter((e) => {
+        const r = e.getBoundingClientRect();
+        return r.width > 1 && r.height > 1 && getComputedStyle(e).display !== "none";
+      }).length
+    );
+    expect(visibleSets).toBe(1);
+  });
+
   test("the feature tiles are one list of rows that open one by one, the first already open", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#features .tiles")).toHaveCount(0);
