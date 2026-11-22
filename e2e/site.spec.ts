@@ -42,7 +42,7 @@ test("every internal link points at a real page or section", async ({ page, requ
     await page.goto(path);
     const hrefs = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")!));
     for (const href of new Set(hrefs)) {
-      if (/^https?:/.test(href)) continue;
+      if (/^(https?|mailto):/.test(href)) continue;
       const [p, hash] = href.split("#");
       if (p) expect((await request.get(p)).status(), href).toBe(200);
       if (hash) {
@@ -588,7 +588,7 @@ test("the ask comes straight after the scene, and How it works leads to the scen
   await expect(page.getByText("Use AI once. Not on every video.")).toHaveCount(0);
 });
 
-test("the page ends on one centred ask, with the button before the messaging links", async ({ page }) => {
+test("the page ends on one centred ask, with the button before the email address", async ({ page }) => {
   await page.goto("/");
   const early = page.locator("#early");
   await early.scrollIntoViewIfNeeded();
@@ -597,6 +597,12 @@ test("the page ends on one centred ask, with the button before the messaging lin
   const socials = (await early.locator(".socials").boundingBox())!;
   expect(btn.y + btn.height).toBeLessThanOrEqual(socials.y);
   expect(Math.abs(btn.x + btn.width / 2 - vw / 2)).toBeLessThan(24);
+  const mail = early.locator(".socials a");
+  await expect(mail).toHaveCount(1);
+  await expect(mail).toHaveAttribute("href", "mailto:hello@takewon.com");
+  await expect(mail).toBeVisible();
+  await expect(page.locator("#faq a[href^='mailto:']")).toHaveText("hello@takewon.com");
+  await expect(page.locator("footer.foot").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "mailto:hello@takewon.com");
 });
 
 test("the feeds section shows the agent badge and the brand every clip carries, inside the screen", async ({ page }) => {

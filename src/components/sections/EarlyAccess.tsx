@@ -1,8 +1,8 @@
 import { EarlyAccessDialog } from "@/components/EarlyAccessDialog";
-import { BrandIcon, FileLogo, icons } from "@/components/brand/Logo";
-import { siInstagram } from "simple-icons";
+import { Mail } from "lucide-react";
+import { CONTACT_EMAIL, CONTACT_HREF } from "@/lib/contact";
 
-/** The close of the page: one clear ask, centred, with messaging Chowderr as the quieter second route. */
+/** The close of the page: one clear ask, centred, with email as the quieter second route. */
 export function EarlyAccess() {
   return (
     <section className="early" id="early" aria-labelledby="early-title">
@@ -19,15 +19,9 @@ export function EarlyAccess() {
             </a>
           </div>
           <div className="socials">
-            <p>Or message Chowderr and say “dashboard”.</p>
-            <a href="https://www.instagram.com/hamchowderr">
-              <BrandIcon icon={siInstagram} /> Instagram
-            </a>
-            <a href="https://www.linkedin.com/in/tylanmiller">
-              <FileLogo name="linkedin" size={20} /> LinkedIn
-            </a>
-            <a href="https://x.com/hamchowderr">
-              <BrandIcon icon={icons.x} /> X
+            <p>Questions first? Send an email.</p>
+            <a href={CONTACT_HREF}>
+              <Mail size={18} aria-hidden="true" /> {CONTACT_EMAIL}
             </a>
           </div>
         </div>

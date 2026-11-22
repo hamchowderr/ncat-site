@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Faq, FAQ } from "./Faq";
 import { Footer } from "./Footer";
+import { EarlyAccess } from "./EarlyAccess";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 describe("Footer", () => {
   it("is the mark, one line and short link columns, with no small print underneath", () => {
@@ -18,6 +20,11 @@ describe("Footer", () => {
     for (const name of ["Instagram", "X", "LinkedIn"]) expect(screen.getByRole("link", { name })).toBeInTheDocument();
     expect(social.querySelectorAll("svg, img")).toHaveLength(3);
   });
+
+  it("has a Contact link that emails the Takewon address", () => {
+    render(<Footer />);
+    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", `mailto:${CONTACT_EMAIL}`);
+  });
 });
 
 describe("FAQ", () => {
@@ -30,8 +37,20 @@ describe("FAQ", () => {
     for (const d of items) expect(d.querySelector("summary .faq-plus")).not.toBeNull();
   });
 
-  it("points anything else to a direct message", () => {
-    render(<Faq />);
-    for (const name of ["Instagram", "LinkedIn", "X"]) expect(screen.getByRole("link", { name })).toHaveAttribute("href", expect.stringMatching(/instagram\.com\/hamchowderr|linkedin\.com\/in\/tylanmiller|x\.com\/hamchowderr/));
+  it("points anything else to the email address, not social messages", () => {
+    const { container } = render(<Faq />);
+    expect(screen.getByRole("link", { name: CONTACT_EMAIL })).toHaveAttribute("href", `mailto:${CONTACT_EMAIL}`);
+    expect(container.querySelector('a[href*="instagram.com"], a[href*="linkedin.com"], a[href*="x.com"]')).toBeNull();
+    expect(container).not.toHaveTextContent(/message me/i);
+  });
+});
+
+describe("Early access close", () => {
+  it("offers the email address as the second route, with no social messaging", () => {
+    const { container } = render(<EarlyAccess />);
+    const link = container.querySelector(".socials a")!;
+    expect(link).toHaveAttribute("href", `mailto:${CONTACT_EMAIL}`);
+    expect(container.querySelectorAll(".socials a")).toHaveLength(1);
+    expect(container).not.toHaveTextContent(/message Chowderr/i);
   });
 });

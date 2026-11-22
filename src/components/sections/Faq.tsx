@@ -1,3 +1,4 @@
+import { CONTACT_EMAIL, CONTACT_HREF } from "@/lib/contact";
 import { Reveal } from "@/components/Reveal";
 export const FAQ: { q: string; a: React.ReactNode }[] = [
   { q: "Is it out yet?", a: "Not yet. The dashboard is working and in testing now. Get on the early access list and you’ll be first to try it." },
@@ -58,8 +59,7 @@ export function Faq() {
         <Reveal className="sec-head">
           <h2 id="faq-title">Got questions?</h2>
           <p>
-            Anything else, message me on <a href="https://www.instagram.com/hamchowderr">Instagram</a>,{" "}
-            <a href="https://www.linkedin.com/in/tylanmiller">LinkedIn</a> or <a href="https://x.com/hamchowderr">X</a>.
+            Anything else, email <a href={CONTACT_HREF}>{CONTACT_EMAIL}</a>.
           </p>
         </Reveal>
         <div className="faq-list">

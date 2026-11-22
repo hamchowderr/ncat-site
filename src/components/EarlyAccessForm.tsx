@@ -1,5 +1,6 @@
 "use client";
 
+import { CONTACT_EMAIL } from "@/lib/contact";
 import { useEffect, useRef, useState } from "react";
 import {
   CONTENT,
@@ -117,7 +118,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
         setStatus({ kind: "idle" });
         return;
       }
-      setStatus({ kind: "error", message: body.error ?? "It didn’t send on my side. Try again in a minute, or message me on Instagram and say “dashboard”." });
+      setStatus({ kind: "error", message: body.error ?? `It didn’t send on my side. Try again in a minute, or email ${CONTACT_EMAIL}.` });
     } catch {
       setStatus({ kind: "error", message: "It couldn’t reach the server. Check your connection and try again." });
     }

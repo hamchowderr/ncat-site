@@ -1,3 +1,4 @@
+import { CONTACT_HREF } from "@/lib/contact";
 import Link from "next/link";
 import { siInstagram, siX } from "simple-icons";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -25,6 +26,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
+      { label: "Contact", href: CONTACT_HREF },
     ],
   },
 ];
