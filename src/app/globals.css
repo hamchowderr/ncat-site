@@ -4536,6 +4536,101 @@ html:has(.ea-dialog[open]) {
   box-shadow: 0 0 0 1px var(--accent-soft-2, rgb(91 61 245 / 0.18));
 }
 
+/* The four steps of the form, shown as they are: a few real answers each, tappable to start with one picked */
+.early-steps {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  max-width: 1040px;
+  counter-reset: none;
+}
+.early-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 18px 20px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 14px 34px -22px rgba(41, 22, 140, 0.4);
+  text-align: left;
+}
+.early-step-n {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink, #0b0b12);
+}
+.early-step-n span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent, #5b3df5);
+  font-size: 13px;
+  font-weight: 700;
+}
+.early-answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.early-answer {
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.25;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 0;
+  background: #f4f3fb;
+  color: var(--ink, #0b0b12);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), transform 0.15s var(--ease);
+}
+.early-answer:hover,
+.early-answer:focus-visible {
+  background: var(--accent, #5b3df5);
+  color: #fff;
+}
+.early-answer:active {
+  transform: scale(0.97);
+}
+.early-answer.is-field {
+  flex: 1 1 100%;
+  border-radius: 10px;
+  background: #f4f3fb;
+  color: var(--soft);
+  cursor: default;
+}
+@media (max-width: 960px) {
+  .early-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .early-steps {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 26px;
+  }
+  .early-step {
+    padding: 16px;
+    gap: 10px;
+  }
+  .early-answer.is-field {
+    flex: 1 1 auto;
+  }
+}
+
 @keyframes split-dest-in {
   from {
     opacity: 0;

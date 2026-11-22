@@ -117,6 +117,23 @@ test("early-access form checks each step, then sends", async ({ page }) => {
   expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
 });
 
+test("tapping an answer in the closing steps opens the form with it picked", async ({ page }) => {
+  await page.goto("/pricing");
+  await page.locator(".early-steps").getByRole("button", { name: "Livestreams" }).click();
+  const form = page.locator("dialog[open] form");
+  await expect(form.getByRole("heading", { name: /About you/ })).toBeVisible();
+  let sent: Record<string, unknown> = {};
+  await page.route("**/api/early-access", async (r) => {
+    sent = r.request().postDataJSON();
+    await r.fulfill({ json: { ok: true } });
+  });
+  await answerFirstSteps(form);
+  await form.getByLabel("Cut out silences", { exact: true }).check();
+  await form.getByRole("button", { name: "Join early access" }).click();
+  await expect(page.getByRole("status")).toContainText("You’re on the list");
+  expect(sent.content).toEqual(expect.arrayContaining(["streams", "podcasts"]));
+});
+
 test("the hero plays real dashboard recordings", async ({ page, request, isMobile }) => {
   await page.goto("/");
   const video = page.locator(".stage video");
