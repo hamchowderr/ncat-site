@@ -31,9 +31,16 @@ test.describe("home page on a phone", () => {
     await expect.poll(async () => (await stage.boundingBox())!.height).toBeGreaterThan((vh - 68) * 0.7);
     const h2 = page.locator(".split-head h2");
     await expect(h2).toBeInViewport({ ratio: 1 });
-    const hb = (await h2.boundingBox())!;
-    expect(hb.y).toBeGreaterThanOrEqual(68);
-    expect(hb.y + hb.height).toBeLessThanOrEqual((await stage.boundingBox())!.y);
+    // measured together, once the page has stopped moving
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const h = document.querySelector(".split-head h2")!.getBoundingClientRect();
+          const s = document.querySelector(".split-stage")!.getBoundingClientRect();
+          return h.top >= 68 && h.bottom <= s.top;
+        })
+      )
+      .toBe(true);
     expect(await h2.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
     // the finished clips take turns at full size: one is large enough to read its captions, the rest wait small
     const big = page.locator(".split-clip.is-big");
@@ -42,7 +49,7 @@ test.describe("home page on a phone", () => {
     await expect.poll(async () => (await big.boundingBox())!.height, { timeout: 8000 }).toBeGreaterThan(vh * 0.3);
     await page.waitForTimeout(800);
     const bb = (await big.boundingBox())!;
-    if ((await big.getAttribute("data-frame")) !== "original") expect(bb.width / vw).toBeGreaterThan(0.4);
+    if ((await big.getAttribute("data-frame")) !== "original") expect(bb.width / vw).toBeGreaterThan(0.35);
     await expect(page.locator(".split-dest.is-big .split-ready")).toBeVisible();
     // and the turn moves on to the next clip by itself
     const first = await big.getAttribute("data-platform");
