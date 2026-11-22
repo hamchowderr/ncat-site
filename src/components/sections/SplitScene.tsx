@@ -73,6 +73,8 @@ export function SplitScene() {
   const reduce = useReducedMotion();
   const live = mounted && !reduce;
   const [step, setStep] = useState(SPLIT_STEPS.length - 1);
+  // how far the next recording has got through the same five steps; it loops while it is on screen
+  const [nextStep, setNextStep] = useState<number>(SPLIT_STEPS.length);
 
   useEffect(() => {
     if (!live) return;
@@ -97,6 +99,8 @@ export function SplitScene() {
     // on a phone the finished clips take turns at full size (TikTok first), the others waiting small underneath
     let big = 1;
     let settled = false;
+    let nextOn = false;
+    let nextAt = 0;
 
     const paint = () => {
       raf = 0;
@@ -122,7 +126,7 @@ export function SplitScene() {
       const destH = narrow ? (dests[0]?.offsetHeight ?? 48) + 12 : 92;
       const rowGap = narrow ? 14 : 18;
       // room above for the next recording, and below for the editor route and the token count
-      const topBand = narrow ? 44 : 52;
+      const topBand = narrow ? 62 : 60;
       // measured from where the foot actually sits, so nothing above it can reach into it
       const footH = narrow ? (foot ? H - foot.offsetTop : 110) + 8 : 72;
 
@@ -275,9 +279,10 @@ export function SplitScene() {
       if (next) {
         // the next recording slides in along the top and starts the same run
         const n = ease(local(p, 0.84, 0.97));
-        next.style.width = `${Math.min(SW, 520)}px`;
+        next.style.width = `${Math.min(SW, 660)}px`;
         next.style.transform = `translate(${mix(W, pad, n)}px, ${narrow ? 6 : 10}px)`;
         next.style.opacity = String(local(p, 0.84, 0.88));
+        nextOn = p >= 0.9;
       }
       let current = 0;
       SPLIT_STEPS.forEach((s, i) => {
@@ -301,11 +306,18 @@ export function SplitScene() {
       big = (big + 1) % SPLIT_CLIPS.length;
       onScroll();
     }, 3200);
+    // the next recording goes through the steps one by one, rests on "ready", then the one after it comes in
+    const run = window.setInterval(() => {
+      if (!nextOn) return;
+      nextAt = (nextAt + 1) % (SPLIT_STEPS.length + 3);
+      setNextStep(Math.min(nextAt, SPLIT_STEPS.length));
+    }, 900);
     const ro = new ResizeObserver(onScroll);
     ro.observe(st);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.clearInterval(turn);
+      window.clearInterval(run);
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener("scroll", onScroll);
@@ -345,15 +357,30 @@ export function SplitScene() {
             <span className="split-now" />
             <span className="split-name">{SPLIT_RECORDING.label}</span>
             <span className="split-playhead" />
-            <span className="split-next">
+            <span className="split-next" data-at={nextStep}>
+              <span className="split-next-in">
+                <FileAudio size={15} strokeWidth={2.4} />
+              </span>
               <span className="split-next-wave">
                 {BARS.map((h, i) => (
                   <i key={i} style={{ height: `${Math.round(h * 100)}%` }} />
                 ))}
               </span>
               <span className="split-next-text">
-                <b>Next recording came in.</b> <span>Same steps, nobody touching it.</span>
+                <b>Next recording came in.</b>{" "}
+                <span className="split-next-now">
+                  {SPLIT_STEPS[nextStep]?.label ?? "Same steps, nobody touching it."}
+                </span>
               </span>
+              <ol className="split-next-steps">
+                {SPLIT_STEPS.map((s, i) => (
+                  <li key={s.label} className={i < nextStep ? "on" : i === nextStep ? "now" : undefined}>
+                    <span className="split-n" data-move={s.move}>
+                      <s.icon size={11} strokeWidth={2.6} />
+                    </span>
+                  </li>
+                ))}
+              </ol>
             </span>
             <div className="split-row">
               {SPLIT_CLIPS.map((c) => {

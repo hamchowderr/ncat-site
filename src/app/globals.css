@@ -2601,34 +2601,42 @@ fieldset[aria-invalid="true"] .pill span {
   .split-clip.is-big .split-ok span:not(.mi) {
     display: inline;
   }
-  /* on a phone: a short wave, then the news on one line and what it means on the next */
+  /* on a phone: the news on one line, the step it is on under it, and the five steps lighting up beside them */
   .split.is-live .split-next {
     height: auto;
-    min-height: 34px;
-    padding: 9px 14px 9px 12px;
-    border-radius: 14px;
+    min-height: 48px;
+    gap: 10px;
+    padding: 8px 10px 8px 14px;
+    border-radius: 16px;
   }
-  .split.is-live .split-next .split-next-wave {
-    width: 34px;
-    height: 26px;
-  }
-  .split.is-live .split-next .split-next-wave i:nth-child(n + 12) {
+  .split.is-live .split-next .split-next-wave,
+  .split.is-live .split-next .split-next-in {
     display: none;
   }
   .split.is-live .split-next .split-next-text {
     display: grid;
     gap: 1px;
-    white-space: normal;
     line-height: 1.25;
   }
   .split.is-live .split-next .split-next-text b {
     font-size: 14px;
     font-weight: 700;
   }
-  .split.is-live .split-next .split-next-text span {
-    font-size: 12.5px;
-    font-weight: 500;
-    opacity: 0.82;
+  .split.is-live .split-next .split-next-now {
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .split.is-live .split-next .split-next-steps {
+    gap: 2px;
+  }
+  .split.is-live .split-next .split-next-steps .split-n {
+    width: 17px;
+    height: 17px;
+  }
+  .split.is-live .split-next .split-next-steps svg {
+    width: 10px;
+    height: 10px;
   }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) {
@@ -3234,33 +3242,84 @@ fieldset[aria-invalid="true"] .pill span {
   position: absolute;
   top: 0;
   left: 0;
-  height: 34px;
-  padding: 0 14px 0 8px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #241a63, #5b3df5);
-  color: #fff;
+  height: 44px;
+  padding: 0 8px 0 6px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(20 16 60 / 0.06), 0 8px 24px -12px rgb(60 40 180 / 0.35);
   overflow: hidden;
   will-change: transform;
+}
+/* the new file arriving: a purple dot that breathes while it is being worked on */
+.split-next-in {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #5b3df5;
+  color: #fff;
+}
+.split-next:not([data-at="5"]) .split-next-in {
+  animation: sn-glow 1.8s ease-in-out infinite;
 }
 .split-next-wave {
   display: flex;
   align-items: center;
   gap: 2px;
-  height: 20px;
-  width: 120px;
+  height: 18px;
+  width: 64px;
   flex-shrink: 0;
+}
+.split-next-wave i:nth-child(n + 17) {
+  display: none;
 }
 .split-next-wave i {
   flex: 1;
   border-radius: 2px;
-  background: rgb(255 255 255 / 0.55);
+  background: #c9c0fb;
+  transition: background 0.3s;
+}
+.split-next[data-at="5"] .split-next-wave i {
+  background: #5b3df5;
 }
 .split-next-text {
+  flex: 1;
+  min-width: 0;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.split-next-now {
+  color: var(--mute);
+  font-weight: 500;
+}
+.split-next-steps {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+.split-next-steps .split-n {
+  width: 22px;
+  height: 22px;
+  background: #eeedf3;
+  color: #a19fb0;
+  transition: background 0.25s, color 0.25s;
+}
+.split-next-steps li.on .split-n {
+  background: var(--c);
+  color: #fff;
+}
+.split-next-steps li.now .split-n {
+  color: var(--c);
+  animation: sn-glow 1.2s ease-in-out infinite;
 }
 @media (max-width: 600px) {
   .split-ok span:not(.mi) {

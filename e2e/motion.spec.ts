@@ -484,3 +484,29 @@ test("a clips link without its key shows nothing", async ({ page }) => {
   const res = await page.goto("/clips/run1?k=wrong");
   expect(res?.status()).toBe(404);
 });
+
+test("the next recording runs through the same five steps one by one, without spilling out of its bar", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".split.is-live")).toHaveCount(1);
+  await scrollSplit(page, 1);
+  const next = page.locator(".split-next");
+  await expect(next).toBeVisible();
+  // watch it for a few seconds: it starts the steps again and lights them in order
+  const seen = new Set<number>();
+  for (let i = 0; i < 40 && seen.size < 4; i++) {
+    seen.add(await next.locator(".split-next-steps li.on").count());
+    await page.waitForTimeout(250);
+  }
+  expect(seen.size).toBeGreaterThanOrEqual(4);
+  for (const label of ["Cut at the pauses", "Reshaped and captioned"]) {
+    await expect(next.locator(".split-next-now")).toHaveText(label, { timeout: 12000 });
+  }
+  await expect(next.locator(".split-next-now")).toHaveText("Same steps, nobody touching it.", { timeout: 12000 });
+  // the whole line is readable, and the bar stays inside the scene
+  const text = next.locator(".split-next-text");
+  expect(await text.evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+  expect(await next.locator(".split-next-now").evaluate((e) => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+  const stage = (await page.locator(".split-stage").boundingBox())!;
+  const bar = (await next.boundingBox())!;
+  expect(bar.x + bar.width).toBeLessThanOrEqual(stage.x + stage.width + 1);
+});

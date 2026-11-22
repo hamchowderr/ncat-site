@@ -82,7 +82,13 @@ describe("one recording in, a clip for every feed out", () => {
     expect(editors).toHaveTextContent("or a clip pack for");
     for (const e of editors.querySelectorAll("[title]")) expect(e.querySelector("svg, img")).not.toBeNull();
     expect(container.querySelector(".split-tokens")).toHaveTextContent("AI tokens spent on these clips 0");
-    expect(container.querySelector(".split-next")).toHaveTextContent("Next recording came in");
+    const next = container.querySelector(".split-next")!;
+    expect(next).toHaveTextContent("Next recording came in. Same steps, nobody touching it.");
+    // the next recording goes through the same five steps, each with its own icon, finished before it starts moving
+    const nextSteps = [...next.querySelectorAll(".split-next-steps li")];
+    expect(nextSteps).toHaveLength(SPLIT_STEPS.length);
+    for (const li of nextSteps) expect(li).toHaveClass("on");
+    expect(nextSteps.map((li) => li.querySelector(".split-n")!.getAttribute("data-move"))).toEqual(SPLIT_STEPS.map((s) => s.move));
     expect(container.querySelector(".split-head .sr")).toHaveTextContent("No AI tokens are spent on these clips");
   });
 });
