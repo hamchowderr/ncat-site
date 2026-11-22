@@ -52,6 +52,23 @@ describe("Everything around the clip", () => {
   });
 });
 
+describe("each row is set apart", () => {
+  it("gives every row its own soft tone in turn, a number, and its pieces to bring in", () => {
+    const { container } = render(<AroundTheClip />);
+    const rows = [...container.querySelectorAll<HTMLElement>(".tiles > .tile-row")];
+    expect(rows).toHaveLength(AROUND_TILES.length);
+    const tones = rows.map((r) => r.style.getPropertyValue("--tone"));
+    // neighbours never share a tone, and four tones take turns
+    for (let i = 1; i < tones.length; i++) expect(tones[i]).not.toBe(tones[i - 1]);
+    expect(new Set(tones).size).toBe(4);
+    expect(rows.map((r) => r.querySelector(".tile-n")!.textContent)).toEqual(AROUND_TILES.map((_, i) => `${String(i + 1).padStart(2, "0")} / ${AROUND_TILES.length}`));
+    for (const r of rows) {
+      expect(r.querySelector(".tile-stage video")).not.toBeNull();
+      expect(r.querySelector(".tile-body")).not.toBeNull();
+    }
+  });
+});
+
 describe("Your own steps", () => {
   it("is a real recording of the agent writing, trying, saving and using a step, not a drawing", () => {
     const tile = AROUND_TILES.find((t) => t.id === "steps")!;

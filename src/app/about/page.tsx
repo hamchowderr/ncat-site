@@ -5,8 +5,10 @@ import { EarlyAccess } from "@/components/sections/EarlyAccess";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Why Takewon exists: a free open-source engine, a community of creators tired of paying for every step, and two talks that kept ending with the same question.",
+  description: "Why Takewon exists: a free open-source engine, creators tired of paying for every step, and two talks that kept ending with the same question.",
   alternates: { canonical: "/about" },
+  openGraph: { type: "website", siteName: "Takewon", title: "About Takewon", description: "Why Takewon exists: a free open-source engine, creators tired of paying for every step, and two talks that kept ending with the same question.", url: "/about" },
+  twitter: { card: "summary_large_image", title: "About Takewon", description: "Why Takewon exists: a free open-source engine, creators tired of paying for every step, and two talks that kept ending with the same question.", creator: "@hamchowderr" },
 };
 
 export default function AboutPage() {

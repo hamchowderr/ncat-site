@@ -19,7 +19,7 @@ import {
   type Errors,
   type Field,
 } from "@/lib/early-access";
-import { PREFILL_EVENT, type SignedUp } from "@/lib/prefill";
+import { PICK_EVENT, PREFILL_EVENT, type Pick, type SignedUp } from "@/lib/prefill";
 
 type Option = { readonly value: string; readonly label: string };
 
@@ -56,8 +56,17 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
       const text = (e as CustomEvent<string>).detail;
       if (text) setData((d) => (d.details ? d : { ...d, details: text }));
     };
+    // an answer picked on the page before the form opened: tick it, never untick
+    const onPick = (e: Event) => {
+      const { field, value } = (e as CustomEvent<Pick>).detail;
+      setData((d) => (field === "hosting" ? { ...d, hosting: value } : d[field].includes(value) ? d : { ...d, [field]: [...d[field], value] }));
+    };
     window.addEventListener(PREFILL_EVENT, on);
-    return () => window.removeEventListener(PREFILL_EVENT, on);
+    window.addEventListener(PICK_EVENT, onPick);
+    return () => {
+      window.removeEventListener(PREFILL_EVENT, on);
+      window.removeEventListener(PICK_EVENT, onPick);
+    };
   }, []);
 
   useEffect(() => {

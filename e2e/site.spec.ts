@@ -117,6 +117,58 @@ test("early-access form checks each step, then sends", async ({ page }) => {
   expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
 });
 
+test("tapping an answer in the closing steps opens the form with it picked", async ({ page }) => {
+  await page.goto("/pricing");
+  await page.locator(".early-steps").getByRole("button", { name: "Livestreams" }).click();
+  const form = page.locator("dialog[open] form");
+  await expect(form.getByRole("heading", { name: /About you/ })).toBeVisible();
+  let sent: Record<string, unknown> = {};
+  await page.route("**/api/early-access", async (r) => {
+    sent = r.request().postDataJSON();
+    await r.fulfill({ json: { ok: true } });
+  });
+  await answerFirstSteps(form);
+  await form.getByLabel("Cut out silences", { exact: true }).check();
+  await form.getByRole("button", { name: "Join early access" }).click();
+  await expect(page.getByRole("status")).toContainText("You’re on the list");
+  expect(sent.content).toEqual(expect.arrayContaining(["streams", "podcasts"]));
+});
+
+test("the closing steps fill in one after another once they are in view", async ({ page }) => {
+  await page.goto("/pricing");
+  const steps = page.locator(".early-steps");
+  await steps.evaluate((e) => e.scrollIntoView({ block: "center" }));
+  await expect(steps).toHaveClass(/is-in/);
+  await expect(page.locator(".early-step.is-done")).toHaveCount(1, { timeout: 5000 });
+  await expect(page.locator(".early-step").first().locator(".fill").first()).toHaveText("Ava Reyes");
+  await expect(page.locator(".early-step.is-done")).toHaveCount(4, { timeout: 8000 });
+  await expect(page.locator(".early-answer.is-picked")).toHaveCount(3);
+  // the picked answers stay real buttons that open the form
+  await page.locator(".early-answer.is-picked").first().click();
+  await expect(page.locator("dialog[open] form")).toBeVisible();
+});
+
+test("each row around the clip comes in as you reach it: its panel opens, the recording slides in, then the words", async ({ page, isMobile }) => {
+  test.skip(isMobile, "on a phone the rows are folds");
+  await page.goto("/");
+  const rows = page.locator("#around .tile-row");
+  await expect(rows).toHaveCount(11);
+  const last = rows.last();
+  await expect(last).not.toHaveClass(/is-in/);
+  await expect(last.locator(".tile-stage")).toHaveCSS("opacity", "0");
+  await last.evaluate((e) => {
+    document.documentElement.style.scrollBehavior = "auto";
+    e.scrollIntoView({ block: "center" });
+  });
+  await expect(last).toHaveClass(/is-in/);
+  await expect(last.locator(".tile-stage")).toHaveCSS("opacity", "1");
+  await expect(last.locator(".tile-body")).toHaveCSS("opacity", "1");
+  await expect.poll(() => last.locator(".shot").evaluate((e) => getComputedStyle(e).transform)).toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
+  // and neighbouring rows sit on different tones
+  const tones = await rows.evaluateAll((els) => els.map((e) => getComputedStyle(e.querySelector(".tile-stage")!).backgroundColor));
+  for (let i = 1; i < tones.length; i++) expect(tones[i]).not.toBe(tones[i - 1]);
+});
+
 test("the hero plays real dashboard recordings", async ({ page, request, isMobile }) => {
   await page.goto("/");
   const video = page.locator(".stage video");
@@ -134,7 +186,8 @@ test("every logo and picture loads", async ({ page, isMobile }) => {
   await page.goto("/");
   if (isMobile) await openFolds(page);
   for (const img of await page.locator("img").all()) {
-    await img.scrollIntoViewIfNeeded();
+    // scrolled by hand: the clips riding the factory line never stop moving, so Playwright's wait-for-still would time out
+    await img.evaluate((i) => i.scrollIntoView({ block: "center" }));
     await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { message: await img.getAttribute("src") ?? "" }).toBe(true);
   }
 });
@@ -481,6 +534,8 @@ test("the newer features each show a whole-window recording that plays on screen
   for (const v of await shots.all()) {
     await v.scrollIntoViewIfNeeded();
     await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
+    // measured once its row has finished sliding in (it comes in slightly turned)
+    await expect.poll(() => v.evaluate((x) => getComputedStyle(x.closest(".shot")!).transform)).toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
     const box = (await v.boundingBox())!;
     expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
     for (const attr of ["src", "poster"]) {
@@ -697,4 +752,64 @@ test("the Also in Takewon cards fill every row, with no empty gap", async ({ pag
   expect(rows.length).toBeGreaterThan(0);
   // each row's cards plus the gaps between them reach across the whole grid
   for (const w of rows) expect(w).toBeGreaterThan(gw - 40);
+});
+
+test("each page has its own share card and description", async ({ page, request }) => {
+  const want = {
+    "/": { title: "Takewon: Your content, social media ready.", desc: /sized for TikTok, Instagram, YouTube, LinkedIn, Facebook and X/ },
+    "/about": { title: "About Takewon", desc: /Why Takewon exists/ },
+    "/pricing": { title: "Takewon pricing", desc: /Pay once and own your version of Takewon/ },
+  } as const;
+  const images = new Set<string>();
+  for (const [path, w] of Object.entries(want)) {
+    await page.goto(path);
+    const meta = (p: string) => page.locator(`meta[property="${p}"], meta[name="${p}"]`).first().getAttribute("content");
+    expect(await meta("og:title"), path).toBe(w.title);
+    expect(await meta("og:description"), path).toMatch(w.desc);
+    expect(await meta("description"), path).toMatch(w.desc);
+    expect(await meta("twitter:card"), path).toBe("summary_large_image");
+    for (const key of ["og:image", "twitter:image"]) {
+      const url = new URL((await meta(key))!);
+      const res = await request.get(url.pathname);
+      expect(res.status(), `${path} ${key}`).toBe(200);
+      expect(res.headers()["content-type"]).toContain("image/png");
+      const png = await res.body();
+      // a PNG's width and height sit at bytes 16 and 20
+      expect([png.readUInt32BE(16), png.readUInt32BE(20)], `${path} ${key}`).toEqual([1200, 630]);
+      if (key === "og:image") images.add(url.pathname.split("?")[0]!);
+    }
+    expect(await meta("og:image:alt"), path).toContain(w.title.replace("Takewon: ", ""));
+  }
+  expect(images.size).toBe(3);
+});
+
+test("the ask after the scene shows the content factory line, ending at the six feeds' real logos", async ({ page }) => {
+  await page.goto("/");
+  const box = page.locator(".mid-cta-in");
+  for (let k = 0; k < 4; k++) {
+    await page.evaluate(() => {
+      const e = document.querySelector(".mid-cta-in")!;
+      document.documentElement.style.scrollBehavior = "auto";
+      scrollTo(0, e.getBoundingClientRect().top + scrollY - 150);
+    });
+    await page.waitForTimeout(300);
+  }
+  await expect(box).toHaveClass(/is-in/);
+  await expect(box.locator(".fline-in")).toContainText("interview.mp4");
+  await expect(box.locator(".fline-st")).toHaveCount(5);
+  const feeds = box.locator(".fline-feed");
+  await expect(feeds).toHaveCount(6);
+  expect(await feeds.evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.feed))).toEqual(["tiktok", "instagram", "youtube", "linkedin", "facebook", "x"]);
+  await expect(feeds.last().locator("svg, img").first()).toBeVisible();
+  // no logo covers the words or the button, and every logo stays inside the panel
+  const pb = (await box.boundingBox())!;
+  const words = await box.locator("h2, p, .btn").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
+  for (const f of await feeds.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()))) {
+    expect(f.left).toBeGreaterThanOrEqual(pb.x - 1);
+    expect(f.right).toBeLessThanOrEqual(pb.x + pb.width + 1);
+    for (const w of words) {
+      const overlap = f.left < w.right && w.left < f.right && f.top < w.bottom && w.top < f.bottom;
+      expect(overlap).toBe(false);
+    }
+  }
 });

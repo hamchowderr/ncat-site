@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Faq, FAQ } from "./Faq";
 import { Footer } from "./Footer";
@@ -71,5 +71,27 @@ describe("Early access close", () => {
     expect(link).toHaveAttribute("href", `mailto:${CONTACT_EMAIL}`);
     expect(container.querySelectorAll(".socials a")).toHaveLength(1);
     expect(container).not.toHaveTextContent(/message Chowderr/i);
+  });
+
+  it("shows the form's four steps with real answers, and tapping one opens the form with it picked", () => {
+    // jsdom has <dialog> but not its methods
+    HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
+      this.setAttribute("open", "");
+    };
+    const { container } = render(<EarlyAccess />);
+    const steps = container.querySelectorAll(".early-step");
+    expect([...steps].map((s) => s.querySelector(".early-step-n")!.textContent)).toEqual(["1 About you", "2 Your content", "3 Your setup", "4 What to automate"]);
+    const seen: unknown[] = [];
+    const onPick = (e: Event) => seen.push((e as CustomEvent).detail);
+    const onOpen = () => seen.push("open");
+    window.addEventListener("early-access:pick", onPick);
+    window.addEventListener("early-access:open", onOpen);
+    fireEvent.click(screen.getByRole("button", { name: "Livestreams" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cut out silences" }));
+    window.removeEventListener("early-access:pick", onPick);
+    window.removeEventListener("early-access:open", onOpen);
+    expect(seen).toEqual([{ field: "content", value: "streams" }, "open", { field: "jobs", value: "silences" }, "open"]);
+    expect(container.querySelector("dialog")).toHaveAttribute("open");
+    expect(container).not.toHaveTextContent(/no server required/i);
   });
 });

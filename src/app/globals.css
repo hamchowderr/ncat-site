@@ -765,7 +765,7 @@ html {
 .tiles > :nth-child(even) .tile {
   grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
 }
-.tiles > :nth-child(even) .tile .shot {
+.tiles > :nth-child(even) .tile .tile-stage {
   order: 2;
 }
 .tile-text > .tile-head:first-child {
@@ -795,7 +795,7 @@ html {
   .tiles > :nth-child(even) .tile {
     grid-template-columns: 1fr;
   }
-  .tiles > :nth-child(even) .tile .shot {
+  .tiles > :nth-child(even) .tile .tile-stage {
     order: 0;
   }
   .tile-text > .tile-head:first-child {
@@ -4504,6 +4504,15 @@ html:has(.ea-dialog[open]) {
 .early-cta {
   margin-top: 26px;
 }
+
+/* The ask: the content factory line above the words */
+.mid-cta-in {
+  position: relative;
+  overflow: hidden;
+}
+
+
+
 .early-in h2 {
   font-size: clamp(2rem, 4.2vw, 3.25rem);
 }
@@ -4525,6 +4534,168 @@ html:has(.ea-dialog[open]) {
 .early-in .socials a:hover {
   background: var(--paper, #fff);
   box-shadow: 0 0 0 1px var(--accent-soft-2, rgb(91 61 245 / 0.18));
+}
+
+/* The four steps of the form, shown as they are: a few real answers each, tappable to start with one picked */
+.early-steps {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  max-width: 1040px;
+  counter-reset: none;
+}
+.early-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 18px 20px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 14px 34px -22px rgba(41, 22, 140, 0.4);
+  text-align: left;
+}
+.early-step-n {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink, #0b0b12);
+}
+.early-step-n span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent, #5b3df5);
+  font-size: 13px;
+  font-weight: 700;
+}
+.early-answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.early-answer {
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.25;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 0;
+  background: #f4f3fb;
+  color: var(--ink, #0b0b12);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), transform 0.15s var(--ease);
+}
+.early-answer:hover,
+.early-answer:focus-visible {
+  background: var(--accent, #5b3df5);
+  color: #fff;
+}
+.early-answer:active {
+  transform: scale(0.97);
+}
+.early-answer.is-field {
+  flex: 1 1 100%;
+  border-radius: 10px;
+  background: #f4f3fb;
+  color: var(--soft);
+  cursor: default;
+}
+/* The steps rise in, then fill in one after another: fields type in, an answer is picked, the number turns to a tick */
+.early-step {
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease), opacity 0.5s var(--ease);
+}
+.early-step-n span {
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+}
+.early-step-n span b,
+.early-step-n span svg {
+  grid-area: 1 / 1;
+  transition: transform 0.35s var(--ease), opacity 0.25s var(--ease);
+}
+.early-step-n span svg {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.early-step.is-done .early-step-n span {
+  background: var(--accent);
+  color: #fff;
+}
+.early-step.is-done .early-step-n span b {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.early-step.is-done .early-step-n span svg {
+  opacity: 1;
+  transform: none;
+}
+.early-step.is-now {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 44px -22px rgba(41, 22, 140, 0.5);
+}
+.early-answer.is-field {
+  display: grid;
+}
+.early-answer.is-field > span {
+  grid-area: 1 / 1;
+  transition: opacity 0.2s var(--ease), clip-path 0.6s steps(14, end);
+}
+.early-answer.is-field .fill {
+  color: var(--ink);
+  clip-path: inset(0 100% 0 0);
+  opacity: 0;
+}
+.early-step.is-done .early-answer.is-field .ph {
+  opacity: 0;
+}
+.early-step.is-done .early-answer.is-field .fill {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transition-delay: calc(var(--k) * 0.25s);
+}
+.early-answer.is-picked {
+  background: var(--accent);
+  color: #fff;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .early-steps:not(.is-in) .early-step {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  .early-steps.is-in .early-step:not(.is-now) {
+    transition-delay: calc(var(--i) * 80ms);
+  }
+}
+@media (max-width: 960px) {
+  .early-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .early-steps {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 26px;
+  }
+  .early-step {
+    padding: 16px;
+    gap: 10px;
+  }
+  .early-answer.is-field {
+    flex: 1 1 auto;
+  }
 }
 
 @keyframes split-dest-in {
@@ -4551,6 +4722,192 @@ html:has(.ea-dialog[open]) {
 /* Use cases as a stack of cards (phones only; see the end of this file) */
 .case-stack {
   display: none;
+}
+
+/* Factory line: a recording goes down a belt through the five steps and out to every feed */
+.fline {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(100%, 860px);
+  margin-bottom: 34px;
+}
+.fline-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 28px -12px rgba(41, 22, 140, 0.28);
+  font: 600 14px/1 var(--font-jbm), monospace;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.fline-belt {
+  position: relative;
+  flex: 1;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.fline-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(90deg, #d9d1fd 0 14px, #c7bbfb 14px 28px);
+  background-size: 28px 6px;
+  animation: fline-run 1.2s linear infinite;
+}
+@keyframes fline-run {
+  to { background-position: 28px 0; }
+}
+.fline-st.split-n {
+  position: relative;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--c);
+  box-shadow: 0 6px 18px -8px rgba(41, 22, 140, 0.35);
+}
+.fline-tok {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 0;
+  width: 26px;
+  height: 46px;
+  margin-top: -23px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 6px 14px -6px rgba(20, 10, 80, 0.5);
+  opacity: 0;
+  animation: fline-tok 6s linear infinite;
+  animation-delay: calc(var(--i) * 1.5s);
+}
+@keyframes fline-tok {
+  0% { left: 0; opacity: 0; transform: scale(0.9); }
+  6% { opacity: 1; }
+  50% { transform: scale(1); }
+  92% { opacity: 1; }
+  100% { left: calc(100% - 26px); opacity: 0; transform: scale(1); }
+}
+.fline-out {
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  gap: 8px;
+}
+.fline-feed {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px -8px rgba(41, 22, 140, 0.3);
+}
+.fline-feed .bi,
+.fline-feed .fl {
+  width: 20px;
+  height: 20px;
+}
+@media (max-width: 640px) {
+  .fline {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 26px;
+  }
+  .fline-belt {
+    width: 100%;
+    height: 56px;
+  }
+  .fline-st.split-n {
+    width: 34px;
+    height: 34px;
+  }
+  .fline-out {
+    grid-template-columns: repeat(6, 36px);
+  }
+  .fline-feed {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Everything around the clip: each row sits on its own soft tone and comes in on its own as you reach it */
+.tile-stage {
+  padding: clamp(14px, 2.2vw, 28px);
+  border-radius: 28px;
+  background: var(--tone, var(--accent-soft));
+}
+.tile-n {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+.tile-n span {
+  color: var(--mute);
+  font-weight: 500;
+}
+.tile-row .tile-icon {
+  background: var(--tone, var(--accent-soft));
+}
+/* on a phone the rows are folds that open one at a time, so they skip the entrance */
+@media (prefers-reduced-motion: no-preference) and (min-width: 641px) {
+  .tile-row .tile-stage {
+    transition: clip-path 0.9s var(--ease), opacity 0.6s var(--ease);
+  }
+  .tile-row .tile-stage .shot {
+    transition: transform 1s var(--ease) 0.15s, opacity 0.7s var(--ease) 0.15s;
+  }
+  .tile-row .tile-n,
+  .tile-row .tile-head,
+  .tile-row .tile-body,
+  .tile-row .logo-chips li {
+    transition: transform 0.7s var(--ease), opacity 0.6s var(--ease);
+  }
+  .tile-row .tile-n { transition-delay: 0.25s; }
+  .tile-row .tile-head { transition-delay: 0.33s; }
+  .tile-row .tile-body { transition-delay: 0.42s; }
+  .tile-row .logo-chips li { transition-delay: calc(0.55s + var(--k, 0) * 0.08s); }
+  .tile-row .tile-icon {
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
+  }
+
+  .tile-row:not(.is-in) .tile-stage {
+    clip-path: inset(8% 6% round 28px);
+    opacity: 0;
+  }
+  .tile-row.is-in .tile-stage {
+    clip-path: inset(0 0 round 28px);
+  }
+  .tile-row:not(.is-in) .tile-stage .shot {
+    transform: translateX(-48px) rotate(-2.5deg);
+    opacity: 0;
+  }
+  .tiles > .tile-row:nth-child(even):not(.is-in) .tile-stage .shot {
+    transform: translateX(48px) rotate(2.5deg);
+  }
+  .tile-row:not(.is-in) .tile-n,
+  .tile-row:not(.is-in) .tile-head,
+  .tile-row:not(.is-in) .tile-body,
+  .tile-row:not(.is-in) .logo-chips li {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  .tile-row:not(.is-in) .tile-icon {
+    transform: scale(0.4) rotate(-20deg);
+  }
 }
 
 /* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
@@ -4696,6 +5053,13 @@ html:has(.ea-dialog[open]) {
   }
   .fold-body .tile-head {
     display: none;
+  }
+  .fold-body .tile-n {
+    display: none;
+  }
+  .tile-stage {
+    padding: 10px;
+    border-radius: 18px;
   }
   /* the card's rounded, clipped corners would cut into the words now that it has no padding */
   .tiles .tile.spotlight-card {

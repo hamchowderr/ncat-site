@@ -147,7 +147,7 @@ test.describe("home page on a phone", () => {
       await heads.nth(1).click();
       await expect(heads.nth(1)).toHaveAttribute("aria-expanded", "true");
       await expect(second.locator(".shot video")).toBeVisible();
-      await expect(second.locator(".tile p")).toBeVisible();
+      await expect(second.locator(".tile .tile-body")).toBeVisible();
       const b = (await second.locator(".shot video").boundingBox())!;
       expect(Math.abs(b.width / b.height - 16 / 10)).toBeLessThan(0.02);
       // and closes again

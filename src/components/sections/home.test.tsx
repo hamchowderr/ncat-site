@@ -254,6 +254,13 @@ describe("the ask straight after the scene", () => {
     expect(screen.getByRole("link", { name: "Get early access" })).toHaveAttribute("href", "#early");
     expect(container.textContent).not.toMatch(/Set it up once|no server required/i);
   });
+
+  it("shows the content factory as a line: one recording, the five steps, every feed out", () => {
+    const { container } = render(<MidCta />);
+    expect(screen.getByRole("img", { name: /One recording goes through five steps and out to TikTok, Instagram, YouTube, LinkedIn, Facebook and X/ })).toBeInTheDocument();
+    expect(container.querySelectorAll(".fline-st")).toHaveLength(5);
+    expect(container.querySelectorAll(".fline-feed")).toHaveLength(6);
+  });
 });
 
 describe("use cases from the newer features", () => {

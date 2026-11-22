@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PREFILL_EVENT } from "@/lib/prefill";
+import { PICK_EVENT, PREFILL_EVENT } from "@/lib/prefill";
 import { EarlyAccessForm } from "./EarlyAccessForm";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -82,6 +82,24 @@ describe("EarlyAccessForm", () => {
     });
     fillAll();
     expect(screen.getByLabelText(/The first automation you’d want/)).toHaveValue("Caption every upload");
+  });
+
+  it("starts with the answers picked on the page already ticked, and never unticks them", () => {
+    render(<EarlyAccessForm />);
+    act(() => {
+      window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "content", value: "streams" } }));
+      window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "content", value: "streams" } }));
+      window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "hosting", value: "machine" } }));
+    });
+    fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    pick("What describes you best?", "Editing agency");
+    pick("How many people would use it?", "6 to 20");
+    next();
+    expect(within(screen.getByRole("group", { name: "What do you make?" })).getByLabelText("Livestreams")).toBeChecked();
+    pick("Roughly how much do you record each week?", "5 to 20 hours");
+    next();
+    expect(within(screen.getByRole("group", { name: "Where would it run?" })).getByLabelText("My own always-on machine, like a Mac Mini")).toBeChecked();
   });
 
   it("sends people back to the step the server flagged", async () => {

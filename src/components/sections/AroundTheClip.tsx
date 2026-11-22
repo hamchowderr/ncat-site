@@ -12,11 +12,15 @@ import RefreshIcon from "@/components/itshover/refresh-icon";
 import UsersIcon from "@/components/itshover/users-icon";
 import { FeatureVideo } from "@/components/FeatureVideo";
 import { PhoneFold } from "@/components/PhoneFold";
+import { InView } from "@/components/InView";
 import { Reveal } from "@/components/Reveal";
 import SpotlightCard from "@/components/reactbits/SpotlightCard/SpotlightCard";
 import { BrandIcon, FileLogo } from "@/components/brand/Logo";
 import { ChatGptMark, DiscordMark, GoogleMeetMark, SlackMark, TeamsMark, TelegramMark, ZoomMark } from "@/components/brand/AppLogos";
 import { AlsoScene, type AlsoSceneName } from "@/components/AlsoScenes";
+
+/** Soft tones the rows take in turn, so eleven recordings in a row don't all look the same. */
+const TONES = ["#efecff", "#fdeee6", "#e5f5ee", "#e6f0fc"];
 
 const TILE_SURFACE = { "--spotlight-card-surface": "transparent", "--spotlight-card-border": "transparent", "--spotlight-card-shadow": "none" } as React.CSSProperties;
 
@@ -27,7 +31,7 @@ const HAND_TILES: Tile[] = [
   {
     id: "brand",
     title: "Your brand, set once",
-    icon: <MovingIcon icon={PaintIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={PaintIcon} size={18} trigger=".tile" inView />,
     body: "Logo, colour, font and music are saved in settings and used by every step that needs them. No step ever asks again.",
     video: "brand",
     alt: "Screen recording: the logo, brand colour and theme music are saved in Settings, then the Add a logo step shows it is handled for you.",
@@ -35,7 +39,7 @@ const HAND_TILES: Tile[] = [
   {
     id: "files",
     title: "Organized in your own storage",
-    icon: <MovingIcon icon={LayersIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={LayersIcon} size={18} trigger=".tile" inView />,
     body: "Every upload and every output is filed in your bucket, with its length, picture size and the run that made it.",
     video: "files",
     alt: "Screen recording: a new TikTok clips folder is made in the Files screen, a captioned clip is renamed and moved into it.",
@@ -43,7 +47,7 @@ const HAND_TILES: Tile[] = [
   {
     id: "alerts",
     title: "Retries, then an alert",
-    icon: <MovingIcon icon={RefreshIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={RefreshIcon} size={18} trigger=".tile" inView />,
     body: "If the toolkit is busy or offline, the step waits and tries again. If it still fails you get an alert saying what went wrong.",
     video: "alerts",
     alt: "Screen recording: the toolkit is offline, the step waits and tries again twice, then the run fails, and the Inbox in the side menu says what went wrong. Sped up while it waits.",
@@ -51,7 +55,7 @@ const HAND_TILES: Tile[] = [
   {
     id: "schedule",
     title: "On a schedule, in your time zone",
-    icon: <MovingIcon icon={ClockIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={ClockIcon} size={18} trigger=".tile" inView />,
     body: "Run it every morning or every Friday at 9. The canvas shows what starts it and when it last ran.",
     video: "schedule",
     alt: "Screen recording: an automation's trigger is changed to a Schedule, every day at 09:00 America/Los_Angeles, and switched on.",
@@ -62,7 +66,7 @@ const CLIP_TILES: Tile[] = [
   {
     id: "meetings",
     title: "Meeting recordings come in by themselves",
-    icon: <MovingIcon icon={CameraIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={CameraIcon} size={18} trigger=".tile" inView />,
     body: "Connect Zoom, Google Meet or Microsoft Teams once. When a recorded meeting ends, its video lands in Uploads and starts whatever automation is set to run on an upload. An owner can connect a whole Zoom account, and past recordings can be brought in by hand.",
     video: "zoom",
     alt: "Screen recording: Zoom is connected in Settings, a past recording called Client Kickoff is brought in, and it appears in Uploads ready to clip.",
@@ -75,7 +79,7 @@ const CLIP_TILES: Tile[] = [
   {
     id: "library",
     title: "Find any moment by what was said",
-    icon: <MovingIcon icon={FileDescriptionIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={FileDescriptionIcon} size={18} trigger=".tile" inView />,
     body: "The library holds every upload and everything your automations made. Files are transcribed once on your own toolkit, so you can search the words, jump to the moment, and tag, star and sort what you keep.",
     video: "library",
     alt: "Screen recording: the Library is searched for the word history, the result opens the video at the moment it was said, then it gets five stars and two tags.",
@@ -83,7 +87,7 @@ const CLIP_TILES: Tile[] = [
   {
     id: "calendar",
     title: "Plan what goes out on a calendar",
-    icon: <MovingIcon icon={ClockIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={ClockIcon} size={18} trigger=".tile" inView />,
     body: "See what posts when, what is due and when your automations run, by month or week. Set repeating slots like Mondays at 10 on Instagram, queue posts into them and drag anything to another day.",
     video: "calendar",
     alt: "Screen recording: the content calendar, a repeating Monday slot for Instagram is added, posts are queued and dragged between days, and the week view opens.",
@@ -91,7 +95,7 @@ const CLIP_TILES: Tile[] = [
   {
     id: "moments",
     title: "Best moments and chapters",
-    icon: <MovingIcon icon={PlayerIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={PlayerIcon} size={18} trigger=".tile" inView />,
     body: "One step writes chapters and show notes you can paste into a YouTube description. Another picks the strongest moments as clips, each starting and ending on whole words. Picking uses AI once per video; the cutting is plain editing.",
     video: "moments",
     alt: "Screen recording: an automation with Chapters and show notes and Best moments steps runs on an interview, then shows four chapters with notes and three vertical clips.",
@@ -99,7 +103,7 @@ const CLIP_TILES: Tile[] = [
   {
     id: "follow",
     title: "Vertical clips that follow the speaker",
-    icon: <MovingIcon icon={UsersIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={UsersIcon} size={18} trigger=".tile" inView />,
     body: "Turn a wide recording into a tall one that keeps whoever is talking in frame, moving gently when they move and switching when someone else speaks.",
     video: "follow",
     alt: "Screen recording: a Follow the speaker automation runs on a news conference recording and the finished vertical clip plays, keeping the astronaut who is talking in frame.",
@@ -107,7 +111,7 @@ const CLIP_TILES: Tile[] = [
   {
     id: "steps",
     title: "Your own steps",
-    icon: <MovingIcon icon={Stack3Icon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={Stack3Icon} size={18} trigger=".tile" inView />,
     body: "When no ready-made step does what you need, describe it. The agent writes the step, tries it on one of your files, saves it for your team and adds it to an automation. From then on it runs on every video with no AI used.",
     video: "steps",
     alt: "Screen recording: someone asks the agent for a step that draws a progress bar along the bottom of a video. The agent writes it, tries it on Crew interview, saves it for the team, then adds it to the Clips from new recordings automation after Caption video.",
@@ -115,7 +119,7 @@ const CLIP_TILES: Tile[] = [
   {
     id: "mcp",
     title: "Use it from the AI apps you already use",
-    icon: <MovingIcon icon={PlugConnectedIcon} size={18} trigger=".tile" />,
+    icon: <MovingIcon icon={PlugConnectedIcon} size={18} trigger=".tile" inView />,
     body: "Takewon is an MCP server. Connect any MCP client to see your uploads and runs, build automations as drafts for you to publish, and start runs, signed in as you on the team you pick.",
     video: "mcp",
     alt: "Screen recording: the MCP settings page with the server address and the steps for Claude, ChatGPT, Cursor, Claude Code, n8n and other apps.",
@@ -158,25 +162,31 @@ export function AroundTheClip() {
             The parts you would otherwise do by hand are done for you. Recordings arrive on their own, get filed and searchable, and go out on a plan.
           </p>
         </Reveal>
-        {/* the list fades in as one, so no row waits invisible inside the panel while you scroll */}
-        <Reveal className="tiles">
+        {/* each row comes in on its own: its soft panel opens, the recording slides in from its side, then the words */}
+        <div className="tiles">
           {AROUND_TILES.map((t, i) => (
-            <div key={t.id}>
+            <InView key={t.id} className="tile-row" style={{ "--tone": TONES[i % TONES.length] } as React.CSSProperties}>
               <PhoneFold id={`tile-${t.id}`} title={t.title} icon={t.icon} level={3} defaultOpen={i === 0}>
                 <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
-                  <FeatureVideo name={t.video} label={t.alt} />
+                  <div className="tile-stage">
+                    <FeatureVideo name={t.video} label={t.alt} />
+                  </div>
                   <div className="tile-text">
+                    <p className="tile-n" aria-hidden="true">
+                      {String(i + 1).padStart(2, "0")}
+                      <span> / {AROUND_TILES.length}</span>
+                    </p>
                     <div className="tile-head">
                       <span className="tile-icon" aria-hidden="true">
                         {t.icon}
                       </span>
                       <h3>{t.title}</h3>
                     </div>
-                    <p>{t.body}</p>
+                    <p className="tile-body">{t.body}</p>
                     {t.logos && (
                       <ul className="logo-chips" aria-label={`${t.title}: apps`}>
-                        {t.logos.map((l) => (
-                          <li key={l.name}>
+                        {t.logos.map((l, k) => (
+                          <li key={l.name} style={{ "--k": k } as React.CSSProperties}>
                             {l.mark} {l.name}
                           </li>
                         ))}
@@ -185,9 +195,9 @@ export function AroundTheClip() {
                   </div>
                 </SpotlightCard>
               </PhoneFold>
-            </div>
+            </InView>
           ))}
-        </Reveal>
+        </div>
         <Reveal>
           <h3 className="tiles-title">Also in Takewon</h3>
         </Reveal>
