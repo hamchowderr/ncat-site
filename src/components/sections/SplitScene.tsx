@@ -90,6 +90,7 @@ export function SplitScene() {
     const next = st.querySelector<HTMLElement>(".split-next");
     const head = el.querySelector<HTMLElement>(".split-head");
     const now = st.querySelector<HTMLElement>(".split-now");
+    const rail = st.querySelector<HTMLElement>(".split-rail");
     let raf = 0;
     // the scene follows the scroll with a little lag, so each change eases in rather than jumping
     let shown = -1;
@@ -288,6 +289,8 @@ export function SplitScene() {
         now.textContent = SPLIT_STEPS[current].label;
         now.style.opacity = String(1 - local(p, 0.8, 0.84));
       }
+      // on a phone the five steps ride along the top of the stage too, each icon moving in its own way as it is reached
+      if (rail) rail.style.opacity = String(1 - local(p, 0.8, 0.84));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(paint);
@@ -330,6 +333,15 @@ export function SplitScene() {
         </div>
         <div className="wrap">
           <div className="split-stage" ref={stage} aria-hidden="true">
+            <ol className="split-rail">
+              {SPLIT_STEPS.map((s, i) => (
+                <li key={s.label} className={i <= step ? "on" : undefined} aria-current={i === step ? "step" : undefined}>
+                  <span className="split-n" data-move={s.move}>
+                    <s.icon size={13} strokeWidth={2.4} />
+                  </span>
+                </li>
+              ))}
+            </ol>
             <span className="split-now" />
             <span className="split-name">{SPLIT_RECORDING.label}</span>
             <span className="split-playhead" />

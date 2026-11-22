@@ -71,6 +71,32 @@ test.describe("home page on a phone", () => {
     await expect(now).toHaveText(/Cut at the pauses|Reshaped and captioned|Filed and transcribed/);
   });
 
+  test("while pinned, the five step icons ride across the top of the stage like on desktop, lighting up as they are reached", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".split.is-live")).toHaveCount(1);
+    const at = (f: number) =>
+      page.evaluate((f) => {
+        const el = document.querySelector<HTMLElement>(".split")!;
+        const top = el.getBoundingClientRect().top + scrollY;
+        scrollTo(0, top + (el.offsetHeight - innerHeight) * f);
+      }, f);
+    await at(0.3);
+    const rail = page.locator(".split-rail");
+    await expect(rail).toBeVisible();
+    await expect(rail.locator(".split-n")).toHaveCount(5);
+    await expect(rail.locator("li.on").first()).toBeVisible();
+    const before = await rail.locator("li.on").count();
+    await at(0.62);
+    await expect.poll(() => rail.locator("li.on").count()).toBeGreaterThan(before);
+    // the icons and the step's name sit side by side, inside the stage, the name never cut off
+    const r = (await rail.boundingBox())!;
+    const n = (await page.locator(".split-now").boundingBox())!;
+    const st = (await page.locator(".split-stage").boundingBox())!;
+    expect(r.x + r.width).toBeLessThanOrEqual(n.x);
+    expect(n.x + n.width).toBeLessThanOrEqual(st.x + st.width);
+    expect(await page.locator(".split-now").evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
+  });
+
   test("the feature tiles are one list of rows that open one by one, the first already open", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#features .tiles")).toHaveCount(0);

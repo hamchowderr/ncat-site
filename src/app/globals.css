@@ -2218,7 +2218,7 @@ fieldset[aria-invalid="true"] .pill span {
   width: 28px;
   height: 28px;
 }
-.split-steps li.on .split-n {
+.split-steps li.on .split-n, .split-rail li.on .split-n {
   background: var(--accent);
   color: #fff;
 }
@@ -2228,16 +2228,16 @@ fieldset[aria-invalid="true"] .pill span {
 .split-n[data-move="shape"] { --c: #0c8599; }
 .split-n[data-move="check"] { --c: #2f9e44; }
 .split-n[data-move="send"] { --c: #d6336c; }
-.split-steps li.on .split-n[data-move] {
+.split-steps li.on .split-n[data-move], .split-rail li.on .split-n[data-move] {
   background: var(--c);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .split-steps li.on .split-n[data-move="file"] svg { animation: sn-file 0.6s var(--ease) both; }
-  .split-steps li.on .split-n[data-move="snip"] svg { animation: sn-snip 0.7s var(--ease) both; }
-  .split-steps li.on .split-n[data-move="shape"] svg { animation: sn-shape 0.7s var(--ease) both; }
-  .split-steps li.on .split-n[data-move="check"] svg { animation: sn-check 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-  .split-steps li.on .split-n[data-move="send"] svg { animation: sn-send 0.8s var(--ease) both; }
-  .split-steps li[aria-current="step"] .split-n { animation: sn-glow 1.8s ease-in-out infinite; }
+  .split-steps li.on .split-n[data-move="file"] svg, .split-rail li.on .split-n[data-move="file"] svg { animation: sn-file 0.6s var(--ease) both; }
+  .split-steps li.on .split-n[data-move="snip"] svg, .split-rail li.on .split-n[data-move="snip"] svg { animation: sn-snip 0.7s var(--ease) both; }
+  .split-steps li.on .split-n[data-move="shape"] svg, .split-rail li.on .split-n[data-move="shape"] svg { animation: sn-shape 0.7s var(--ease) both; }
+  .split-steps li.on .split-n[data-move="check"] svg, .split-rail li.on .split-n[data-move="check"] svg { animation: sn-check 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .split-steps li.on .split-n[data-move="send"] svg, .split-rail li.on .split-n[data-move="send"] svg { animation: sn-send 0.8s var(--ease) both; }
+  .split-steps li[aria-current="step"] .split-n, .split-rail li[aria-current="step"] .split-n { animation: sn-glow 1.8s ease-in-out infinite; }
 }
 @keyframes sn-file {
   from { transform: translateY(-8px); opacity: 0; }
@@ -2272,7 +2272,8 @@ fieldset[aria-invalid="true"] .pill span {
 }
 .split-name,
 .split-playhead,
-.split-now {
+.split-now,
+.split-rail {
   display: none;
 }
 .split-row {
@@ -2481,15 +2482,37 @@ fieldset[aria-invalid="true"] .pill span {
     margin-top: 0;
     padding: 0;
   }
+  .split.is-live .split-rail {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    margin: 0;
+  }
+  .split.is-live .split-rail .split-n {
+    width: 24px;
+    height: 24px;
+    color: var(--mute);
+  }
+  .split.is-live .split-rail li.on .split-n {
+    color: #fff;
+  }
   .split.is-live .split-now {
     display: block;
     position: absolute;
-    top: 14px;
-    left: 14px;
-    right: 14px;
-    font-size: 15px;
+    top: 13px;
+    left: 158px;
+    right: 10px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .split.is-live .split-ready {
     display: none;

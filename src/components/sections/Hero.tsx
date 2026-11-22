@@ -55,9 +55,6 @@ export function Hero() {
               <a className="btn primary" href="#early">
                 Get early access
               </a>
-              <a className="btn ghost" href="#templates">
-                See the automations
-              </a>
             </>
           )}
         </div>

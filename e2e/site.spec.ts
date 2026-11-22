@@ -674,3 +674,8 @@ test("the try-it demo never names the toolkit and the formats picture has no sma
   const body = await page.locator("body").innerText();
   expect(body).not.toMatch(/Set once in Settings|Checked on \d/);
 });
+
+test("the hero has no See the automations button", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".hero-cta").getByText("See the automations")).toHaveCount(0);
+});
