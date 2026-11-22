@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { PhoneStepper } from "@/components/PhoneStepper";
+import { useRef, useState, type CSSProperties } from "react";
 import { Reveal } from "@/components/Reveal";
 import { AudioLines, BadgeCheck, FileText, Play, SquarePen } from "lucide-react";
 import { MovingIcon } from "@/components/MovingIcon";
@@ -177,13 +176,6 @@ export function UseCases() {
             </button>
           ))}
         </div>
-        <PhoneStepper
-          label="Who it is for"
-          controls="case-panel"
-          active={active}
-          onChange={setActive}
-          items={CASES.map((x) => ({ id: x.id, label: x.tab, icon: <MovingIcon icon={x.icon} size={18} trigger=".stepper" /> }))}
-        />
         <div className="case" id="case-panel" role="tabpanel" aria-labelledby={`case-${c.id}`}>
           <div className="case-text" key={c.id}>
             <span className="case-icon" aria-hidden="true">
@@ -222,6 +214,37 @@ export function UseCases() {
             </ul>
           </div>
         </div>
+        {/* phones: every case as a card, each sliding up over the one before as you scroll */}
+        <ol className="case-stack" aria-label="Who it is for">
+          {CASES.map((x, i) => {
+            const XIcon = x.icon;
+            return (
+              <li key={x.id} className="case-card" style={{ "--i": i } as CSSProperties}>
+                <div className="case-card-tab">
+                  <span className="case-card-icon" aria-hidden="true">
+                    <XIcon size={16} />
+                  </span>
+                  {x.tab}
+                </div>
+                <h3>{x.title}</h3>
+                <p className="case-card-body">{x.body}</p>
+                <p className="case-card-flow">
+                  <span className="case-in-label">In</span> {x.input}
+                </p>
+                <ul className="case-card-outs" aria-label={`${x.tab}: what comes out`}>
+                  {x.outputs.map((o) => (
+                    <li key={o.label}>
+                      <span className={`case-shape ${o.shape}`} aria-hidden="true">
+                        <ShapeArt shape={o.shape} />
+                      </span>
+                      {o.label}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </section>
   );

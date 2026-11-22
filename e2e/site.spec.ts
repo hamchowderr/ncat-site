@@ -287,6 +287,8 @@ test("every tab label fits inside its tab track, with nothing cut off", async ({
 });
 
 test("use-case tabs switch panels", async ({ page, isMobile }) => {
+  // phones show every case as a stacked card instead of tabs; phone.spec.ts checks those
+  test.skip(isMobile);
   await page.goto("/");
   // located by CSS so it is found on phones too, where the tab row is hidden behind the stepper
   const tab = page.locator('[role="tab"]', { hasText: "Podcast Teams" });
@@ -296,6 +298,7 @@ test("use-case tabs switch panels", async ({ page, isMobile }) => {
 });
 
 test("each use case shows what goes in and what comes out as styled cards, logos small", async ({ page, isMobile }) => {
+  test.skip(isMobile, "phones show the stacked case cards instead");
   await page.goto("/");
   const panel = page.getByRole("tabpanel").filter({ has: page.locator(".case-flow") });
   await panel.scrollIntoViewIfNeeded();
@@ -543,6 +546,8 @@ test("the engine section lays the five ways on one rail, ending on the shell, wi
 });
 
 test("the Editing with AI tab says what it costs today and what changes", async ({ page, isMobile }) => {
+  // phones show every case as a stacked card instead of tabs; phone.spec.ts checks those
+  test.skip(isMobile);
   await page.goto("/");
   await pickTab(page, isMobile, "Editing With AI");
   const panel = page.locator("#case-panel");

@@ -7,7 +7,7 @@ import { PlatformExpert } from "./PlatformExpert";
 import { Proof } from "./Proof";
 import { AroundTheClip } from "./AroundTheClip";
 import { MidCta } from "./MidCta";
-import { UseCases } from "./UseCases";
+import { CASES, UseCases } from "./UseCases";
 
 describe("Hero", () => {
   it("fills the line under the headline in as you scroll, with the work it does in colour", () => {
@@ -167,6 +167,17 @@ describe("Features", () => {
 });
 
 describe("UseCases", () => {
+  it("also renders every case as a card for the phone stack, in order, with what goes in and comes out", () => {
+    const { container } = render(<UseCases />);
+    const cards = Array.from(container.querySelectorAll(".case-stack > .case-card"));
+    expect(cards.map((c) => c.querySelector(".case-card-tab")!.textContent)).toEqual(CASES.map((c) => c.tab));
+    cards.forEach((card, i) => {
+      expect(card.querySelector("h3")!.textContent).toBe(CASES[i].title);
+      expect(card.querySelectorAll(".case-card-outs li")).toHaveLength(CASES[i].outputs.length);
+      expect((card as HTMLElement).style.getPropertyValue("--i")).toBe(String(i));
+    });
+  });
+
   it("switches who it is for", () => {
     render(<UseCases />);
     fireEvent.click(screen.getByRole("tab", { name: "Podcast Teams" }));

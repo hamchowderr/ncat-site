@@ -339,7 +339,9 @@ export function SplitScene() {
                   <i key={i} style={{ height: `${Math.round(h * 100)}%` }} />
                 ))}
               </span>
-              <span className="split-next-text">Next recording came in. Same steps, nobody touching it.</span>
+              <span className="split-next-text">
+                <b>Next recording came in.</b> <span>Same steps, nobody touching it.</span>
+              </span>
             </span>
             <div className="split-row">
               {SPLIT_CLIPS.map((c) => {

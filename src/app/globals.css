@@ -2578,15 +2578,34 @@ fieldset[aria-invalid="true"] .pill span {
   .split-clip.is-big .split-ok span:not(.mi) {
     display: inline;
   }
+  /* on a phone: a short wave, then the news on one line and what it means on the next */
   .split.is-live .split-next {
     height: auto;
     min-height: 34px;
-    padding-block: 7px;
+    padding: 9px 14px 9px 12px;
+    border-radius: 14px;
+  }
+  .split.is-live .split-next .split-next-wave {
+    width: 34px;
+    height: 26px;
+  }
+  .split.is-live .split-next .split-next-wave i:nth-child(n + 12) {
+    display: none;
   }
   .split.is-live .split-next .split-next-text {
+    display: grid;
+    gap: 1px;
     white-space: normal;
+    line-height: 1.25;
+  }
+  .split.is-live .split-next .split-next-text b {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .split.is-live .split-next .split-next-text span {
     font-size: 12.5px;
-    line-height: 1.3;
+    font-weight: 500;
+    opacity: 0.82;
   }
 }
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) {
@@ -2910,6 +2929,13 @@ fieldset[aria-invalid="true"] .pill span {
   }
   .shift-stage {
     height: 260px;
+  }
+  /* stacked under the clip, the label and the platform buttons sit centred */
+  .shift-kicker {
+    text-align: center;
+  }
+  .shift-tabs {
+    justify-content: center;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -4520,6 +4546,11 @@ html:has(.ea-dialog[open]) {
   }
 }
 
+/* Use cases as a stack of cards (phones only; see the end of this file) */
+.case-stack {
+  display: none;
+}
+
 /* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
    Desktop is untouched. The feature tiles become one soft grouped list: each row is an icon and a title
    that opens to its recording and words (the first starts open). Recordings keep the whole window and
@@ -4822,5 +4853,111 @@ html:has(.ea-dialog[open]) {
 @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
   .stepper-label {
     animation: none;
+  }
+}
+
+/* Use cases on a phone: one card per case, each sliding up over the one before as you scroll,
+   with the earlier cards' tabs still showing above it */
+@media (max-width: 640px) {
+  .cases .seg,
+  .cases .case {
+    display: none;
+  }
+  .case-stack {
+    display: grid;
+    gap: 18px;
+    padding-bottom: 8px;
+  }
+  .case-card {
+    position: sticky;
+    top: calc(80px + var(--i) * 14px);
+    display: grid;
+    gap: 12px;
+    padding: 20px 20px 22px;
+    border-radius: 24px;
+    background: var(--panel);
+    box-shadow:
+      0 -1px 0 rgb(11 11 18 / 0.04),
+      0 -14px 30px -24px rgb(11 11 18 / 0.35);
+  }
+  .case-card h3 {
+    font-size: 1.45rem;
+    line-height: 1.15;
+  }
+  .case-card-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    padding: 6px 12px 6px 6px;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .case-card-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .case-card-body {
+    color: var(--soft);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .case-card-flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .case-card-outs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .case-card-outs li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px;
+    border-radius: 12px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .case-card-outs .case-shape,
+  .case-card-outs .case-shape.square,
+  .case-card-outs .case-shape.audio,
+  .case-card-outs .case-shape.doc,
+  .case-card-outs .case-shape.approve,
+  .case-card-outs .case-shape.edit {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+  .case-card-outs .case-shape.tall {
+    width: 20px;
+    height: 34px;
+  }
+  .case-card-outs .case-shape.wide {
+    width: 36px;
+    height: 22px;
+  }
+  .case-card-outs .case-shape svg {
+    width: 14px;
+    height: 14px;
   }
 }

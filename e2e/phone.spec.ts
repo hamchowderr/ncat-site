@@ -186,29 +186,40 @@ test.describe("home page on a phone", () => {
     expect(hits).toEqual([]);
   });
 
-  test("the hero and use-case switchers are one stepper row each: back, the choice, next, and a dot for each", async ({ page }) => {
+  test("the hero switcher is one stepper row: back, the choice, next, and a dot for each", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator(".stage-tabs")).toBeHidden();
-    await expect(page.locator(".seg")).toBeHidden();
-    const cases = page.locator("#use-cases .stepper");
-    await cases.scrollIntoViewIfNeeded();
-    await expect(cases.locator(".stepper-now")).toHaveText("Creators");
-    await expect(cases.locator(".stepper-dot")).toHaveCount(7);
-    await cases.getByRole("button", { name: /^Next/ }).click();
-    await expect(cases.locator(".stepper-now")).toHaveText("Editing Agencies");
-    await cases.getByRole("button", { name: /^Previous/ }).click();
-    await cases.getByRole("button", { name: /^Previous/ }).click();
-    await expect(cases.locator(".stepper-now")).toHaveText("Editing With AI");
-    for (const b of await page.locator(".stepper button").all()) {
-      const box = await b.boundingBox();
-      if (box) expect(box.height).toBeGreaterThanOrEqual(43.5);
-    }
     const hero = page.locator(".stage .stepper");
     await hero.scrollIntoViewIfNeeded();
+    await expect(hero.locator(".stepper-now")).toHaveText("It runs by itself");
     await expect(hero.locator(".stepper-dot")).toHaveCount(4);
     await hero.getByRole("button", { name: /^Next/ }).click();
     await expect(hero.locator(".stepper-now")).toHaveText("Review");
     await expect(page.locator(".stage video")).toHaveAttribute("src", "/media/review.mp4");
+    await hero.getByRole("button", { name: /^Previous/ }).click();
+    await hero.getByRole("button", { name: /^Previous/ }).click();
+    await expect(hero.locator(".stepper-now")).toHaveText("Or build your own");
+    for (const b of await hero.locator("button").all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
+  });
+
+  test("use cases are a stack of cards: each slides up over the one before, with the earlier tabs still showing", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("#use-cases .seg")).toBeHidden();
+    await expect(page.locator("#case-panel")).toBeHidden();
+    const cards = page.locator(".case-stack > .case-card");
+    await expect(cards).toHaveCount(7);
+    const vh = page.viewportSize()!.height;
+    // every card fits on the screen under the bar, so none is covered before it has been read
+    for (const c of await cards.all()) expect((await c.boundingBox())!.height).toBeLessThan(vh - 80 - 6 * 14);
+    // scroll until the third card has stuck: the first two sit just above it, each 14px further down
+    await cards.nth(0).scrollIntoViewIfNeeded();
+    const start = await page.evaluate(() => document.querySelector(".case-stack")!.getBoundingClientRect().top + scrollY);
+    await page.evaluate((y) => scrollTo(0, y + 1200), start);
+    await page.waitForTimeout(400);
+    const tops = await cards.evaluateAll((els) => els.slice(0, 3).map((e) => Math.round(e.getBoundingClientRect().top)));
+    expect(tops).toEqual([80, 94, 108]);
+    await expect(cards.nth(2).locator("h3")).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
   });
 
