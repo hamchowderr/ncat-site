@@ -257,6 +257,14 @@ describe("the ask straight after the scene", () => {
     expect(container.querySelectorAll(".mid-feed")).toHaveLength(6);
     expect(container.textContent).not.toMatch(/Set it up once|no server required/i);
   });
+
+  it("can show the content factory as a line: one recording, the five steps, every feed out", () => {
+    const { container } = render(<MidCta look="line" />);
+    expect(screen.getByRole("img", { name: /One recording goes through five steps and out to TikTok, Instagram, YouTube, LinkedIn, Facebook and X/ })).toBeInTheDocument();
+    expect(container.querySelectorAll(".fline-st")).toHaveLength(5);
+    expect(container.querySelectorAll(".fline-feed")).toHaveLength(6);
+    expect(container.querySelector(".mid-feeds")).toBeNull();
+  });
 });
 
 describe("use cases from the newer features", () => {

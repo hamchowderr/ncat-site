@@ -4647,6 +4647,123 @@ html:has(.ea-dialog[open]) {
   display: none;
 }
 
+/* Factory line (mock): a recording goes down a belt through the five steps and out to every feed */
+.fline {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(100%, 860px);
+  margin-bottom: 34px;
+}
+.fline-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 28px -12px rgba(41, 22, 140, 0.28);
+  font: 600 14px/1 var(--font-jbm), monospace;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.fline-belt {
+  position: relative;
+  flex: 1;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.fline-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(90deg, #d9d1fd 0 14px, #c7bbfb 14px 28px);
+  background-size: 28px 6px;
+  animation: fline-run 1.2s linear infinite;
+}
+@keyframes fline-run {
+  to { background-position: 28px 0; }
+}
+.fline-st.split-n {
+  position: relative;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--c);
+  box-shadow: 0 6px 18px -8px rgba(41, 22, 140, 0.35);
+}
+.fline-tok {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 0;
+  width: 26px;
+  height: 46px;
+  margin-top: -23px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 6px 14px -6px rgba(20, 10, 80, 0.5);
+  opacity: 0;
+  animation: fline-tok 6s linear infinite;
+  animation-delay: calc(var(--i) * 1.5s);
+}
+@keyframes fline-tok {
+  0% { left: 0; opacity: 0; transform: scale(0.9); }
+  6% { opacity: 1; }
+  50% { transform: scale(1); }
+  92% { opacity: 1; }
+  100% { left: calc(100% - 26px); opacity: 0; transform: scale(1); }
+}
+.fline-out {
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  gap: 8px;
+}
+.fline-feed {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px -8px rgba(41, 22, 140, 0.3);
+}
+.fline-feed .bi,
+.fline-feed .fl {
+  width: 20px;
+  height: 20px;
+}
+@media (max-width: 640px) {
+  .fline {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 26px;
+  }
+  .fline-belt {
+    width: 100%;
+    height: 56px;
+  }
+  .fline-st.split-n {
+    width: 34px;
+    height: 34px;
+  }
+  .fline-out {
+    grid-template-columns: repeat(6, 36px);
+  }
+  .fline-feed {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
    Desktop is untouched. The feature tiles become one soft grouped list: each row is an icon and a title
    that opens to its recording and words (the first starts open). Recordings keep the whole window and
@@ -5057,4 +5174,3 @@ html:has(.ea-dialog[open]) {
     height: 14px;
   }
 }
-
