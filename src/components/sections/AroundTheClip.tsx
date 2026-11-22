@@ -108,7 +108,7 @@ const CLIP_TILES: Tile[] = [
     id: "steps",
     title: "Your own steps",
     icon: <MovingIcon icon={Stack3Icon} size={18} trigger=".tile" />,
-    body: "When no ready-made step does what you need, describe it. The agent writes the step, tries it on one of your files, saves it for your team and adds it to an automation, where plain FFmpeg runs it with no AI per video.",
+    body: "When no ready-made step does what you need, describe it. The agent writes the step, tries it on one of your files, saves it for your team and adds it to an automation. From then on it runs on every video with no AI used.",
     video: "steps",
     alt: "Screen recording: someone asks the agent for a step that draws a progress bar along the bottom of a video. The agent writes it, tries it on Crew interview, saves it for the team, then adds it to the Clips from new recordings automation after Caption video.",
   },

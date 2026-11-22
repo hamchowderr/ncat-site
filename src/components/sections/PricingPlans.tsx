@@ -87,7 +87,7 @@ export function PricingPlans() {
             <h3>
               Video editing skills <span className="plan-status">Price to be announced</span>
             </h3>
-            <p>A plugin for Claude Code and other agents: cut silences, add captions, reframe to vertical and join clips with nothing but FFmpeg on your computer.</p>
+            <p>A plugin for Claude Code and other agents: cut silences, add captions, reframe to vertical and join clips, right on your computer.</p>
           </article>
         </div>
 

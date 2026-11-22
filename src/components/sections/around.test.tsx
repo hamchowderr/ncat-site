@@ -58,6 +58,7 @@ describe("Your own steps", () => {
     expect(tile.video).toBe("steps");
     expect(tile.alt).toMatch(/^Screen recording:/);
     expect(tile.body).toMatch(/tries it on one of your files/);
+    expect(tile.body).not.toMatch(/ffmpeg/i);
     const { container } = render(<AroundTheClip />);
     expect(container.querySelector(".scene-steps")).toBeNull();
   });
