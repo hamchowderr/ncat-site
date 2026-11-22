@@ -134,7 +134,8 @@ test("every logo and picture loads", async ({ page, isMobile }) => {
   await page.goto("/");
   if (isMobile) await openFolds(page);
   for (const img of await page.locator("img").all()) {
-    await img.scrollIntoViewIfNeeded();
+    // scrolled by hand: the clips riding the factory line never stop moving, so Playwright's wait-for-still would time out
+    await img.evaluate((i) => i.scrollIntoView({ block: "center" }));
     await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { message: await img.getAttribute("src") ?? "" }).toBe(true);
   }
 });
@@ -728,7 +729,7 @@ test("each page has its own share card and description", async ({ page, request 
   expect(images.size).toBe(3);
 });
 
-test("the ask after the scene has the six feeds' real logos around it", async ({ page }) => {
+test("the ask after the scene shows the content factory line, ending at the six feeds' real logos", async ({ page }) => {
   await page.goto("/");
   const box = page.locator(".mid-cta-in");
   for (let k = 0; k < 4; k++) {
@@ -740,10 +741,12 @@ test("the ask after the scene has the six feeds' real logos around it", async ({
     await page.waitForTimeout(300);
   }
   await expect(box).toHaveClass(/is-in/);
-  const feeds = box.locator(".mid-feed");
+  await expect(box.locator(".fline-in")).toContainText("interview.mp4");
+  await expect(box.locator(".fline-st")).toHaveCount(5);
+  const feeds = box.locator(".fline-feed");
   await expect(feeds).toHaveCount(6);
   expect(await feeds.evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.feed))).toEqual(["tiktok", "instagram", "youtube", "linkedin", "facebook", "x"]);
-  await expect(feeds.last()).toHaveCSS("opacity", "1");
+  await expect(feeds.last().locator("svg, img").first()).toBeVisible();
   // no logo covers the words or the button, and every logo stays inside the panel
   const pb = (await box.boundingBox())!;
   const words = await box.locator("h2, p, .btn").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
