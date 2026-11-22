@@ -148,6 +148,27 @@ test("the closing steps fill in one after another once they are in view", async 
   await expect(page.locator("dialog[open] form")).toBeVisible();
 });
 
+test("each row around the clip comes in as you reach it: its panel opens, the recording slides in, then the words", async ({ page, isMobile }) => {
+  test.skip(isMobile, "on a phone the rows are folds");
+  await page.goto("/");
+  const rows = page.locator("#around .tile-row");
+  await expect(rows).toHaveCount(11);
+  const last = rows.last();
+  await expect(last).not.toHaveClass(/is-in/);
+  await expect(last.locator(".tile-stage")).toHaveCSS("opacity", "0");
+  await last.evaluate((e) => {
+    document.documentElement.style.scrollBehavior = "auto";
+    e.scrollIntoView({ block: "center" });
+  });
+  await expect(last).toHaveClass(/is-in/);
+  await expect(last.locator(".tile-stage")).toHaveCSS("opacity", "1");
+  await expect(last.locator(".tile-body")).toHaveCSS("opacity", "1");
+  await expect.poll(() => last.locator(".shot").evaluate((e) => getComputedStyle(e).transform)).toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
+  // and neighbouring rows sit on different tones
+  const tones = await rows.evaluateAll((els) => els.map((e) => getComputedStyle(e.querySelector(".tile-stage")!).backgroundColor));
+  for (let i = 1; i < tones.length; i++) expect(tones[i]).not.toBe(tones[i - 1]);
+});
+
 test("the hero plays real dashboard recordings", async ({ page, request, isMobile }) => {
   await page.goto("/");
   const video = page.locator(".stage video");
@@ -513,6 +534,8 @@ test("the newer features each show a whole-window recording that plays on screen
   for (const v of await shots.all()) {
     await v.scrollIntoViewIfNeeded();
     await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
+    // measured once its row has finished sliding in (it comes in slightly turned)
+    await expect.poll(() => v.evaluate((x) => getComputedStyle(x.closest(".shot")!).transform)).toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
     const box = (await v.boundingBox())!;
     expect(Math.abs(box.width / box.height - 16 / 10)).toBeLessThan(0.02);
     for (const attr of ["src", "poster"]) {

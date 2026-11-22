@@ -765,7 +765,7 @@ html {
 .tiles > :nth-child(even) .tile {
   grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
 }
-.tiles > :nth-child(even) .tile .shot {
+.tiles > :nth-child(even) .tile .tile-stage {
   order: 2;
 }
 .tile-text > .tile-head:first-child {
@@ -795,7 +795,7 @@ html {
   .tiles > :nth-child(even) .tile {
     grid-template-columns: 1fr;
   }
-  .tiles > :nth-child(even) .tile .shot {
+  .tiles > :nth-child(even) .tile .tile-stage {
     order: 0;
   }
   .tile-text > .tile-head:first-child {
@@ -4841,6 +4841,75 @@ html:has(.ea-dialog[open]) {
   }
 }
 
+/* Everything around the clip: each row sits on its own soft tone and comes in on its own as you reach it */
+.tile-stage {
+  padding: clamp(14px, 2.2vw, 28px);
+  border-radius: 28px;
+  background: var(--tone, var(--accent-soft));
+}
+.tile-n {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+.tile-n span {
+  color: var(--mute);
+  font-weight: 500;
+}
+.tile-row .tile-icon {
+  background: var(--tone, var(--accent-soft));
+}
+/* on a phone the rows are folds that open one at a time, so they skip the entrance */
+@media (prefers-reduced-motion: no-preference) and (min-width: 641px) {
+  .tile-row .tile-stage {
+    transition: clip-path 0.9s var(--ease), opacity 0.6s var(--ease);
+  }
+  .tile-row .tile-stage .shot {
+    transition: transform 1s var(--ease) 0.15s, opacity 0.7s var(--ease) 0.15s;
+  }
+  .tile-row .tile-n,
+  .tile-row .tile-head,
+  .tile-row .tile-body,
+  .tile-row .logo-chips li {
+    transition: transform 0.7s var(--ease), opacity 0.6s var(--ease);
+  }
+  .tile-row .tile-n { transition-delay: 0.25s; }
+  .tile-row .tile-head { transition-delay: 0.33s; }
+  .tile-row .tile-body { transition-delay: 0.42s; }
+  .tile-row .logo-chips li { transition-delay: calc(0.55s + var(--k, 0) * 0.08s); }
+  .tile-row .tile-icon {
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s;
+  }
+
+  .tile-row:not(.is-in) .tile-stage {
+    clip-path: inset(8% 6% round 28px);
+    opacity: 0;
+  }
+  .tile-row.is-in .tile-stage {
+    clip-path: inset(0 0 round 28px);
+  }
+  .tile-row:not(.is-in) .tile-stage .shot {
+    transform: translateX(-48px) rotate(-2.5deg);
+    opacity: 0;
+  }
+  .tiles > .tile-row:nth-child(even):not(.is-in) .tile-stage .shot {
+    transform: translateX(48px) rotate(2.5deg);
+  }
+  .tile-row:not(.is-in) .tile-n,
+  .tile-row:not(.is-in) .tile-head,
+  .tile-row:not(.is-in) .tile-body,
+  .tile-row:not(.is-in) .logo-chips li {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  .tile-row:not(.is-in) .tile-icon {
+    transform: scale(0.4) rotate(-20deg);
+  }
+}
+
 /* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
    Desktop is untouched. The feature tiles become one soft grouped list: each row is an icon and a title
    that opens to its recording and words (the first starts open). Recordings keep the whole window and
@@ -4984,6 +5053,13 @@ html:has(.ea-dialog[open]) {
   }
   .fold-body .tile-head {
     display: none;
+  }
+  .fold-body .tile-n {
+    display: none;
+  }
+  .tile-stage {
+    padding: 10px;
+    border-radius: 18px;
   }
   /* the card's rounded, clipped corners would cut into the words now that it has no padding */
   .tiles .tile.spotlight-card {
