@@ -134,6 +134,20 @@ test("tapping an answer in the closing steps opens the form with it picked", asy
   expect(sent.content).toEqual(expect.arrayContaining(["streams", "podcasts"]));
 });
 
+test("the closing steps fill in one after another once they are in view", async ({ page }) => {
+  await page.goto("/pricing");
+  const steps = page.locator(".early-steps");
+  await steps.evaluate((e) => e.scrollIntoView({ block: "center" }));
+  await expect(steps).toHaveClass(/is-in/);
+  await expect(page.locator(".early-step.is-done")).toHaveCount(1, { timeout: 5000 });
+  await expect(page.locator(".early-step").first().locator(".fill").first()).toHaveText("Ava Reyes");
+  await expect(page.locator(".early-step.is-done")).toHaveCount(4, { timeout: 8000 });
+  await expect(page.locator(".early-answer.is-picked")).toHaveCount(3);
+  // the picked answers stay real buttons that open the form
+  await page.locator(".early-answer.is-picked").first().click();
+  await expect(page.locator("dialog[open] form")).toBeVisible();
+});
+
 test("the hero plays real dashboard recordings", async ({ page, request, isMobile }) => {
   await page.goto("/");
   const video = page.locator(".stage video");

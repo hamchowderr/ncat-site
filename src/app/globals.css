@@ -4611,6 +4611,73 @@ html:has(.ea-dialog[open]) {
   color: var(--soft);
   cursor: default;
 }
+/* The steps rise in, then fill in one after another: fields type in, an answer is picked, the number turns to a tick */
+.early-step {
+  transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease), opacity 0.5s var(--ease);
+}
+.early-step-n span {
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+}
+.early-step-n span b,
+.early-step-n span svg {
+  grid-area: 1 / 1;
+  transition: transform 0.35s var(--ease), opacity 0.25s var(--ease);
+}
+.early-step-n span svg {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.early-step.is-done .early-step-n span {
+  background: var(--accent);
+  color: #fff;
+}
+.early-step.is-done .early-step-n span b {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.early-step.is-done .early-step-n span svg {
+  opacity: 1;
+  transform: none;
+}
+.early-step.is-now {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 44px -22px rgba(41, 22, 140, 0.5);
+}
+.early-answer.is-field {
+  display: grid;
+}
+.early-answer.is-field > span {
+  grid-area: 1 / 1;
+  transition: opacity 0.2s var(--ease), clip-path 0.6s steps(14, end);
+}
+.early-answer.is-field .fill {
+  color: var(--ink);
+  clip-path: inset(0 100% 0 0);
+  opacity: 0;
+}
+.early-step.is-done .early-answer.is-field .ph {
+  opacity: 0;
+}
+.early-step.is-done .early-answer.is-field .fill {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transition-delay: calc(var(--k) * 0.25s);
+}
+.early-answer.is-picked {
+  background: var(--accent);
+  color: #fff;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .early-steps:not(.is-in) .early-step {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  .early-steps.is-in .early-step:not(.is-now) {
+    transition-delay: calc(var(--i) * 80ms);
+  }
+}
 @media (max-width: 960px) {
   .early-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
