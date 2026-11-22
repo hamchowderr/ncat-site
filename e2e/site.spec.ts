@@ -477,7 +477,7 @@ test("the newer features each show a whole-window recording that plays on screen
   if (isMobile) await openFolds(page);
   const section = page.getByRole("region", { name: "Everything around the clip, too" });
   const shots = section.locator(".shot video");
-  await expect(shots).toHaveCount(10);
+  await expect(shots).toHaveCount(11);
   for (const v of await shots.all()) {
     await v.scrollIntoViewIfNeeded();
     await expect.poll(() => v.evaluate((x: HTMLVideoElement) => [x.videoWidth, x.videoHeight])).toEqual([1600, 1000]);
@@ -498,7 +498,7 @@ test("the newer features each show a whole-window recording that plays on screen
     expect(b.width).toBeGreaterThan(14);
     expect(b.height).toBeGreaterThan(14);
   }
-  await expect(section.getByRole("list", { name: "Also in the dashboard" }).getByRole("listitem")).toHaveCount(5);
+  await expect(section.getByRole("list", { name: "Also in the dashboard" }).getByRole("listitem")).toHaveCount(4);
   // the meeting apps sit side by side, Microsoft Teams next to Google Meet, each chip only as wide as its name
   const meet = section.getByRole("list", { name: /Meeting recordings.*: apps/ });
   const chips = await Promise.all(["Zoom", "Google Meet", "Microsoft Teams"].map((n) => meet.getByRole("listitem").filter({ hasText: n }).boundingBox()));

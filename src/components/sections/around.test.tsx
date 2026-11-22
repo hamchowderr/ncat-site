@@ -18,7 +18,7 @@ describe("Everything around the clip", () => {
       expect(existsSync(`public/media/features/${t.video}.jpg`), t.video).toBe(true);
     }
     // the parts you would otherwise do by hand come first, in the same section (one list, not two)
-    expect(AROUND_TILES.map((t) => t.id)).toEqual(["brand", "files", "alerts", "schedule", "meetings", "library", "calendar", "moments", "follow", "mcp"]);
+    expect(AROUND_TILES.map((t) => t.id)).toEqual(["brand", "files", "alerts", "schedule", "meetings", "library", "calendar", "moments", "follow", "steps", "mcp"]);
     expect(document.querySelectorAll(".around .tiles")).toHaveLength(1);
   });
 
@@ -49,5 +49,16 @@ describe("Everything around the clip", () => {
     expect(text).toMatch(/any MCP client/);
     expect(text).not.toMatch(/Zapier|Make\.com|no server required/i);
     expect(text).toMatch(/Picking uses AI once per video/);
+  });
+});
+
+describe("Your own steps", () => {
+  it("is a real recording of the agent writing, trying, saving and using a step, not a drawing", () => {
+    const tile = AROUND_TILES.find((t) => t.id === "steps")!;
+    expect(tile.video).toBe("steps");
+    expect(tile.alt).toMatch(/^Screen recording:/);
+    expect(tile.body).toMatch(/tries it on one of your files/);
+    const { container } = render(<AroundTheClip />);
+    expect(container.querySelector(".scene-steps")).toBeNull();
   });
 });

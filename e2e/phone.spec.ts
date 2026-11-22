@@ -77,7 +77,7 @@ test.describe("home page on a phone", () => {
     for (const sel of ["#around .tiles"]) {
       const heads = page.locator(`${sel} .fold-head`);
       const n = await heads.count();
-      expect(n, sel).toBe(10);
+      expect(n, sel).toBe(11);
       await expect(heads.first()).toHaveAttribute("aria-expanded", "true");
       for (let i = 1; i < n; i++) await expect(heads.nth(i)).toHaveAttribute("aria-expanded", "false");
       // a closed row hides its recording; opening it shows the whole-window recording and its words

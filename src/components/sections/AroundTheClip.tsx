@@ -4,6 +4,7 @@ import CameraIcon from "@/components/itshover/camera-icon";
 import ClockIcon from "@/components/itshover/clock-icon";
 import FileDescriptionIcon from "@/components/itshover/file-description-icon";
 import LayersIcon from "@/components/itshover/layers-icon";
+import Stack3Icon from "@/components/itshover/stack-3-icon";
 import PaintIcon from "@/components/itshover/paint-icon";
 import PlayerIcon from "@/components/itshover/player-icon";
 import PlugConnectedIcon from "@/components/itshover/plug-connected-icon";
@@ -104,6 +105,14 @@ const CLIP_TILES: Tile[] = [
     alt: "Screen recording: a Follow the speaker automation runs on a news conference recording and the finished vertical clip plays, keeping the astronaut who is talking in frame.",
   },
   {
+    id: "steps",
+    title: "Your own steps",
+    icon: <MovingIcon icon={Stack3Icon} size={18} trigger=".tile" />,
+    body: "When no ready-made step does what you need, describe it. The agent writes the step, tries it on one of your files, saves it for your team and adds it to an automation, where plain FFmpeg runs it with no AI per video.",
+    video: "steps",
+    alt: "Screen recording: someone asks the agent for a step that draws a progress bar along the bottom of a video. The agent writes it, tries it on Crew interview, saves it for the team, then adds it to the Clips from new recordings automation after Caption video.",
+  },
+  {
     id: "mcp",
     title: "Use it from the AI apps you already use",
     icon: <MovingIcon icon={PlugConnectedIcon} size={18} trigger=".tile" />,
@@ -135,7 +144,6 @@ export const ALSO: { title: string; body: string; scene: AlsoSceneName; logos?: 
     ],
   },
   { title: "Clients and a client portal", scene: "clients", body: "Group work by client, track each project's deliverables, and give clients one link to review and approve their own." },
-  { title: "Your own steps", scene: "steps", body: "Describe a step you need and the agent writes it, tries it on a file and saves it for your team." },
   { title: "Big files and versions", scene: "files", body: "Upload files over 5 GB in parts, and compare two versions of a review clip side by side." },
   { title: "Guided tours", scene: "tours", body: "New teammates get a short tour of each page the first time they open it." },
 ];

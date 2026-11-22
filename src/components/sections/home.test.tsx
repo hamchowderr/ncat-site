@@ -127,8 +127,8 @@ describe("Features", () => {
       </>,
     );
     const videos = Array.from(container.querySelectorAll<HTMLVideoElement>(".story-row video, .around .tiles video"));
-    // four story rows, then the ten tiles of the one "around the clip" list
-    expect(videos.length).toBe(14);
+    // four story rows, then the eleven tiles of the one "around the clip" list
+    expect(videos.length).toBe(15);
     for (const v of videos) {
       expect(v.getAttribute("aria-label")).toMatch(/^Screen recording: .{30,}/);
       expect(v.getAttribute("src")).toMatch(/^\/media\/features\/[a-z]+\.mp4$/);

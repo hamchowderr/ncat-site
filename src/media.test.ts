@@ -39,7 +39,7 @@ function cornerLight(f: Buffer) {
 }
 
 const HERO = ["live-run", "review", "outputs", "agent-builds"];
-const FEATURES = ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule", "zoom", "library", "calendar", "moments", "follow", "mcp"];
+const FEATURES = ["templates", "runs", "review", "editors", "brand", "files", "alerts", "schedule", "zoom", "library", "calendar", "moments", "follow", "steps", "mcp"];
 
 // The recordings move a camera in to each action, so most frames are close-ups. Every clip
 // opens on the whole app window, recorded from a production build: that first frame shows

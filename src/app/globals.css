@@ -3606,83 +3606,6 @@ fieldset[aria-invalid="true"] .pill span {
   }
 }
 
-/* your own steps: ask in words, get a step */
-.steps-s {
-  display: grid;
-  gap: 14px;
-}
-.ask {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  background: var(--panel);
-  color: var(--soft) !important;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.ask svg {
-  flex: none;
-}
-.ask-type {
-  overflow: hidden;
-  border-right: 1.5px solid var(--accent);
-  animation: type-in 6s steps(34, end) infinite;
-}
-@keyframes type-in {
-  0% {
-    max-width: 0;
-  }
-  45%,
-  100% {
-    max-width: 100%;
-  }
-}
-.made {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 0 0 1px var(--line);
-  animation: made-in 6s cubic-bezier(0.16, 1, 0.3, 1) infinite both;
-}
-.made > span:nth-child(2) {
-  display: grid;
-  flex: 1;
-}
-.made-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-.made-save {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent-ink);
-}
-@keyframes made-in {
-  0%,
-  48% {
-    opacity: 0;
-    transform: translateY(6px) scale(0.98);
-  }
-  58%,
-  92% {
-    opacity: 1;
-    transform: none;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
 /* big files: a long upload going up in parts */
 .files-s {
   display: grid;
@@ -3858,8 +3781,6 @@ fieldset[aria-invalid="true"] .pill span {
 
 @media (prefers-reduced-motion: reduce) {
   .msg,
-  .made,
-  .ask-type,
   .parts i::after,
   .pa-yes,
   .tour-dot {
