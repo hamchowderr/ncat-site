@@ -21,7 +21,8 @@
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "simple-icons": "^16.38.0"
+    "simple-icons": "^16.38.0",
+    "tosend": "1.2.0"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

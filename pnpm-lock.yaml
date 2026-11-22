@@ -38,6 +38,9 @@ importers:
       simple-icons:
         specifier: ^16.38.0
         version: 16.38.0
+      tosend:
+        specifier: 1.2.0
+        version: 1.2.0
     devDependencies:
       '@playwright/test':
         specifier: 1.63.0
@@ -2256,6 +2259,10 @@ packages:
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
+
+  tosend@1.2.0:
+    resolution: {integrity: sha512-fKkTv0hBMI5HGobVqcA7+rKaZ8wWiHNDwzCKUbzJJ9FQZVGKp8PlQeUD0hVr/9SaCh0YMrHMmY1fl0ZhhrWTMQ==}
+    engines: {node: '>=18'}
 
   tough-cookie@6.1.0:
     resolution: {integrity: sha512-FTxc8u8Kl2tz0Lat1u8ksvcy8bwHRyEMawwTWybo51JqaC6O7SvfuhAKg+Ld6VqyIe2QRJBzY9HA7y2WyFRT2w==}
@@ -4814,6 +4821,8 @@ snapshots:
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
+
+  tosend@1.2.0: {}
 
   tough-cookie@6.1.0:
     dependencies:
