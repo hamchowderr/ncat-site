@@ -1,4 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+/** Picks an option of a tab row: the tab itself on wide screens, its dot in the phone stepper on phones. */
+async function pickTab(page: Page, isMobile: boolean, name: string) {
+  if (!isMobile) return page.getByRole("tab", { name }).click();
+  const dot = page.getByRole("button", { name: new RegExp(`^${name} \\(\\d+ of \\d+\\)$`) });
+  await dot.scrollIntoViewIfNeeded();
+  await dot.click();
+}
 
 const pages = [
   { path: "/", h1: "Your content, social media ready." },
@@ -109,12 +117,12 @@ test("early-access form checks each step, then sends", async ({ page }) => {
   expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
 });
 
-test("the hero plays real dashboard recordings", async ({ page, request }) => {
+test("the hero plays real dashboard recordings", async ({ page, request, isMobile }) => {
   await page.goto("/");
   const video = page.locator(".stage video");
   await expect(video).toHaveAttribute("src", "/media/live-run.mp4");
   await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.readyState)).toBeGreaterThan(1);
-  await page.getByRole("tab", { name: "Or build your own" }).click();
+  await pickTab(page, isMobile, "Or build your own");
   await expect(video).toHaveAttribute("src", "/media/agent-builds.mp4");
   for (const f of ["agent-builds", "live-run", "review", "outputs"]) {
     expect((await request.get(`/media/${f}.mp4`)).status(), f).toBe(200);
@@ -261,7 +269,9 @@ test("every platform lives in the shape-changing clip, with no second grid of ti
   await expect(page.locator(".shift-ratio")).toHaveText("−16 LUFS");
 });
 
-test("every tab label fits inside its tab track, with nothing cut off", async ({ page }) => {
+test("every tab label fits inside its tab track, with nothing cut off", async ({ page, isMobile }) => {
+  // phones show the stepper instead of the tab rows; it has its own test
+  test.skip(isMobile);
   await page.goto("/");
   for (const track of [page.locator(".stage-tabs"), page.locator(".seg")]) {
     await track.scrollIntoViewIfNeeded();
@@ -276,10 +286,11 @@ test("every tab label fits inside its tab track, with nothing cut off", async ({
   }
 });
 
-test("use-case tabs switch panels", async ({ page }) => {
+test("use-case tabs switch panels", async ({ page, isMobile }) => {
   await page.goto("/");
-  const tab = page.getByRole("tab", { name: "Podcast Teams" });
-  await tab.click();
+  // located by CSS so it is found on phones too, where the tab row is hidden behind the stepper
+  const tab = page.locator('[role="tab"]', { hasText: "Podcast Teams" });
+  await pickTab(page, isMobile, "Podcast Teams");
   await expect(tab).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("tabpanel").filter({ hasText: "The call ends. The episode gets to work." })).toBeVisible();
 });
@@ -531,11 +542,9 @@ test("the engine section lays the five ways on one rail, ending on the shell, wi
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBe(0);
 });
 
-test("the Editing with AI tab says what it costs today and what changes", async ({ page }) => {
+test("the Editing with AI tab says what it costs today and what changes", async ({ page, isMobile }) => {
   await page.goto("/");
-  const tab = page.getByRole("tab", { name: "Editing With AI" });
-  await tab.scrollIntoViewIfNeeded();
-  await tab.click();
+  await pickTab(page, isMobile, "Editing With AI");
   const panel = page.locator("#case-panel");
   await expect(panel).toContainText("Stop spending your AI limits on the same edit.");
   await expect(panel.locator(".case-without")).toContainText("Without Takewon");

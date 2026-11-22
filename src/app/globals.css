@@ -2478,6 +2478,7 @@ fieldset[aria-invalid="true"] .pill span {
   }
   .split.is-live .split-stage {
     max-height: none;
+    margin-top: 0;
     padding: 0;
   }
   .split.is-live .split-now {
@@ -3234,8 +3235,12 @@ fieldset[aria-invalid="true"] .pill span {
     top: 5px;
     right: 5px;
   }
+  /* beside its piece of the film strip, at a size that can be read */
   .split.is-live .split-said {
-    font-size: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: left;
   }
   .split-editors,
   .split-tokens {
@@ -4504,6 +4509,17 @@ html:has(.ea-dialog[open]) {
     opacity: 0;
   }
 }
+/* Phone stepper (PhoneStepper.tsx): replaces a tab row on phones; hidden on wider screens */
+.stepper {
+  display: none;
+}
+@keyframes stepper-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
 /* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
    Desktop is untouched. The feature tiles become one soft grouped list: each row is an icon and a title
    that opens to its recording and words (the first starts open). Recordings keep the whole window and
@@ -4717,5 +4733,94 @@ html:has(.ea-dialog[open]) {
   .early-cta,
   .early-cta .btn {
     width: 100%;
+  }
+}
+
+/* On a phone the tab rows become one stepper: back and next either side of what is showing, dots under it */
+@media (max-width: 640px) {
+  .stage-tabs,
+  .seg {
+    display: none;
+  }
+  .stepper {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+  }
+  .stepper-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--panel);
+  }
+  .stepper-btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgb(11 11 18 / 0.08);
+    cursor: pointer;
+  }
+  .stepper-btn:active {
+    transform: scale(0.94);
+  }
+  .stepper-now {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .stepper-icon {
+    display: inline-grid;
+    color: var(--accent);
+  }
+  .stepper-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    animation: stepper-in 0.28s var(--ease);
+  }
+  .stepper-dots {
+    display: flex;
+    justify-content: center;
+  }
+  .stepper-dot {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .stepper-dot i {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #cfd0d8;
+    transition:
+      width 0.25s var(--ease),
+      background 0.25s var(--ease);
+  }
+  .stepper-dot[aria-current="true"] i {
+    width: 20px;
+    background: var(--accent);
+  }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .stepper-label {
+    animation: none;
   }
 }

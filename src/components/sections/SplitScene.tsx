@@ -140,19 +140,29 @@ export function SplitScene() {
 
       // a phone: one clip large across the stage, the other four in a row of small ones under it
       const tw = (SW - 3 * 10) / 4;
-      const th = Math.min(tw * 1.78, 104);
+      const th = Math.min(tw * 1.78, 104, room * 0.22);
       const thumbDest = 34;
       const bigDest = 44 + 10;
       const bigH = room - 8 - bigDest - 22 - th - thumbDest;
       const thumbBottom = topBand + room - thumbDest;
       const others = SPLIT_CLIPS.map((_, i) => i).filter((i) => i !== big);
 
+      // a phone: the recording runs down the stage as one tall film strip, its words read beside each
+      // piece, and the cut opens gaps between the pieces, so every step uses the whole screen
+      const nameH = narrow && name ? name.offsetHeight : 0;
+      const gapMax = 14;
+      const colTop = topBand + 8 + nameH + 10;
+      // the editor line at the foot only shows once the strip is gone, so the strip may use its space
+      const rowH = Math.min(96, (H - 12 - colTop - 4 * gapMax) / SPLIT_CLIPS.length);
+      const rowW = (rowH * 16) / 9;
+      const cutGap = ease(local(p, 0.11, 0.22)) * gapMax;
+
       let x = pad;
       const onScreen = box.bottom > 0 && box.top < window.innerHeight;
       SPLIT_CLIPS.forEach((c, i) => {
         const share = (c.to - c.from) / SPLIT_RECORDING.seconds;
         const sw = share * (SW - 4 * g);
-        const from = { x, y: stripY, w: sw, h: stripH };
+        const from = narrow ? { x: pad, y: colTop + i * (rowH + cutGap), w: rowW, h: rowH } : { x, y: stripY, w: sw, h: stripH };
         x += sw + g;
         const row = Math.floor(i / cols);
         const inRow = Math.min(cols, SPLIT_CLIPS.length - row * cols);
@@ -203,7 +213,9 @@ export function SplitScene() {
         const frameW = (mix(from.h, to.h, t) * 16) / 9;
         const fs = films[i].style;
         fs.backgroundSize = `${frameW * SPLIT_RECORDING.frames}px 100%`;
-        fs.backgroundPosition = `${-(c.from / SPLIT_RECORDING.seconds) * frameW * SPLIT_RECORDING.frames}px 0`;
+        // on a phone each piece is one frame wide, so it shows one whole frame from its middle
+        const mid = Math.floor((((c.from + c.to) / 2) / SPLIT_RECORDING.seconds) * SPLIT_RECORDING.frames);
+        fs.backgroundPosition = narrow ? `${-mid * frameW}px 0` : `${-(c.from / SPLIT_RECORDING.seconds) * frameW * SPLIT_RECORDING.frames}px 0`;
         fs.opacity = String(1 - local(p, 0.3 + i * 0.035, 0.38 + i * 0.035));
         // once a piece has its shape it plays as the finished clip, and stops when the scene is gone
         const v = videos[i];
@@ -215,9 +227,17 @@ export function SplitScene() {
 
         // the words spoken in this piece, under it, until they turn into its captions
         const w = said[i].style;
-        w.transform = `translate(${from.x}px, ${stripY + stripH + 10}px)`;
-        w.width = `${sw}px`;
-        w.opacity = String(local(p, 0.01 + i * 0.015, 0.05 + i * 0.015) * (1 - local(p, 0.24 + i * 0.035, 0.3 + i * 0.035)));
+        if (narrow) {
+          // beside its piece, appearing as the transcription line passes it
+          const wx = pad + rowW + 14;
+          w.width = `${SW - rowW - 14}px`;
+          w.transform = `translate(${wx}px, ${from.y + rowH / 2 - said[i].offsetHeight / 2}px)`;
+          w.opacity = String(local(p, 0.01 + i * 0.018, 0.03 + i * 0.018) * (1 - local(p, 0.24 + i * 0.035, 0.3 + i * 0.035)));
+        } else {
+          w.transform = `translate(${from.x}px, ${stripY + stripH + 10}px)`;
+          w.width = `${sw}px`;
+          w.opacity = String(local(p, 0.01 + i * 0.015, 0.05 + i * 0.015) * (1 - local(p, 0.24 + i * 0.035, 0.3 + i * 0.035)));
+        }
 
         const d = local(p, 0.58 + i * 0.025, 0.66 + i * 0.025);
         const ds = dests[i].style;
@@ -227,15 +247,23 @@ export function SplitScene() {
       });
 
       const sweep = local(p, 0, 0.1);
-      if (playhead) {
+      if (playhead && narrow) {
+        // the transcription line runs down the strip
+        const colH = SPLIT_CLIPS.length * rowH;
+        playhead.style.transform = `translate(${pad - 6}px, ${colTop + sweep * colH}px)`;
+        playhead.style.width = `${rowW + 12}px`;
+        playhead.style.height = "2px";
+        playhead.style.opacity = String(1 - local(p, 0.1, 0.14));
+      } else if (playhead) {
         playhead.style.transform = `translate(${pad + sweep * SW}px, ${stripY - 10}px)`;
+        playhead.style.width = "";
         playhead.style.height = `${stripH + 20}px`;
         playhead.style.opacity = String(1 - local(p, 0.1, 0.14));
       }
       if (name) {
         // above the strip, however many lines the label takes on a narrow screen
         name.style.width = `${SW}px`;
-        name.style.transform = `translate(${pad}px, ${stripY - name.offsetHeight - 12}px)`;
+        name.style.transform = `translate(${pad}px, ${narrow ? colTop - name.offsetHeight - 10 : stripY - name.offsetHeight - 12}px)`;
         name.style.opacity = String(1 - local(p, 0.2, 0.26));
       }
       if (foot) {

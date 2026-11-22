@@ -185,6 +185,40 @@ test.describe("home page on a phone", () => {
     }
     expect(hits).toEqual([]);
   });
+
+  test("the hero and use-case switchers are one stepper row each: back, the choice, next, and a dot for each", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".stage-tabs")).toBeHidden();
+    await expect(page.locator(".seg")).toBeHidden();
+    const cases = page.locator("#use-cases .stepper");
+    await cases.scrollIntoViewIfNeeded();
+    await expect(cases.locator(".stepper-now")).toHaveText("Creators");
+    await expect(cases.locator(".stepper-dot")).toHaveCount(7);
+    await cases.getByRole("button", { name: /^Next/ }).click();
+    await expect(cases.locator(".stepper-now")).toHaveText("Editing Agencies");
+    await cases.getByRole("button", { name: /^Previous/ }).click();
+    await cases.getByRole("button", { name: /^Previous/ }).click();
+    await expect(cases.locator(".stepper-now")).toHaveText("Editing With AI");
+    for (const b of await page.locator(".stepper button").all()) {
+      const box = await b.boundingBox();
+      if (box) expect(box.height).toBeGreaterThanOrEqual(43.5);
+    }
+    const hero = page.locator(".stage .stepper");
+    await hero.scrollIntoViewIfNeeded();
+    await expect(hero.locator(".stepper-dot")).toHaveCount(4);
+    await hero.getByRole("button", { name: /^Next/ }).click();
+    await expect(hero.locator(".stepper-now")).toHaveText("Review");
+    await expect(page.locator(".stage video")).toHaveAttribute("src", "/media/review.mp4");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
+  });
+
+  test("the tile rows never wait invisible inside their panel: the list shows as one", async ({ page }) => {
+    await page.goto("/");
+    const tiles = page.locator("#around .tiles");
+    await tiles.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1200);
+    for (const row of await tiles.locator(":scope > div").all()) expect(await row.evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
+  });
 });
 
 test("a wide screen keeps the scroll scene, the tiles in full and no fold rows or full-screen buttons", async ({ page, isMobile }) => {

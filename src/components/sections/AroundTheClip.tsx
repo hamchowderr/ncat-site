@@ -150,9 +150,10 @@ export function AroundTheClip() {
             The parts you would otherwise do by hand are done for you. Recordings arrive on their own, get filed and searchable, and go out on a plan.
           </p>
         </Reveal>
-        <div className="tiles">
+        {/* the list fades in as one, so no row waits invisible inside the panel while you scroll */}
+        <Reveal className="tiles">
           {AROUND_TILES.map((t, i) => (
-            <Reveal key={t.id} delay={(i % 2) * 0.08}>
+            <div key={t.id}>
               <PhoneFold id={`tile-${t.id}`} title={t.title} icon={t.icon} level={3} defaultOpen={i === 0}>
                 <SpotlightCard className="tile" theme="light" spotlightColor="rgba(91, 61, 245, 0.16)" style={TILE_SURFACE}>
                   <FeatureVideo name={t.video} label={t.alt} />
@@ -176,9 +177,9 @@ export function AroundTheClip() {
                   </div>
                 </SpotlightCard>
               </PhoneFold>
-            </Reveal>
+            </div>
           ))}
-        </div>
+        </Reveal>
         <Reveal>
           <h3 className="tiles-title">Also in the dashboard</h3>
         </Reveal>

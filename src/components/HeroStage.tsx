@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PhoneStepper } from "@/components/PhoneStepper";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 /** Real screen recordings of the dashboard, sped up and silent. Team names and files in them are demo data. */
@@ -117,6 +118,7 @@ export function HeroStage() {
           </button>
         ))}
       </div>
+      <PhoneStepper label="See the dashboard" controls="stage-panel" active={active} onChange={setActive} items={STAGE.map((s) => ({ id: s.id, label: s.tab }))} />
       <div className="stage-panel" id="stage-panel" role="tabpanel" aria-labelledby={`tab-${item.id}`}>
         <div className="stage-screen">
           <video

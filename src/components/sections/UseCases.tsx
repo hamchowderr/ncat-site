@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { PhoneStepper } from "@/components/PhoneStepper";
 import { Reveal } from "@/components/Reveal";
 import { AudioLines, BadgeCheck, FileText, Play, SquarePen } from "lucide-react";
 import { MovingIcon } from "@/components/MovingIcon";
@@ -176,6 +177,13 @@ export function UseCases() {
             </button>
           ))}
         </div>
+        <PhoneStepper
+          label="Who it is for"
+          controls="case-panel"
+          active={active}
+          onChange={setActive}
+          items={CASES.map((x) => ({ id: x.id, label: x.tab, icon: <MovingIcon icon={x.icon} size={18} trigger=".stepper" /> }))}
+        />
         <div className="case" id="case-panel" role="tabpanel" aria-labelledby={`case-${c.id}`}>
           <div className="case-text" key={c.id}>
             <span className="case-icon" aria-hidden="true">

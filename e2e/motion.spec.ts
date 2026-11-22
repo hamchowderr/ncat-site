@@ -20,13 +20,22 @@ test("one recording splits into clips that each take their platform's shape and 
   await expect(clips).toHaveCount(5);
 
   // at the start it is one long recording: the pieces sit side by side at one height
+  // (on a phone, one tall strip down the screen: the pieces stacked at one width)
   await scrollSplit(page, 0.02);
   const start = await Promise.all((await clips.all()).map(async (c) => (await c.boundingBox())!));
   for (const b of start) {
-    expect(Math.abs(b.y - start[0].y)).toBeLessThan(1);
-    expect(Math.abs(b.height - start[0].height)).toBeLessThan(1);
+    if (isMobile) {
+      expect(Math.abs(b.x - start[0].x)).toBeLessThan(1);
+      expect(Math.abs(b.width - start[0].width)).toBeLessThan(1);
+    } else {
+      expect(Math.abs(b.y - start[0].y)).toBeLessThan(1);
+      expect(Math.abs(b.height - start[0].height)).toBeLessThan(1);
+    }
   }
-  for (let i = 1; i < start.length; i++) expect(start[i].x).toBeGreaterThanOrEqual(start[i - 1].x + start[i - 1].width - 1);
+  for (let i = 1; i < start.length; i++) {
+    if (isMobile) expect(start[i].y).toBeGreaterThanOrEqual(start[i - 1].y + start[i - 1].height - 1);
+    else expect(start[i].x).toBeGreaterThanOrEqual(start[i - 1].x + start[i - 1].width - 1);
+  }
   await expect(page.locator(".split-dest").first()).toHaveCSS("opacity", "0");
   await expect(page.locator(".split-steps li.on")).toHaveCount(1);
   // the strip is frames of the real recording, and nothing plays yet
@@ -45,8 +54,16 @@ test("one recording splits into clips that each take their platform's shape and 
   await expect(saidFirst).toHaveCSS("opacity", "1");
   const sb = (await saidFirst.boundingBox())!;
   const cb = (await clips.first().boundingBox())!;
-  expect(sb.y).toBeGreaterThanOrEqual(cb.y + cb.height);
-  expect(Math.abs(sb.x - cb.x)).toBeLessThan(2);
+  if (isMobile) {
+    // beside its piece, readable, inside the stage
+    expect(sb.x).toBeGreaterThanOrEqual(cb.x + cb.width);
+    expect(sb.y).toBeGreaterThanOrEqual(cb.y - 1);
+    expect(sb.y + sb.height).toBeLessThanOrEqual(cb.y + cb.height + 1);
+    expect(await saidFirst.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(14);
+  } else {
+    expect(sb.y).toBeGreaterThanOrEqual(cb.y + cb.height);
+    expect(Math.abs(sb.x - cb.x)).toBeLessThan(2);
+  }
 
   // when they are ready, each clip has its platform's shape, sits inside the scene, and its logo shows under it
   await scrollSplit(page, 0.8);
