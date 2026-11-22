@@ -31,6 +31,8 @@ const VIDEOS = [
   "24-your-inbox",
   "25-home",
   "26-jobs",
+  "27-meeting-imports",
+  "28-chat-alerts",
 ];
 
 const DIR = "public/watch";
