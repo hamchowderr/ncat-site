@@ -20,7 +20,7 @@ export function clipsReadyEmail(demo: Demo, link: string) {
     ...paragraphs([
       `Hi ${first},`,
       `The toolkit cut ${demo.fileName} into ${n} vertical ${n === 1 ? "clip" : "clips"}${demo.clips.every((c) => c.captioned) ? " with captions" : ""}. Watch and download them here: ${link}`,
-      "The link works for 7 days. On the dashboard this runs by itself every time a new video comes in.",
+      "The link works for 7 days. In Takewon this runs by itself every time a new video comes in.",
       "If you have questions, just reply to this email.",
       "Chowderr",
     ]),

@@ -1,7 +1,7 @@
 import { CONTACT_EMAIL, CONTACT_HREF } from "@/lib/contact";
 import { Reveal } from "@/components/Reveal";
 export const FAQ: { q: string; a: React.ReactNode }[] = [
-  { q: "Is it out yet?", a: "Not yet. The dashboard is working and in testing now. Get on the early access list and you’ll be first to try it." },
+  { q: "Is it out yet?", a: "Not yet. Takewon is working and in testing now. Get on the early access list and you’ll be first to try it." },
   {
     q: "If the NCA Toolkit is free, what am I paying for?",
     a: "The shell around it. The toolkit is a free, open-source engine: it cuts, captions, transcribes and reframes video through an API, but it has no screens and nothing that runs on its own. We built the fine-tuned shell that makes it run your content: ready-made automations, an agent that sets up new ones, recordings that come in from Zoom, Google Meet and Microsoft Teams, a library of everything you’ve recorded, approvals, your brand on every clip and hand-off to your editor. You never pay for the processing itself.",

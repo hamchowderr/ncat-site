@@ -42,7 +42,7 @@ export function PricingPlans() {
             </h2>
             <p className="plan-price">One-time purchase</p>
             <p className="plan-tba">Price announced at launch</p>
-            <p className="plan-desc">The dashboard and the cohort come together as one purchase. Runs on the NCA Toolkit you host.</p>
+            <p className="plan-desc">Takewon and the cohort come together as one purchase. Runs on the NCA Toolkit you host.</p>
             <a className="btn primary" href="#early">
               Get early access
             </a>
@@ -81,7 +81,7 @@ export function PricingPlans() {
             <h3>
               social-clips <span className="plan-status">Free</span>
             </h3>
-            <p>A smaller version of the idea that you clone and run yourself. A good first step if you are not ready for the dashboard.</p>
+            <p>A smaller version of the idea that you clone and run yourself. A good first step if you are not ready for Takewon.</p>
           </article>
           <article>
             <h3>

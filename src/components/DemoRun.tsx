@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { DemoView, StepView } from "@/lib/demo/run";
 
 /** The real steps, in order, before anything has run. */
-export const DEMO_STEPS = ["Uploaded", "Read by the toolkit", "Cut at the pauses, made vertical", "Captioned", "Ready to download"] as const;
+export const DEMO_STEPS = ["Uploaded", "Checked", "Cut at the pauses, made vertical", "Captioned", "Ready to download"] as const;
 
 export const waitingSteps = (): StepView[] => DEMO_STEPS.map((label) => ({ label, state: "wait" }));
 

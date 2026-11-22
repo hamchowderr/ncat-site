@@ -116,7 +116,7 @@ const CLIP_TILES: Tile[] = [
     id: "mcp",
     title: "Use it from the AI apps you already use",
     icon: <MovingIcon icon={PlugConnectedIcon} size={18} trigger=".tile" />,
-    body: "The dashboard is an MCP server. Connect any MCP client to see your uploads and runs, build automations as drafts for you to publish, and start runs, signed in as you on the team you pick.",
+    body: "Takewon is an MCP server. Connect any MCP client to see your uploads and runs, build automations as drafts for you to publish, and start runs, signed in as you on the team you pick.",
     video: "mcp",
     alt: "Screen recording: the MCP settings page with the server address and the steps for Claude, ChatGPT, Cursor, Claude Code, n8n and other apps.",
     logos: [
@@ -189,9 +189,9 @@ export function AroundTheClip() {
           ))}
         </Reveal>
         <Reveal>
-          <h3 className="tiles-title">Also in the dashboard</h3>
+          <h3 className="tiles-title">Also in Takewon</h3>
         </Reveal>
-        <ul className="also" aria-label="Also in the dashboard">
+        <ul className="also" aria-label="Also in Takewon">
           {ALSO.map((a, i) => (
             <li key={a.title} className={`also-card also-${a.scene}`}>
               <Reveal className="also-in" delay={(i % 3) * 0.06}>

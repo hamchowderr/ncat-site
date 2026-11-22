@@ -255,7 +255,7 @@ async function dropRecording(page: import("@playwright/test").Page) {
 }
 
 type Step = { label: string; state: string; detail?: string };
-const LABELS = ["Uploaded", "Read by the toolkit", "Cut at the pauses, made vertical", "Captioned", "Ready to download"];
+const LABELS = ["Uploaded", "Checked", "Cut at the pauses, made vertical", "Captioned", "Ready to download"];
 const steps = (states: string[], details: (string | undefined)[] = []): Step[] =>
   LABELS.map((label, i) => ({ label, state: states[i], ...(details[i] ? { detail: details[i] } : {}) }));
 
@@ -370,10 +370,12 @@ test("signing up uploads the video to the real toolkit, shows its real steps, th
   const last = (await wait.getByRole("button", { name: "Copy link" }).boundingBox())!;
   expect(Math.abs(first.x - box.x - (box.x + box.width - last.x - last.width))).toBeLessThan(4);
   // the toolkit's own answers, step by step
-  await expect(page.locator('[data-step="Read by the toolkit"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
+  await expect(page.locator('[data-step="Checked"] .try-detail')).toHaveText("35 s long, 1440 × 900", { timeout: 15_000 });
   await expect(page.locator(".try-step.done")).toHaveCount(5, { timeout: 15_000 });
   const next = page.locator(".try-next");
-  await expect(next).toContainText("Here are your clips, made by the toolkit.");
+  await expect(next).toContainText("Here are your clips.");
+  for (const t of await page.locator("[data-step]").allInnerTexts()) expect(t).not.toMatch(/toolkit/i);
+  await expect(next).not.toContainText(/toolkit/i);
   await expect(wait).toHaveCount(0);
   // No email is promised while the site has no way to send one (toSend is not set up here).
   await expect(next).not.toContainText("in your email");

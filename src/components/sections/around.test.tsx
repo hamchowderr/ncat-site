@@ -33,7 +33,7 @@ describe("Everything around the clip", () => {
 
   it("lists the rest plainly, with Slack, Discord, Microsoft Teams and Telegram marks on the team chat", () => {
     render(<AroundTheClip />);
-    const also = screen.getByRole("list", { name: "Also in the dashboard" });
+    const also = screen.getByRole("list", { name: "Also in Takewon" });
     expect(within(also).getAllByRole("listitem")).toHaveLength(ALSO.length);
     const chat = within(also).getByRole("heading", { name: "The agent in your team chat" });
     expect(chat.querySelectorAll("svg")).toHaveLength(4);

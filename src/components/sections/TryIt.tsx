@@ -228,7 +228,7 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
         {finished && view && (
           <div className="try-next" aria-live="polite">
             <p className="try-next-lead">
-              Here are your clips, made by the toolkit.{emails ? " They’re in your email too." : ""} On the dashboard this runs by itself every
+              Here are your clips.{emails ? " They’re in your email too." : ""} In Takewon this runs by itself every
               time a new video comes in.
             </p>
             {view.partial && <p className="try-next-note">{view.partial}</p>}

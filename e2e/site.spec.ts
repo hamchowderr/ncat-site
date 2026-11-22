@@ -498,7 +498,7 @@ test("the newer features each show a whole-window recording that plays on screen
     expect(b.width).toBeGreaterThan(14);
     expect(b.height).toBeGreaterThan(14);
   }
-  await expect(section.getByRole("list", { name: "Also in the dashboard" }).getByRole("listitem")).toHaveCount(4);
+  await expect(section.getByRole("list", { name: "Also in Takewon" }).getByRole("listitem")).toHaveCount(4);
   // the meeting apps sit side by side, Microsoft Teams next to Google Meet, each chip only as wide as its name
   const meet = section.getByRole("list", { name: /Meeting recordings.*: apps/ });
   const chips = await Promise.all(["Zoom", "Google Meet", "Microsoft Teams"].map((n) => meet.getByRole("listitem").filter({ hasText: n }).boundingBox()));
@@ -640,4 +640,19 @@ test("the early-access form asks a flood from one address to wait", async ({ pag
   }, address);
   expect(statuses.slice(0, 5).every((status) => status !== 429)).toBe(true);
   expect(statuses[5]).toBe(429);
+});
+
+// Old names are built from pieces so the repo-wide name check stays clean.
+const OLD_NAMES = new RegExp(["NCA (Toolkit )?Dash" + "board", "Kon" + "tifi", "Kon" + "tentifi"].join("|"), "i");
+
+test("the pages call the product Takewon, never the dashboard or an old name", async ({ page }) => {
+  for (const path of ["/", "/pricing", "/about"]) {
+    await page.goto(path);
+    const text = await page.locator("body").innerText();
+    const labels = await page.$$eval("[aria-label], [alt], [title]", (els) => els.map((e) => [e.getAttribute("aria-label"), e.getAttribute("alt"), e.getAttribute("title")].filter(Boolean).join(" ")));
+    for (const words of [text, ...labels]) {
+      expect(words, path).not.toMatch(/\bdashboard\b/i);
+      expect(words, path).not.toMatch(OLD_NAMES);
+    }
+  }
 });

@@ -261,7 +261,7 @@ export function viewOf(d: Demo): DemoView {
   };
   const meta = d.probe[0];
   const read: StepView = {
-    label: "Read by the toolkit",
+    label: "Checked",
     state: !meta ? "wait" : meta.state === "done" && d.facts ? "done" : meta.state === "failed" ? "failed" : d.stage === "failed" && !d.cuts.length ? "failed" : "doing",
     detail: d.facts ? `${formatDuration(d.facts.duration)} long${d.facts.width ? `, ${d.facts.width} × ${d.facts.height}` : ""}` : undefined,
   };
@@ -271,7 +271,7 @@ export function viewOf(d: Demo): DemoView {
     state: stateOf(d.cuts),
     detail: n
       ? (d.plannedClips ?? n) > n
-        ? `The first ${n} of ${d.plannedClips} clips, up to a minute each. On the dashboard every clip is made.`
+        ? `The first ${n} of ${d.plannedClips} clips, up to a minute each. In Takewon every clip is made.`
         : `${n} ${n === 1 ? "clip" : "clips"}, up to a minute each, 1080 × 1920.`
       : undefined,
   };

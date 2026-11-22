@@ -20,7 +20,7 @@ export default async function ClipsPage({ params, searchParams }: { params: Prom
       <div className="wrap">
         <div className="sec-head">
           <h1 id="clips-title">Your clips from {found.demo.fileName}</h1>
-          <p>Made by the toolkit from your video. They stay here for 7 days.</p>
+          <p>Made from your video. They stay here for 7 days.</p>
         </div>
         <DemoResults id={id} k={k!} fileName={found.demo.fileName} initial={viewOf(found.demo)} />
       </div>

@@ -203,5 +203,5 @@ export function earlyAccessEmail(v: EarlyAccessInput) {
   const html = sections
     .map(([h, rows]) => `<h3 style="margin:18px 0 6px">${esc(h)}</h3><table cellpadding="4">${rows.filter(([, x]) => x).map(([k, x]) => `<tr><td style="color:#666;vertical-align:top">${esc(k)}</td><td>${esc(x)}</td></tr>`).join("")}</table>`)
     .join("");
-  return { subject: `[${tags.join(" · ")}] Dashboard early access: ${v.name}`, text, html, tags };
+  return { subject: `[${tags.join(" · ")}] Takewon early access: ${v.name}`, text, html, tags };
 }

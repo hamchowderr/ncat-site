@@ -100,7 +100,7 @@ export function HeroStage() {
 
   return (
     <div className="stage" id="see-it">
-      <div className="stage-tabs" role="tablist" aria-label="See the dashboard" onKeyDown={onKey}>
+      <div className="stage-tabs" role="tablist" aria-label="See Takewon" onKeyDown={onKey}>
         {STAGE.map((s, i) => (
           <button
             key={s.id}
@@ -118,7 +118,7 @@ export function HeroStage() {
           </button>
         ))}
       </div>
-      <PhoneStepper label="See the dashboard" controls="stage-panel" active={active} onChange={setActive} items={STAGE.map((s) => ({ id: s.id, label: s.tab }))} />
+      <PhoneStepper label="See Takewon" controls="stage-panel" active={active} onChange={setActive} items={STAGE.map((s) => ({ id: s.id, label: s.tab }))} />
       <div className="stage-panel" id="stage-panel" role="tabpanel" aria-labelledby={`tab-${item.id}`}>
         <div className="stage-screen">
           <video

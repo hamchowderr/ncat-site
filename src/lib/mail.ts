@@ -50,7 +50,7 @@ export function earlyAccessThanks(name: string, trialUrl: string | null) {
     ...paragraphs([
       `Hi ${first},`,
       "Thanks for telling me what you make. Your answers came through, and I read every one of these myself and reply by email.",
-      ...(trialUrl ? [`If you’d like to try it before then, the hosted dashboard is free for 3 days with no card: ${trialUrl}`] : []),
+      ...(trialUrl ? [`If you’d like to try it before then, the hosted version of Takewon is free for 3 days with no card: ${trialUrl}`] : []),
       "If you think of anything else, just reply to this email.",
       "Chowderr",
     ]),
