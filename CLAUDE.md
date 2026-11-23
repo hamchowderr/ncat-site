@@ -10,7 +10,7 @@ Marketing website for Takewon. The dashboard itself is the private `ncat-dash` r
 
 ## Layout
 - `src/app/` pages: `/` (home), `/pricing`, plus icon, share image, sitemap, robots, 404.
-- `src/components/sections/` one component per page section. They started as a port of the design prototype (`/mnt/project-files/product-overview/nca-toolkit-dashboard.html`, published as the "NCA Toolkit Dashboard" artifact).
+- `src/components/sections/` one component per page section. They started as a port of the design prototype (`/mnt/project-files/product-overview/Takewon Site Prototype.html`; its artifact was deleted 2026-11-22).
 - `src/components/HomeEffects.tsx` motion and behaviour for the home page (respects reduced motion).
 
 ## Commands

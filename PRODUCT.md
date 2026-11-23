@@ -27,7 +27,7 @@ A fine-tuned shell around the free, open-source NCA Toolkit (Stephen G. Pope's m
 - Posting to platforms goes direct through each platform's own API, no aggregators, and is built last.
 
 ## Capabilities and Constraints
-- Working name "NCA Dashboard"; no product name yet. Do not propose names.
+- Product name: Takewon (site takewon.com, app app.takewon.com). Older working names are retired; `src/app/product-name.test.ts` keeps them out.
 - Offer: one price for the dashboard plus a 4-week group cohort with Chowderr, no seat cap. No dashboard-only option. No pricing by team size. Price not set: never invent one, or any credit amount.
 - Hosted-by-Chowderr version with starting credits is planned ("for now"); updates included "for now".
 - Free rung: social-clips (a smaller clone-it-yourself app). Video editing skills plugin exists; price not announced.
