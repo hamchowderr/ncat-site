@@ -813,3 +813,11 @@ test("the ask after the scene shows the content factory line, ending at the six 
     }
   }
 });
+
+test("the AI apps page has every app, n8n too, sign in, with no API keys to make", async ({ page }) => {
+  await page.goto("/docs/ai-apps");
+  await expect(page.getByRole("heading", { level: 3, name: "n8n" })).toBeVisible();
+  await expect(page.getByText("Set Authentication to MCP OAuth2", { exact: false })).toBeVisible();
+  await expect(page.getByText("There are no API keys to make or look after.")).toBeVisible();
+  await expect(page.locator("main")).not.toContainText("Bearer");
+});
