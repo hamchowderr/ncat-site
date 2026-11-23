@@ -1,6 +1,6 @@
 ---
-name: NCA Dashboard site
-description: Marketing site for the NCA Dashboard, in the familiar clean look of clipping platforms.
+name: Takewon site
+description: Marketing site for Takewon, in the familiar clean look of clipping platforms.
 colors:
   ink: "#0b0b12"
   soft-ink: "#4f5260"
@@ -101,7 +101,7 @@ components:
     rounded: "{rounded.xl}"
 ---
 
-# Design System: NCA Dashboard site
+# Design System: Takewon site
 
 ## Overview
 
@@ -125,7 +125,7 @@ A near-monochrome palette of ink and cool greys, with one saturated violet carry
 ### Primary
 - **Signal Violet** (primary): primary buttons, the rotating headline word, selected tabs and form choices, focus rings, text selection, the brand mark.
 - **Pressed Violet** (primary-hover): hover state of primary buttons only.
-- **Violet Wash** (primary-soft): the one highlighted panel per screen, such as the self-hosted plan or the "NCA Dashboard" side of a comparison; chip hover.
+- **Violet Wash** (primary-soft): the one highlighted panel per screen, such as the self-hosted plan or the Takewon side of a comparison; chip hover.
 - **Deep Violet Ink** (primary-ink): violet text on Violet Wash, where full violet would be too loud.
 
 ### Neutral
