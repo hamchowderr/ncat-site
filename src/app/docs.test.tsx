@@ -50,6 +50,15 @@ describe("the privacy, terms, support and AI apps pages", () => {
     expect(container.querySelectorAll(".doc-table tbody tr")).toHaveLength(17);
   });
 
+  it("has every app sign in, n8n included, and never asks for an API key", async () => {
+    const { default: AiApps } = await import("./docs/ai-apps/page");
+    const { container } = render(<AiApps />);
+    expect(screen.getByRole("heading", { name: "n8n" })).toBeTruthy();
+    expect(container).toHaveTextContent("MCP OAuth2");
+    expect(container).toHaveTextContent("There are no API keys");
+    expect(container).not.toHaveTextContent(/Bearer|makes one under Settings|need a key/);
+  });
+
   it("are linked from the footer and listed in the sitemap", () => {
     render(<Footer />);
     expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
