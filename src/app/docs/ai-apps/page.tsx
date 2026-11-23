@@ -92,7 +92,7 @@ export default function AiAppsPage() {
       <h3>n8n</h3>
       <ol>
         <li>In an AI Agent node, add the MCP Client Tool. Set Endpoint to the address above and Server Transport to HTTP Streamable.</li>
-        <li>Set Authentication to MCP OAuth2 and make a new MCP OAuth2 API credential, leaving Register Client Automatically on.</li>
+        <li>Set Authentication to MCP OAuth2 and make a new MCP OAuth2 API credential. Leave Register Client Automatically on and paste the address above into Server URL.</li>
         <li>Choose Connect my account, sign in to Takewon, pick the team and choose Allow.</li>
       </ol>
       <p>Every app signs in this way. There are no API keys to make or look after.</p>
