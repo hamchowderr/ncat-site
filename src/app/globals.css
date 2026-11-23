@@ -4910,6 +4910,112 @@ html:has(.ea-dialog[open]) {
   }
 }
 
+/* ---------- Doc pages: privacy, terms, support, setup guides ---------- */
+.doc {
+  padding-block: clamp(56px, 9vw, 104px) clamp(64px, 10vw, 120px);
+}
+.doc-wrap {
+  max-width: calc(720px + 48px);
+}
+.doc-head h1 {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  letter-spacing: -0.03em;
+}
+.doc-updated {
+  margin-top: 12px;
+  color: var(--mute);
+  font-size: 15px;
+}
+.doc-lead {
+  margin-top: 24px;
+  font-size: clamp(17px, 1.6vw, 19px);
+  color: var(--soft);
+}
+.doc-body {
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+}
+.doc-body h2 {
+  margin-top: 40px;
+  font-size: clamp(1.35rem, 2.4vw, 1.6rem);
+  letter-spacing: -0.02em;
+}
+.doc-body h3 {
+  margin-top: 24px;
+  font-size: 1.1rem;
+}
+.doc-body p,
+.doc-body li {
+  color: var(--soft);
+  line-height: 1.65;
+}
+.doc-body p {
+  margin-top: 12px;
+}
+.doc-body ul,
+.doc-body ol {
+  margin-top: 12px;
+  padding-left: 1.25em;
+}
+.doc-body li + li {
+  margin-top: 6px;
+}
+.doc-body strong {
+  color: var(--ink);
+}
+.doc-body code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--panel);
+  border-radius: 6px;
+  padding: 2px 6px;
+  overflow-wrap: anywhere;
+}
+.doc-body a {
+  color: var(--accent-ink);
+}
+.doc-table {
+  margin-top: 16px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.doc-table th,
+.doc-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--soft);
+}
+.doc-table th {
+  color: var(--ink);
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .doc-table,
+  .doc-table tbody,
+  .doc-table tr,
+  .doc-table td {
+    display: block;
+  }
+  .doc-table thead {
+    display: none;
+  }
+  .doc-table td {
+    padding: 2px 0;
+    border: 0;
+  }
+  .doc-table tr {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .doc-table td:first-child {
+    color: var(--ink);
+    font-weight: 600;
+  }
+}
+
 /* ---------- Phones: a layout made for the phone, not the desktop rows stacked ----------
    Desktop is untouched. The feature tiles become one soft grouped list: each row is an icon and a title
    that opens to its recording and words (the first starts open). Recordings keep the whole window and
