@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   pr-standards:
-    uses: hamchowderr/braynee/.github/workflows/pr-standards.yml@pr-standards-v1
+    uses: hamchowderr/braynee/.github/workflows/pr-standards.yml@d6980ca9349c56de8e40d02541890453d680283b
     with:
       prefixes: "ncat-site"
