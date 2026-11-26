@@ -87,14 +87,20 @@ test("navigation reaches pricing and back home", async ({ page, isMobile }) => {
 async function answerFirstSteps(form: import("@playwright/test").Locator) {
   await form.getByLabel("Your name").fill("Ava Reyes");
   await form.getByLabel("Email").fill("ava@studio.co");
+  const next = () => form.getByRole("button", { name: "Next" }).click();
+  await next();
   await form.getByLabel("Editing agency", { exact: true }).check();
+  await next();
   await form.getByLabel("2 to 5", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
+  await next();
   await form.getByLabel("Podcasts", { exact: true }).check();
+  await next();
+  await next();
   await form.getByLabel("5 to 20 hours", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
+  await next();
   await form.getByLabel("A rented server", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
+  await next();
+  await next();
 }
 
 test("early-access form checks each step, then sends", async ({ page }) => {
@@ -112,6 +118,8 @@ test("early-access form checks each step, then sends", async ({ page }) => {
   await answerFirstSteps(form);
   await expect(form.getByRole("heading", { name: /What to automate/ })).toBeVisible();
   await form.getByLabel("Cut out silences", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await form.getByRole("button", { name: "Next" }).click();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.getByRole("status")).toContainText("You’re on the beta list");
   expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
@@ -129,6 +137,8 @@ test("tapping an answer in the closing steps opens the form with it picked", asy
   });
   await answerFirstSteps(form);
   await form.getByLabel("Cut out silences", { exact: true }).check();
+  await form.getByRole("button", { name: "Next" }).click();
+  await form.getByRole("button", { name: "Next" }).click();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.getByRole("status")).toContainText("You’re on the beta list");
   expect(sent.content).toEqual(expect.arrayContaining(["streams", "podcasts"]));

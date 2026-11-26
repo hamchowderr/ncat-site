@@ -8,31 +8,41 @@ afterEach(() => vi.unstubAllGlobals());
 const next = () => fireEvent.click(screen.getByRole("button", { name: "Next" }));
 const pick = (group: string | RegExp, option: string) => fireEvent.click(within(screen.getByRole("group", { name: group })).getByLabelText(option));
 
-/** Walks all four steps with the required answers. */
+/** Walks every screen with the required answers, ending on the last one. */
 function fillAll() {
   fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava Reyes" } });
   fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+  next();
   pick("What describes you best?", "Editing agency");
+  next();
   pick("How many people would use it?", "6 to 20");
   next();
   pick("What do you make?", "Podcasts");
   pick("What do you make?", "Interviews and talks");
+  next();
   pick(/Where does it get posted/, "TikTok");
+  next();
   pick("Roughly how much do you record each week?", "5 to 20 hours");
   next();
   pick("Where would it run?", "My own always-on machine, like a Mac Mini");
+  next();
   pick(/Where do you finish videos/, "Premiere Pro");
   next();
   pick(/Which jobs should run/, "Captions burned in");
+  next();
+  next();
 }
 
 describe("EarlyAccessForm", () => {
-  it("walks four steps and sends every answer", async () => {
+  it("asks one or two questions per screen and sends every answer", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     render(<EarlyAccessForm />);
     expect(screen.getByRole("heading", { name: /Step 1 of 4:\s*About you/ })).toBeInTheDocument();
+    expect(screen.getByText("1 of 11")).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "What describes you best?" })).toBeNull();
     fillAll();
+    expect(screen.getByText("11 of 11")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Step 4 of 4:\s*What to automate/ })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Join the beta" }));
     expect(await screen.findByRole("status")).toHaveTextContent("Thanks, Ava. You’re on the beta list.");
@@ -64,11 +74,10 @@ describe("EarlyAccessForm", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).newsletter).toBe(true);
   });
 
-  it("will not move on until the step is answered, and says what is missing", () => {
+  it("will not move on until the screen is answered, and says what is missing", () => {
     render(<EarlyAccessForm />);
     next();
     expect(screen.getByText("Add your name.")).toBeInTheDocument();
-    expect(screen.getByText("Pick what describes you best.")).toBeInTheDocument();
     expect(screen.getByLabelText("Your name")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByRole("heading", { name: /About you/ })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "not-an-email" } });
@@ -76,16 +85,44 @@ describe("EarlyAccessForm", () => {
     expect(screen.getByText("That email address doesn’t look right.")).toBeInTheDocument();
   });
 
+  it("counts a job typed in your own words, and asks on that screen when neither is given", () => {
+    render(<EarlyAccessForm />);
+    fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    next();
+    pick("What describes you best?", "Creator");
+    next();
+    pick("How many people would use it?", "Just me");
+    next();
+    pick("What do you make?", "Podcasts");
+    next();
+    next();
+    pick("Roughly how much do you record each week?", "5 to 20 hours");
+    next();
+    pick("Where would it run?", "A rented server");
+    next();
+    next();
+    next(); // no job picked: that is fine here, they can type it next
+    expect(screen.getByLabelText(/in your words/)).toBeInTheDocument();
+    next();
+    expect(screen.getByText("Go back and pick a job, or describe it here.")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/in your words/), { target: { value: "Captions on every upload" } });
+    expect(screen.queryByText("Go back and pick a job, or describe it here.")).toBeNull();
+    next();
+    expect(screen.getByRole("group", { name: /Where did you hear about it/ })).toBeInTheDocument();
+  });
+
   it("goes back without losing answers", () => {
     render(<EarlyAccessForm />);
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    next();
     pick("What describes you best?", "Creator");
-    pick("How many people would use it?", "Just me");
     next();
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
-    expect(screen.getByLabelText("Your name")).toHaveValue("Ava");
     expect(within(screen.getByRole("group", { name: "What describes you best?" })).getByLabelText("Creator")).toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByLabelText("Your name")).toHaveValue("Ava");
   });
 
   it("takes the job typed in the ask bar", () => {
@@ -94,6 +131,7 @@ describe("EarlyAccessForm", () => {
       window.dispatchEvent(new CustomEvent(PREFILL_EVENT, { detail: "Caption every upload" }));
     });
     fillAll();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
     expect(screen.getByLabelText(/The first automation you’d want/)).toHaveValue("Caption every upload");
   });
 
@@ -106,10 +144,14 @@ describe("EarlyAccessForm", () => {
     });
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    next();
     pick("What describes you best?", "Editing agency");
+    next();
     pick("How many people would use it?", "6 to 20");
     next();
     expect(within(screen.getByRole("group", { name: "What do you make?" })).getByLabelText("Livestreams")).toBeChecked();
+    next();
+    next();
     pick("Roughly how much do you record each week?", "5 to 20 hours");
     next();
     expect(within(screen.getByRole("group", { name: "Where would it run?" })).getByLabelText("My own always-on machine, like a Mac Mini")).toBeChecked();

@@ -139,6 +139,29 @@ export const STEPS: { title: string; fields: Field[] }[] = [
   { title: "What to automate", fields: ["jobs", "details", "source"] },
 ];
 
+/**
+ * The screens the form actually shows: one or two questions each, so every screen fits
+ * a phone without scrolling. `section` points into STEPS for the progress bar; `check`
+ * is what must be answered before Next (jobs is checked on the details screen, since
+ * typing the job in your own words counts as an answer).
+ */
+export const SCREENS: { section: number; show: Field[]; check: Field[] }[] = [
+  { section: 0, show: ["name", "email"], check: ["name", "email"] },
+  { section: 0, show: ["role"], check: ["role"] },
+  { section: 0, show: ["teamSize", "link"], check: ["teamSize", "link"] },
+  { section: 1, show: ["content"], check: ["content"] },
+  { section: 1, show: ["platforms"], check: ["platforms"] },
+  { section: 1, show: ["volume"], check: ["volume"] },
+  { section: 2, show: ["hosting", "toolkit"], check: ["hosting", "toolkit"] },
+  { section: 2, show: ["editors"], check: ["editors"] },
+  { section: 3, show: ["jobs"], check: [] },
+  { section: 3, show: ["details"], check: ["jobs", "details"] },
+  { section: 3, show: ["source"], check: ["source"] },
+];
+
+/** The first screen that asks about one of these fields. */
+export const screenFor = (fields: Field[]) => SCREENS.findIndex((s) => s.check.some((f) => fields.includes(f)));
+
 const REQUIRED_MESSAGES: Partial<Record<Field, string>> = {
   name: "Add your name.",
   email: "Add an email address I can reply to.",
@@ -147,7 +170,7 @@ const REQUIRED_MESSAGES: Partial<Record<Field, string>> = {
   content: "Pick at least one kind of content.",
   volume: "Pick roughly how much you record.",
   hosting: "Pick where it would run, or “Not sure yet”.",
-  jobs: "Pick at least one job, or describe it below.",
+  jobs: "Go back and pick a job, or describe it here.",
 };
 
 export function checkEarlyAccess(raw: unknown, only?: Field[]): Checked {

@@ -79,15 +79,23 @@ describe("early access as a pop-up", () => {
     const fill = (label: RegExp | string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
     fill("Your name", "Ava");
     fill("Email", "ava@studio.co");
+    const next = () => fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    next();
     fireEvent.click(screen.getByLabelText("Editing agency"));
+    next();
     fireEvent.click(screen.getByLabelText("2 to 5"));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    next();
     fireEvent.click(screen.getByLabelText("Podcasts"));
+    next();
+    next();
     fireEvent.click(screen.getByLabelText("1 to 5 hours"));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    next();
     fireEvent.click(screen.getByLabelText("A rented server"));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    next();
+    next();
+    next();
     expect((screen.getByLabelText(/in your words/i) as HTMLTextAreaElement).value).toBe("I tried the preview on a 35 s video, cut into 5 clips.");
+    next();
     await act(async () => {
       fireEvent.submit(form);
     });
