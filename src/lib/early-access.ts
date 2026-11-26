@@ -93,8 +93,7 @@ export const SOURCES = opts([
   { value: "creators-summit", label: "Claude Code Creators Summit" },
   { value: "tech-week", label: "a16z Tech Week Los Angeles" },
   { value: "kinn", label: "The KINN" },
-  { value: "hackathon", label: "The Hackathon Company event" },
-  { value: "social", label: "Chowderr's socials" },
+  { value: "social", label: "Social media" },
   { value: "friend", label: "A friend or colleague" },
   { value: "other", label: "Somewhere else" },
 ] as const);
