@@ -3,6 +3,7 @@ import Link from "next/link";
 import { siInstagram, siX } from "simple-icons";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { BrandIcon, FileLogo } from "@/components/brand/Logo";
+import { NewsletterBox } from "@/components/NewsletterBox";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -59,6 +60,7 @@ export function Footer() {
               </li>
             ))}
           </ul>
+          <NewsletterBox />
         </div>
         {COLUMNS.map((c) => (
           <nav key={c.title} aria-label={c.title}>
