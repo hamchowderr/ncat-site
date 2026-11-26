@@ -32,8 +32,8 @@ describe("Footer resources", () => {
     render(<Footer />);
     const links = Array.from(screen.getByRole("navigation", { name: "Resources" }).querySelectorAll("a"));
     expect(links.map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
-      ["Claude Code Creators Summit talk", TALKS.summit],
-      ["The KINN talk", TALKS.kinn],
+      ["Claude Code Creators Summit Talk", TALKS.summit],
+      ["The KINN Talk", TALKS.kinn],
     ]);
   });
 });

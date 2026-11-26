@@ -19,8 +19,8 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Resources",
     links: [
-      { label: "Claude Code Creators Summit talk", href: TALKS.summit },
-      { label: "The KINN talk", href: TALKS.kinn },
+      { label: "Claude Code Creators Summit Talk", href: TALKS.summit },
+      { label: "The KINN Talk", href: TALKS.kinn },
     ],
   },
   {

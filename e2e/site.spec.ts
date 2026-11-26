@@ -715,7 +715,7 @@ test("the pages call the product Takewon, never the dashboard or an old name", a
 test("the footer's resources are only the two talks", async ({ page }) => {
   await page.goto("/");
   const links = page.getByRole("navigation", { name: "Resources" }).getByRole("link");
-  await expect(links).toHaveText(["Claude Code Creators Summit talk", "The KINN talk"]);
+  await expect(links).toHaveText(["Claude Code Creators Summit Talk", "The KINN Talk"]);
   for (const path of ["/", "/pricing", "/about"]) {
     await page.goto(path);
     expect(await page.locator('a[href*="Y8og6PdvJ3D4y9VjdHRMX1"], a[href*="luma"]').count(), path).toBe(0);
