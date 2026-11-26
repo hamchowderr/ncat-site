@@ -65,9 +65,9 @@ export function EarlyAccess() {
     <section className="early" id="early" aria-labelledby="early-title">
       <div className="wrap">
         <div className="early-in">
-          <h2 id="early-title">Get early access</h2>
+          <h2 id="early-title">Join the beta</h2>
           <p className="early-lede">
-            Four short steps, about two minutes. Tap an answer to start with it picked, and I reply to everyone myself.
+            Takewon is in beta, and I’m inviting testers a few at a time. Four short steps, about two minutes. Tap an answer to start with it picked, and I reply to everyone myself.
           </p>
           <ol className="early-steps" ref={ref}>
             {STEPS.map((s, i) => (
@@ -107,7 +107,7 @@ export function EarlyAccess() {
           </ol>
           <div className="early-cta">
             <a className="btn primary lg" href="#early">
-              Get early access
+              Join the beta
             </a>
           </div>
           <div className="socials">

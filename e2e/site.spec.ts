@@ -99,7 +99,7 @@ async function answerFirstSteps(form: import("@playwright/test").Locator) {
 
 test("early-access form checks each step, then sends", async ({ page }) => {
   await page.goto("/pricing");
-  await page.locator(".early-cta").getByRole("link", { name: "Get early access" }).click();
+  await page.locator(".early-cta").getByRole("link", { name: "Join the beta" }).click();
   const form = page.locator("dialog[open] form");
   await form.getByRole("button", { name: "Next" }).click();
   await expect(form.getByText("Add your name.")).toBeVisible();
@@ -112,8 +112,8 @@ test("early-access form checks each step, then sends", async ({ page }) => {
   await answerFirstSteps(form);
   await expect(form.getByRole("heading", { name: /What to automate/ })).toBeVisible();
   await form.getByLabel("Cut out silences", { exact: true }).check();
-  await form.getByRole("button", { name: "Join early access" }).click();
-  await expect(page.getByRole("status")).toContainText("You’re on the list");
+  await form.getByRole("button", { name: "Join the beta" }).click();
+  await expect(page.getByRole("status")).toContainText("You’re on the beta list");
   expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
 });
 
@@ -129,8 +129,8 @@ test("tapping an answer in the closing steps opens the form with it picked", asy
   });
   await answerFirstSteps(form);
   await form.getByLabel("Cut out silences", { exact: true }).check();
-  await form.getByRole("button", { name: "Join early access" }).click();
-  await expect(page.getByRole("status")).toContainText("You’re on the list");
+  await form.getByRole("button", { name: "Join the beta" }).click();
+  await expect(page.getByRole("status")).toContainText("You’re on the beta list");
   expect(sent.content).toEqual(expect.arrayContaining(["streams", "podcasts"]));
 });
 
@@ -637,7 +637,7 @@ test("the ask comes straight after the scene, and How it works leads to the scen
   await expect(ask.getByRole("heading", { level: 2 })).toHaveText("Use AI once. Every recording after that runs by itself.");
   expect(await page.evaluate(() => document.querySelector(".split")!.nextElementSibling!.className)).toBe("mid-cta");
   await ask.scrollIntoViewIfNeeded();
-  const btn = (await ask.getByRole("link", { name: "Get early access" }).boundingBox())!;
+  const btn = (await ask.getByRole("link", { name: "Join the beta" }).boundingBox())!;
   expect(btn.height).toBeGreaterThanOrEqual(44);
   if (isMobile) expect(btn.width).toBeGreaterThan(page.viewportSize()!.width * 0.7);
   await expect(page.getByText("Use AI once. Not on every video.")).toHaveCount(0);

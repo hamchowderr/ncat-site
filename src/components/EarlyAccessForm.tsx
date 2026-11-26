@@ -14,6 +14,7 @@ import {
   TEAM_SIZES,
   TOOLKIT,
   VOLUMES,
+  NEWSLETTER_WORDING,
   checkEarlyAccess,
   type EarlyAccessInput,
   type Errors,
@@ -136,7 +137,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
   if (status.kind === "sent") {
     return (
       <div className="ea-done" role="status">
-        <h3>Thanks{status.name ? `, ${status.name}` : ""}. You’re on the list.</h3>
+        <h3>Thanks{status.name ? `, ${status.name}` : ""}. You’re on the beta list.</h3>
         <p>I read every one of these myself and reply by email.</p>
       </div>
     );
@@ -271,6 +272,15 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
             />
           </div>
           {choice("source", "Where did you hear about it?", SOURCES, true)}
+          <label className="ea-consent">
+            <input
+              type="checkbox"
+              name="newsletter"
+              checked={data.newsletter === true}
+              onChange={(e) => setData((d) => ({ ...d, newsletter: e.target.checked }))}
+            />
+            <span>{NEWSLETTER_WORDING}</span>
+          </label>
         </div>
       )}
 
@@ -300,7 +310,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
           </button>
         )}
         <button type="submit" className="btn primary" disabled={status.kind === "sending"}>
-          {last ? (status.kind === "sending" ? "Sending…" : "Join early access") : "Next"}
+          {last ? (status.kind === "sending" ? "Sending…" : "Join the beta") : "Next"}
         </button>
         <span className="ea-count" aria-hidden="true">
           {step + 1} of {STEPS.length}

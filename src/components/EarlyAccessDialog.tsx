@@ -6,7 +6,7 @@ import { OPEN_EVENT, type OpenDetail, isEarlyAccessLink } from "@/lib/prefill";
 
 /**
  * The early-access form as a pop-up, so signing up never means scrolling to the bottom.
- * Every "Get early access" link (href "#early") opens it, and so does arriving on the page
+ * Every "Join the beta" link (href "#early") opens it, and so does arriving on the page
  * with #early in the address. Escape, the close button or a click outside closes it.
  */
 export function EarlyAccessDialog() {
@@ -64,7 +64,7 @@ export function EarlyAccessDialog() {
     >
       <div className="ea-dialog-in">
         <header className="ea-dialog-head">
-          <h2 id="ea-dialog-title">Get early access</h2>
+          <h2 id="ea-dialog-title">Join the beta</h2>
           <button type="button" className="ea-dialog-x" aria-label="Close" onClick={close}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />

@@ -86,7 +86,7 @@ export function MidCta() {
             an always-on machine you own, with no fee for each video.
           </p>
           <a className="btn primary" href="#early">
-            Get early access
+            Join the beta
           </a>
         </div>
       </div>

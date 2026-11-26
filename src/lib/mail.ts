@@ -48,10 +48,10 @@ export function paragraphs(lines: string[]): { text: string; html: string } {
 export function earlyAccessThanks(name: string, trialUrl: string | null) {
   const first = name.split(" ")[0] || "there";
   return {
-    subject: "You’re on the list for Takewon",
+    subject: "You’re on the Takewon beta list",
     ...paragraphs([
       `Hi ${first},`,
-      "Thanks for telling me what you make. Your answers came through, and I read every one of these myself and reply by email.",
+      "Thanks for signing up to test Takewon. Your answers came through, and I read every one myself. I’m inviting testers a few at a time, and your invite will come by email from this address.",
       ...(trialUrl ? [`If you’d like to try it before then, the hosted version of Takewon is free for 3 days with no card: ${trialUrl}`] : []),
       "If you think of anything else, just reply to this email.",
       "Chowderr",

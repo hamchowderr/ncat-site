@@ -152,7 +152,7 @@ function Plan() {
     <div style={{ ...white, display: "flex", flexDirection: "column", width: 400, padding: "30px 32px", gap: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 24, fontWeight: 600 }}>
         Self-hosted
-        <span style={{ fontSize: 16, color: "#3d24c4", background: "#efebfe", borderRadius: 999, padding: "4px 12px" }}>Early access</span>
+        <span style={{ fontSize: 16, color: "#3d24c4", background: "#efebfe", borderRadius: 999, padding: "4px 12px" }}>Beta</span>
       </div>
       <div style={{ fontFamily: "Archivo", fontSize: 38, fontWeight: 700, letterSpacing: -1 }}>One-time purchase</div>
       <div style={{ fontSize: 19, color: "#5c5f6a", marginBottom: 12 }}>Price announced at launch</div>
