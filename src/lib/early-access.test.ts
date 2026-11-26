@@ -51,7 +51,7 @@ describe("earlyAccessEmail", () => {
     const r = checkEarlyAccess(full);
     if (!r.ok) throw new Error("expected valid");
     const m = earlyAccessEmail(r.value);
-    expect(m.subject).toBe("[Editing agency · 6 to 20 · My own always-on machine, like a Mac Mini] Takewon early access: Ava Reyes");
+    expect(m.subject).toBe("[Editing agency · 6 to 20 · My own always-on machine, like a Mac Mini] Takewon beta sign-up: Ava Reyes");
     expect(m.text).toContain("THEIR CONTENT\nMakes: Podcasts, Client edits\nPosts to: YouTube, TikTok");
     expect(m.text).toContain("Heard about it from: The KINN");
     expect(m.text).not.toContain("undefined");

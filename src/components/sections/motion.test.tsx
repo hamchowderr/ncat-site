@@ -198,9 +198,9 @@ describe("try it on your own video", () => {
     const { container } = render(<TryIt />);
     expect(screen.getByLabelText("Choose a video")).toHaveAttribute("accept", "video/*");
     expect(screen.queryByRole("button", { name: /sample/i })).toBeNull();
-    expect(screen.getByRole("heading", { name: "Drop in your first video, get early access sooner" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Drop in your first video, get into the beta sooner" })).toBeInTheDocument();
     expect(screen.getByText(/Sign up and Takewon cuts your video/)).toBeInTheDocument();
-    expect(screen.getByText(/moves to the front of the early-access list/)).toBeInTheDocument();
+    expect(screen.getByText(/moves to the front of the beta list/)).toBeInTheDocument();
     expect(screen.getByText("Up to 10 minutes and 1 GB.")).toBeInTheDocument();
     // nothing claims to run in the browser any more
     expect(container.textContent).not.toMatch(/nothing is uploaded|in your browser|preview/i);

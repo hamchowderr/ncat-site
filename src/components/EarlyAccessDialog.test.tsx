@@ -32,18 +32,18 @@ describe("early access as a pop-up", () => {
   it("opens from any Get early access link, without jumping down the page", () => {
     render(
       <>
-        <a href="#early">Get early access</a>
+        <a href="#early">Join the beta</a>
         <EarlyAccessDialog />
       </>,
     );
     expect(dialog().open).toBe(false);
     const click = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
     act(() => {
-      screen.getByRole("link", { name: "Get early access" }).dispatchEvent(click);
+      screen.getByRole("link", { name: "Join the beta" }).dispatchEvent(click);
     });
     expect(click.defaultPrevented).toBe(true);
     expect(dialog().open).toBe(true);
-    expect(screen.getByRole("heading", { name: "Get early access" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Join the beta" })).toBeTruthy();
     expect(dialog().querySelector("form")).not.toBeNull();
   });
 
@@ -93,6 +93,6 @@ describe("early access as a pop-up", () => {
     });
     expect(onSent).toHaveBeenCalledTimes(1);
     expect(JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body))).toMatchObject({ tried: "a 35 s video, cut into 5 clips" });
-    expect(screen.getByRole("status").textContent).toContain("You’re on the list");
+    expect(screen.getByRole("status").textContent).toContain("You’re on the beta list");
   });
 });

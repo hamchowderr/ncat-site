@@ -42,7 +42,7 @@ export function SiteHeader() {
             </a>
           ) : (
             <Link className="btn dark sm" href="#early" onClick={() => setOpen(false)}>
-              Get early access
+              Join the beta
             </Link>
           )}
           <button className="menu-btn" type="button" aria-expanded={open} aria-controls="mnav" aria-label="Menu" onClick={() => setOpen((o) => !o)}>

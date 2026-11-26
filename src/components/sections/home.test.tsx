@@ -38,7 +38,7 @@ describe("Hero", () => {
     expect(document.querySelector(".hero-sub")).toHaveTextContent(/Pick a ready-made automation and switch it on/);
     expect(screen.queryByText(/ready to switch on/)).toBeNull();
     expect(screen.queryByRole("button", { name: "Caption every new upload" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Get early access" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Join the beta" })).toBeInTheDocument();
   });
 });
 
@@ -251,7 +251,7 @@ describe("the ask straight after the scene", () => {
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Use AI once. Every recording after that runs by itself.");
     expect(container.querySelector("p")).toHaveTextContent("Build your content factory once");
     expect(container.querySelector("p")).toHaveTextContent("server or an always-on machine you own");
-    expect(screen.getByRole("link", { name: "Get early access" })).toHaveAttribute("href", "#early");
+    expect(screen.getByRole("link", { name: "Join the beta" })).toHaveAttribute("href", "#early");
     expect(container.textContent).not.toMatch(/Set it up once|no server required/i);
   });
 

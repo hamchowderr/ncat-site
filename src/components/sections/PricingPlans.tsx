@@ -38,13 +38,13 @@ export function PricingPlans() {
         <div className="plans">
           <article className="plan main">
             <h2>
-              Self-hosted <span className="plan-status">Early access</span>
+              Self-hosted <span className="plan-status">Beta</span>
             </h2>
             <p className="plan-price">One-time purchase</p>
             <p className="plan-tba">Price announced at launch</p>
             <p className="plan-desc">Takewon and the cohort come together as one purchase. Runs on the NCA Toolkit you host.</p>
             <a className="btn primary" href="#early">
-              Get early access
+              Join the beta
             </a>
             <ul className="ticks">
               {SELF.map((s) => (

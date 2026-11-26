@@ -93,7 +93,7 @@ export const SOURCES = opts([
   { value: "creators-summit", label: "Claude Code Creators Summit" },
   { value: "tech-week", label: "a16z Tech Week Los Angeles" },
   { value: "kinn", label: "The KINN" },
-  { value: "social", label: "Chowderr's socials" },
+  { value: "social", label: "Social media" },
   { value: "friend", label: "A friend or colleague" },
   { value: "other", label: "Somewhere else" },
 ] as const);
@@ -115,9 +115,15 @@ export type EarlyAccessInput = {
   source: string;
   /** What they tried in the demo first ("a 35 s video, cut into 5 clips"). They go to the front of the list. */
   tried?: string;
+  /** The unticked box on the last step: they want Takewon news by email (confirmed by email first). */
+  newsletter?: boolean;
   /** Hidden field. People leave it empty; bots fill it in. */
   website?: string;
 };
+
+/** The exact words beside the newsletter box. They are kept with the consent record in the app. */
+export const NEWSLETTER_WORDING =
+  "Send me Takewon news now and then. I’ll confirm by email first, and can stop any time.";
 
 export type Field = keyof EarlyAccessInput;
 export type Errors = Partial<Record<Field, string>>;
@@ -170,6 +176,7 @@ export function checkEarlyAccess(raw: unknown, only?: Field[]): Checked {
     source: one("source", SOURCES),
     website: str("website", 200),
     ...(str("tried", 200) ? { tried: str("tried", 200) } : {}),
+    ...(r.newsletter === true ? { newsletter: true } : {}),
   };
   const errors: Errors = {};
   const want = (f: Field) => !only || only.includes(f);
@@ -193,7 +200,7 @@ export function earlyAccessEmail(v: EarlyAccessInput) {
     ["About them", [["Name", v.name], ["Email", v.email], ["Who", label(ROLES, v.role)], ["Team size", label(TEAM_SIZES, v.teamSize)], ["Link", v.link]]],
     ["Their content", [["Makes", labels(CONTENT, v.content)], ["Posts to", labels(PLATFORMS, v.platforms)], ["Records per week", label(VOLUMES, v.volume)]]],
     ["Their setup", [["Would run it on", label(HOSTING, v.hosting)], ["NCA Toolkit", label(TOOLKIT, v.toolkit)], ["Finishes in", labels(EDITORS, v.editors)]]],
-    ["What to automate", [["Jobs", labels(JOBS, v.jobs)], ["In their words", v.details], ["Heard about it from", label(SOURCES, v.source)]]],
+    ["What to automate", [["Jobs", labels(JOBS, v.jobs)], ["In their words", v.details], ["Heard about it from", label(SOURCES, v.source)], ["Product news", v.newsletter ? "Ticked the box (confirms by email)" : "No"]]],
     ...(v.tried ? ([["Tried the demo first", [["On", v.tried]]]] as [string, [string, string][]][]) : []),
   ];
   const tags = [v.tried ? "Tried the demo" : "", label(ROLES, v.role), label(TEAM_SIZES, v.teamSize), label(HOSTING, v.hosting)].filter(Boolean);
@@ -203,5 +210,5 @@ export function earlyAccessEmail(v: EarlyAccessInput) {
   const html = sections
     .map(([h, rows]) => `<h3 style="margin:18px 0 6px">${esc(h)}</h3><table cellpadding="4">${rows.filter(([, x]) => x).map(([k, x]) => `<tr><td style="color:#666;vertical-align:top">${esc(k)}</td><td>${esc(x)}</td></tr>`).join("")}</table>`)
     .join("");
-  return { subject: `[${tags.join(" · ")}] Takewon early access: ${v.name}`, text, html, tags };
+  return { subject: `[${tags.join(" · ")}] Takewon beta sign-up: ${v.name}`, text, html, tags };
 }

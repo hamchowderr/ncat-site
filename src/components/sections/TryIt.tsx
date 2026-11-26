@@ -151,10 +151,10 @@ export function TryIt({ enabled = true, emails = false }: { enabled?: boolean; e
     <section className="try" id="try-it" aria-labelledby="try-title">
       <div className="wrap">
         <div className="sec-head">
-          <h2 id="try-title">Drop in your first video, get early access sooner</h2>
+          <h2 id="try-title">Drop in your first video, get into the beta sooner</h2>
           <p>
             Sign up and Takewon cuts your video at the pauses into vertical clips with captions, ready to download. Everyone who
-            tries it moves to the front of the early-access list.
+            tries it moves to the front of the beta list.
           </p>
         </div>
         <div className="try-in">

@@ -46,14 +46,14 @@ export function Hero() {
                 {TRIAL_LABEL}
               </a>
               <a className="btn ghost" href="#early">
-                Get early access
+                Join the beta
               </a>
               <span className="hero-note">{TRIAL_NOTE}</span>
             </>
           ) : (
             <>
               <a className="btn primary" href="#early">
-                Get early access
+                Join the beta
               </a>
             </>
           )}

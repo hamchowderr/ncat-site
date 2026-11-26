@@ -1,16 +1,18 @@
 import { CONTACT_EMAIL } from "@/lib/contact";
 import { NextResponse } from "next/server";
 import { checkEarlyAccess, earlyAccessEmail } from "@/lib/early-access";
+import { sendToApp } from "@/lib/beta";
 import { addressOf, looksLikeBot, mayEmail, takeSignUp } from "@/lib/guard";
 import { saveLead } from "@/lib/leads";
 import { earlyAccessThanks, mailSetup, sendMail } from "@/lib/mail";
 import { trialUrl } from "@/lib/trial";
 
 /**
- * Receives the early-access form. Each sign-up is kept in the site's Blob store first
- * (see lib/leads.ts), then emailed to Chowderr through toSend, and the visitor gets a
- * short note saying it arrived. Kept or emailed is enough to count as signed up; only when
- * neither is set up does the form say the list is not open yet.
+ * Receives the "Join the beta" form. Each sign-up goes to the Takewon app's Beta Testers
+ * page (lib/beta.ts) and is kept in the site's Blob store as a backup (lib/leads.ts), then
+ * emailed to Chowderr through toSend, and the visitor gets a short note saying it arrived.
+ * Any one of those is enough to count as signed up; only when none is set up does the form
+ * say the list is not open yet.
  *
  * Kept for people (lib/guard.ts): Vercel BotID turns bots away, one address gets a few
  * sign-ups in ten minutes, and nobody is emailed twice in a day however often their
@@ -38,7 +40,12 @@ export async function POST(request: Request) {
   if (checked.value.website) return NextResponse.json({ ok: true });
   const { website: _bot, ...answers } = checked.value; // eslint-disable-line @typescript-eslint/no-unused-vars
 
-  const kept = await saveLead("early-access", answers);
+  const [inApp, inBlob] = await Promise.all([
+    sendToApp(checked.value, request.headers.get("user-agent")),
+    saveLead("early-access", answers),
+  ]);
+  const kept = inApp || inBlob;
+  console.log("beta sign-up", { inApp, inBlob, newsletter: checked.value.newsletter === true });
   const setup = mailSetup();
   // The same address again within a day: kept above, but nobody is emailed again.
   if (setup && kept && !(await mayEmail(checked.value.email))) return NextResponse.json({ ok: true });

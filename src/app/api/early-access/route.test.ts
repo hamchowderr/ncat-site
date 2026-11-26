@@ -42,7 +42,43 @@ describe("POST /api/early-access", () => {
     expect(sent.to).toEqual([{ email: "owner@example.com" }]);
     expect(sent.reply_to).toEqual({ email: "ava@studio.co", name: "Ava" });
     expect(sent.text).toContain("Caption every upload");
-    expect(sent.subject).toBe("[Editing agency · 6 to 20 · A rented server] Takewon early access: Ava");
+    expect(sent.subject).toBe("[Editing agency · 6 to 20 · A rented server] Takewon beta sign-up: Ava");
+  });
+
+  it("sends the sign-up to the app's Beta Testers page, with the news box and its words", async () => {
+    vi.stubEnv("TAKEWON_BETA_URL", "https://app.example/beta/apply");
+    vi.stubEnv("BETA_SIGNUP_SECRET", "shared-secret-for-tests");
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ outcome: "ok" }), { status: 200 }));
+    const res = await post({ ...valid, source: "kinn", newsletter: true });
+    expect(res.status).toBe(200);
+    const call = fetchMock.mock.calls.find(([url]) => url === "https://app.example/beta/apply");
+    expect(call).toBeTruthy();
+    const [, init] = call!;
+    expect(init.headers.authorization).toBe("Bearer shared-secret-for-tests");
+    const body = JSON.parse(init.body);
+    expect(body).toMatchObject({ email: "ava@studio.co", name: "Ava", source: "The KINN", newsletter: true });
+    expect(body.newsletterWording).toContain("I’ll confirm by email first");
+    expect(body.answers).toContainEqual({ question: "What describes them", answer: "Editing agency" });
+    expect(body.answers).toContainEqual({ question: "First automation, in their words", answer: "Caption every upload" });
+  });
+
+  it("counts as signed up when only the app has it", async () => {
+    vi.stubEnv("TOSEND_API_KEY", "");
+    vi.stubEnv("TAKEWON_BETA_URL", "https://app.example/beta/apply");
+    vi.stubEnv("BETA_SIGNUP_SECRET", "shared-secret-for-tests");
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ outcome: "ok" }), { status: 200 }));
+    const res = await post(valid);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+  });
+
+  it("leaves the news box off unless it was ticked", async () => {
+    vi.stubEnv("TAKEWON_BETA_URL", "https://app.example/beta/apply");
+    vi.stubEnv("BETA_SIGNUP_SECRET", "shared-secret-for-tests");
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ outcome: "ok" }), { status: 200 }));
+    await post(valid);
+    const [, init] = fetchMock.mock.calls.find(([url]) => url === "https://app.example/beta/apply")!;
+    expect(JSON.parse(init.body).newsletter).toBeUndefined();
   });
 
   it("returns field errors without sending", async () => {
@@ -86,7 +122,7 @@ describe("POST /api/early-access", () => {
     const note = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(note.to).toEqual([{ email: "ava@studio.co", name: "Ava" }]);
     expect(note.reply_to).toEqual({ email: "owner@example.com", name: "Chowderr" });
-    expect(note.subject).toBe("You’re on the list for Takewon");
+    expect(note.subject).toBe("You’re on the Takewon beta list");
     expect(note.text).toContain("Hi Ava,");
     // No trial link until the trial has somewhere to start.
     expect(note.text).not.toContain("3 days");
@@ -144,7 +180,7 @@ describe("POST /api/early-access", () => {
     fetchMock.mockImplementation(async () => new Response("{}", { status: 200 }));
     await post({ ...valid, tried: "a 35 s video, cut into 5 clips" });
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(sent.subject).toBe("[Tried the demo · Editing agency · 6 to 20 · A rented server] Takewon early access: Ava");
+    expect(sent.subject).toBe("[Tried the demo · Editing agency · 6 to 20 · A rented server] Takewon beta sign-up: Ava");
     expect(sent.text).toContain("On: a 35 s video, cut into 5 clips");
     expect(JSON.parse(blob.put.mock.calls[0][1])).toMatchObject({ tried: "a 35 s video, cut into 5 clips" });
   });

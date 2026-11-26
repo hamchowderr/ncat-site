@@ -317,14 +317,14 @@ async function signUp(page: import("@playwright/test").Page) {
   await form.getByLabel("A rented server", { exact: true }).check();
   await form.getByRole("button", { name: "Next" }).click();
   await expect(form.getByLabel(/in your words/i)).toHaveValue("I ran my-first-video.mp4, 35 s through the demo.");
-  await form.getByRole("button", { name: "Join early access" }).click();
-  await expect(page.locator("dialog[open]").getByRole("status")).toContainText("You’re on the list");
+  await form.getByRole("button", { name: "Join the beta" }).click();
+  await expect(page.locator("dialog[open]").getByRole("status")).toContainText("You’re on the beta list");
   await page.locator("dialog[open]").getByRole("button", { name: "Close" }).click();
 }
 
 test("the section asks for their own first video, and nothing is sent before they sign up", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("#try-it h2")).toHaveText("Drop in your first video, get early access sooner");
+  await expect(page.locator("#try-it h2")).toHaveText("Drop in your first video, get into the beta sooner");
   await expect(page.locator("#try-it").getByRole("button", { name: /sample/i })).toHaveCount(0);
   await expect(page.locator("#try-it")).not.toContainText(/in your browser|nothing is uploaded|preview/i);
   const sent: string[] = [];
@@ -403,17 +403,17 @@ test("when the toolkit can't finish, it says why plainly and lets them start ove
   await expect(page.locator(".try-step.wait")).toHaveCount(5);
 });
 
-test("every Get early access button opens the pop-up, and Escape closes it", async ({ page, isMobile }) => {
+test("every Join the beta button opens the pop-up, and Escape closes it", async ({ page, isMobile }) => {
   // the buttons are plain links to the form until the page's script takes them over; a click before that just
   // jumps to the form, so wait for the script to load first
   await page.goto("/", { waitUntil: "networkidle" });
   if (!isMobile) {
-    await page.locator(".nav-r").getByRole("link", { name: "Get early access" }).click();
+    await page.locator(".nav-r").getByRole("link", { name: "Join the beta" }).click();
     await expect(page.locator("dialog[open]")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.locator("dialog[open]")).toHaveCount(0);
   }
-  await page.locator(".hero-cta").getByRole("link", { name: "Get early access" }).click();
+  await page.locator(".hero-cta").getByRole("link", { name: "Join the beta" }).click();
   await expect(page.locator("dialog[open] form")).toBeVisible();
   const box = (await page.locator("dialog[open]").boundingBox())!;
   const vp = page.viewportSize()!;
