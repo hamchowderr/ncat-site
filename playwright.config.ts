@@ -15,8 +15,9 @@ export default defineConfig({
     port,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    // Shows the footer's product news box; its requests are answered by the tests.
     // Switches the demo on. Every demo request is answered by the tests themselves, so
     // nothing here reaches a real toolkit or Blob store.
-    env: { NCAT_API_URL: "http://127.0.0.1:9", NCAT_API_KEY: "test", BLOB_READ_WRITE_TOKEN: "vercel_blob_rw_teststore_x" },
+    env: { NEXT_PUBLIC_NEWS_SIGNUP_URL: "http://127.0.0.1:9/email/news/subscribe", NCAT_API_URL: "http://127.0.0.1:9", NCAT_API_KEY: "test", BLOB_READ_WRITE_TOKEN: "vercel_blob_rw_teststore_x" },
   },
 });
