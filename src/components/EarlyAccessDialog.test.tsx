@@ -90,9 +90,6 @@ describe("early access as a pop-up", () => {
     next();
     fireEvent.click(screen.getByLabelText("1 to 5 hours"));
     next();
-    fireEvent.click(screen.getByLabelText("A rented server"));
-    next();
-    next();
     await act(async () => {
       fireEvent.submit(form);
     });

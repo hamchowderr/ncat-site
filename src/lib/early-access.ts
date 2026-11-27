@@ -135,16 +135,15 @@ const EMAIL = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/;
 export const STEPS: { title: string; fields: Field[] }[] = [
   { title: "About you", fields: ["name", "email", "role", "teamSize", "link"] },
   { title: "Your content", fields: ["content", "platforms", "volume"] },
-  { title: "Your setup", fields: ["hosting", "editors"] },
   { title: "Last thing", fields: ["source"] },
 ];
 
 /**
  * The screens the form actually shows: one or two questions each, so every screen fits
  * a phone without scrolling. `section` points into STEPS for the progress bar; `check`
- * is what must be answered before Next. There is no jobs screen (Chowderr 2026-11-26:
- * nothing is switched on from the answers); a job typed in the home page's ask bar still
- * comes along as `details`.
+ * is what must be answered before Next. There are no jobs or setup screens (Chowderr
+ * 2026-11-26/27: nothing is switched on from the answers); a job typed in the home page's
+ * ask bar still comes along as `details`, and old hosting/editors answers are still parsed.
  */
 export const SCREENS: { section: number; show: Field[]; check: Field[] }[] = [
   { section: 0, show: ["name", "email"], check: ["name", "email"] },
@@ -153,9 +152,7 @@ export const SCREENS: { section: number; show: Field[]; check: Field[] }[] = [
   { section: 1, show: ["content"], check: ["content"] },
   { section: 1, show: ["platforms"], check: ["platforms"] },
   { section: 1, show: ["volume"], check: ["volume"] },
-  { section: 2, show: ["hosting"], check: ["hosting"] },
-  { section: 2, show: ["editors"], check: ["editors"] },
-  { section: 3, show: ["source"], check: ["source"] },
+  { section: 2, show: ["source"], check: ["source"] },
 ];
 
 /** The first screen that asks about one of these fields. */
@@ -168,7 +165,6 @@ const REQUIRED_MESSAGES: Partial<Record<Field, string>> = {
   teamSize: "Pick your team size.",
   content: "Pick at least one kind of content.",
   volume: "Pick roughly how much you record.",
-  hosting: "Pick where it would run, or “Not sure yet”.",
 };
 
 export function checkEarlyAccess(raw: unknown, only?: Field[]): Checked {
@@ -219,11 +215,10 @@ export function earlyAccessEmail(v: EarlyAccessInput) {
   const sections: [string, [string, string][]][] = [
     ["About them", [["Name", v.name], ["Email", v.email], ["Who", label(ROLES, v.role)], ["Team size", label(TEAM_SIZES, v.teamSize)], ["Link", v.link]]],
     ["Their content", [["Makes", labels(CONTENT, v.content)], ["Posts to", labels(PLATFORMS, v.platforms)], ["Records per week", label(VOLUMES, v.volume)]]],
-    ["Their setup", [["Would run it on", label(HOSTING, v.hosting)], ["Finishes in", labels(EDITORS, v.editors)]]],
     ["Also", [["Jobs", labels(JOBS, v.jobs)], ["Typed in the ask bar", v.details], ["Heard about it from", label(SOURCES, v.source)], ["Product news", v.newsletter ? "Ticked the box (confirms by email)" : "No"]]],
     ...(v.tried ? ([["Tried the demo first", [["On", v.tried]]]] as [string, [string, string][]][]) : []),
   ];
-  const tags = [v.tried ? "Tried the demo" : "", label(ROLES, v.role), label(TEAM_SIZES, v.teamSize), label(HOSTING, v.hosting)].filter(Boolean);
+  const tags = [v.tried ? "Tried the demo" : "", label(ROLES, v.role), label(TEAM_SIZES, v.teamSize)].filter(Boolean);
   const text = sections
     .map(([h, rows]) => [h.toUpperCase(), ...rows.filter(([, x]) => x).map(([k, x]) => `${k}: ${x}`)].join("\n"))
     .join("\n\n");

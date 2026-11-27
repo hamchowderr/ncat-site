@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { EarlyAccessDialog } from "@/components/EarlyAccessDialog";
 import { Check, Mail } from "lucide-react";
 import { CONTACT_EMAIL, CONTACT_HREF } from "@/lib/contact";
-import { CONTENT, HOSTING, SOURCES, STEPS } from "@/lib/early-access";
+import { CONTENT, SOURCES, STEPS } from "@/lib/early-access";
 import { pickEarlyAccess, type Pick } from "@/lib/prefill";
 
 const label = (opts: readonly { value: string; label: string }[], value: string) => opts.find((o) => o.value === value)!.label;
@@ -13,15 +13,11 @@ const label = (opts: readonly { value: string; label: string }[], value: string)
 const PREVIEW: { answers: { pick?: Pick; text: string; fill?: string }[]; shown?: number }[] = [
   { answers: [{ text: "Your name", fill: "Ava Reyes" }, { text: "Email", fill: "ava@studio.co" }, { text: "Your channel or show", fill: "youtube.com/@avareyes" }] },
   { answers: ["podcasts", "streams", "interviews"].map((v) => ({ pick: { field: "content", value: v }, text: label(CONTENT, v) })) },
-  { answers: [
-    { pick: { field: "hosting", value: "server" }, text: label(HOSTING, "server") },
-    { pick: { field: "hosting", value: "machine" }, text: "My own always-on machine" },
-  ] },
   { answers: ["tech-week", "kinn", "social"].map((v) => ({ pick: { field: "source", value: v }, text: label(SOURCES, v) })) },
 ];
 
 /** The answer each step shows being picked while the steps fill in, one after another. */
-const SHOWN = [-1, 0, 1, 2];
+const SHOWN = [-1, 0, 1];
 const BEAT = 1100;
 
 /** Fills the steps in one after another once the section is in view, then starts over. Still with reduced motion. */
@@ -67,7 +63,7 @@ export function EarlyAccess() {
         <div className="early-in">
           <h2 id="early-title">Join the beta</h2>
           <p className="early-lede">
-            Takewon is in beta, and I’m inviting testers a few at a time. Four short steps, about two minutes. Tap an answer to start with it picked, and I reply to everyone myself.
+            Takewon is in beta, and I’m inviting testers a few at a time. Three short steps, about two minutes. Tap an answer to start with it picked, and I reply to everyone myself.
           </p>
           <ol className="early-steps" ref={ref}>
             {STEPS.map((s, i) => (

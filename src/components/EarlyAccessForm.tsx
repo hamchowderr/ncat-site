@@ -4,8 +4,6 @@ import { CONTACT_EMAIL } from "@/lib/contact";
 import { useEffect, useRef, useState } from "react";
 import {
   CONTENT,
-  EDITORS,
-  HOSTING,
   PLATFORMS,
   ROLES,
   SCREENS,
@@ -60,7 +58,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     // an answer picked on the page before the form opened: tick it, never untick
     const onPick = (e: Event) => {
       const { field, value } = (e as CustomEvent<Pick>).detail;
-      setData((d) => (field === "hosting" || field === "source" ? { ...d, [field]: value } : d[field].includes(value) ? d : { ...d, [field]: [...d[field], value] }));
+      setData((d) => (field === "source" ? { ...d, [field]: value } : d[field].includes(value) ? d : { ...d, [field]: [...d[field], value] }));
     };
     window.addEventListener(PREFILL_EVENT, on);
     window.addEventListener(PICK_EVENT, onPick);
@@ -78,7 +76,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     setData((d) => ({ ...d, [k]: v }));
     if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
   };
-  const toggle = (k: "content" | "platforms" | "editors" | "jobs", v: string) => {
+  const toggle = (k: "content" | "platforms", v: string) => {
     const list = data[k];
     set(k, list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
   };
@@ -153,7 +151,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     ) : null;
   const describedBy = (f: Field, hint?: boolean) => [hint && `ea-${f}-hint`, errors[f] && `ea-${f}-err`].filter(Boolean).join(" ") || undefined;
 
-  const choice = (f: "role" | "teamSize" | "volume" | "hosting" | "toolkit" | "source", legend: string, options: readonly Option[], optional = false) => (
+  const choice = (f: "role" | "teamSize" | "volume" | "source", legend: string, options: readonly Option[], optional = false) => (
     <fieldset className="ea-q" id={`ea-${f}`} tabIndex={-1} aria-describedby={describedBy(f)} aria-invalid={!!errors[f] || undefined}>
       <legend>
         {legend}
@@ -171,7 +169,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     </fieldset>
   );
 
-  const multi = (f: "content" | "platforms" | "editors" | "jobs", legend: string, options: readonly Option[], hint: string, optional = false) => (
+  const multi = (f: "content" | "platforms", legend: string, options: readonly Option[], hint: string, optional = false) => (
     <fieldset className="ea-q" id={`ea-${f}`} tabIndex={-1} aria-describedby={describedBy(f, true)} aria-invalid={!!errors[f] || undefined}>
       <legend>
         {legend}
@@ -242,8 +240,6 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
         {shows("content") && multi("content", "What do you make?", CONTENT, "Pick all that apply.")}
         {shows("platforms") && multi("platforms", "Where does it get posted?", PLATFORMS, "Pick all that apply.", true)}
         {shows("volume") && choice("volume", "Roughly how much do you record each week?", VOLUMES)}
-        {shows("hosting") && choice("hosting", "Where would it run?", HOSTING)}
-        {shows("editors") && multi("editors", "Where do you finish videos?", EDITORS, "Pick all that apply.", true)}
         {shows("source") && (
           <>
             {choice("source", "Where did you hear about it?", SOURCES, true)}

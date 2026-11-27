@@ -24,10 +24,6 @@ function fillAll() {
   next();
   pick("Roughly how much do you record each week?", "5 to 20 hours");
   next();
-  pick("Where would it run?", "My own always-on machine, like a Mac Mini");
-  next();
-  pick(/Where do you finish videos/, "Premiere Pro");
-  next();
 }
 
 describe("EarlyAccessForm", () => {
@@ -35,15 +31,18 @@ describe("EarlyAccessForm", () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     render(<EarlyAccessForm />);
-    expect(screen.getByRole("heading", { name: /Step 1 of 4:\s*About you/ })).toBeInTheDocument();
-    expect(screen.getByText("1 of 9")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Step 1 of 3:\s*About you/ })).toBeInTheDocument();
+    expect(screen.getByText("1 of 7")).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "What describes you best?" })).toBeNull();
     fillAll();
-    expect(screen.getByText("9 of 9")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Step 4 of 4:\s*Last thing/ })).toBeInTheDocument();
+    expect(screen.getByText("7 of 7")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Step 3 of 3:\s*Last thing/ })).toBeInTheDocument();
     // Chowderr 2026-11-26: nothing is switched on from the answers, so the form never asks which jobs to run
     expect(screen.queryByRole("group", { name: /Which jobs should run/ })).toBeNull();
     expect(screen.queryByLabelText(/in your words/)).toBeNull();
+    // Chowderr 2026-11-27: nor about their setup
+    expect(screen.queryByRole("group", { name: "Where would it run?" })).toBeNull();
+    expect(screen.queryByRole("group", { name: /Where do you finish videos/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Join the beta" }));
     expect(await screen.findByRole("status")).toHaveTextContent("Thanks, Ava. You’re on the beta list.");
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
@@ -55,9 +54,9 @@ describe("EarlyAccessForm", () => {
       content: ["podcasts", "interviews"],
       platforms: ["tiktok"],
       volume: "5-20",
-      hosting: "machine",
-      editors: ["premiere"],
     });
+    expect(body.hosting).toBe("");
+    expect(body.editors).toEqual([]);
   });
 
   it("never names the toolkit on any screen", () => {
@@ -72,8 +71,6 @@ describe("EarlyAccessForm", () => {
       ["What do you make?", "Podcasts"],
       [/Where does it get posted/, "TikTok"],
       ["Roughly how much do you record each week?", "5 to 20 hours"],
-      ["Where would it run?", "A rented server"],
-      [/Where do you finish videos/, "Premiere Pro"],
     ];
     next();
     for (const [group, option] of answers) {
@@ -82,8 +79,12 @@ describe("EarlyAccessForm", () => {
       next();
     }
     seen.push(container.textContent ?? "");
-    expect(screen.getByText("9 of 9")).toBeInTheDocument();
-    for (const text of seen) expect(text).not.toMatch(/toolkit/i);
+    expect(screen.getByText("7 of 7")).toBeInTheDocument();
+    for (const text of seen) {
+      expect(text).not.toMatch(/toolkit/i);
+      // Chowderr 2026-11-27: no setup questions either
+      expect(text).not.toMatch(/Where would it run|Where do you finish videos/);
+    }
   });
 
   it("leaves the news box unticked, and sends it only when ticked", async () => {
@@ -141,7 +142,6 @@ describe("EarlyAccessForm", () => {
     act(() => {
       window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "content", value: "streams" } }));
       window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "content", value: "streams" } }));
-      window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "hosting", value: "machine" } }));
     });
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
@@ -155,7 +155,7 @@ describe("EarlyAccessForm", () => {
     next();
     pick("Roughly how much do you record each week?", "5 to 20 hours");
     next();
-    expect(within(screen.getByRole("group", { name: "Where would it run?" })).getByLabelText("My own always-on machine, like a Mac Mini")).toBeChecked();
+    expect(screen.getByRole("heading", { name: /Last thing/ })).toBeInTheDocument();
   });
 
   it("sends people back to the step the server flagged", async () => {

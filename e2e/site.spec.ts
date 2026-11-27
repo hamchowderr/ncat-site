@@ -98,9 +98,6 @@ async function answerFirstSteps(form: import("@playwright/test").Locator) {
   await next();
   await form.getByLabel("5 to 20 hours", { exact: true }).check();
   await next();
-  await form.getByLabel("A rented server", { exact: true }).check();
-  await next();
-  await next();
 }
 
 test("early-access form checks each step, then sends", async ({ page }) => {
@@ -119,10 +116,13 @@ test("early-access form checks each step, then sends", async ({ page }) => {
   await expect(form.getByRole("heading", { name: /Last thing/ })).toBeVisible();
   // Chowderr 2026-11-26: nothing is switched on from the answers, so no jobs question
   await expect(form.getByText(/Which jobs should run/)).toHaveCount(0);
+  // Chowderr 2026-11-27: nor where it would run or which editor they finish in
+  await expect(form.getByText(/Where would it run|Where do you finish videos/)).toHaveCount(0);
   await form.getByLabel("The KINN", { exact: true }).check();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.getByRole("status")).toContainText("You’re on the beta list");
-  expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", source: "kinn" });
+  expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], source: "kinn" });
+  expect(sent.hosting).toBe("");
 });
 
 test("tapping an answer in the closing steps opens the form with it picked", async ({ page }) => {
@@ -148,8 +148,8 @@ test("the closing steps fill in one after another once they are in view", async 
   await expect(steps).toHaveClass(/is-in/);
   await expect(page.locator(".early-step.is-done")).toHaveCount(1, { timeout: 5000 });
   await expect(page.locator(".early-step").first().locator(".fill").first()).toHaveText("Ava Reyes");
-  await expect(page.locator(".early-step.is-done")).toHaveCount(4, { timeout: 8000 });
-  await expect(page.locator(".early-answer.is-picked")).toHaveCount(3);
+  await expect(page.locator(".early-step.is-done")).toHaveCount(3, { timeout: 8000 });
+  await expect(page.locator(".early-answer.is-picked")).toHaveCount(2);
   // the picked answers stay real buttons that open the form
   await page.locator(".early-answer.is-picked").first().click();
   await expect(page.locator("dialog[open] form")).toBeVisible();

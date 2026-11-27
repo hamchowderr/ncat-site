@@ -73,14 +73,14 @@ describe("Early access close", () => {
     expect(container).not.toHaveTextContent(/message Chowderr/i);
   });
 
-  it("shows the form's four steps with real answers, and tapping one opens the form with it picked", () => {
+  it("shows the form's three steps with real answers, and tapping one opens the form with it picked", () => {
     // jsdom has <dialog> but not its methods
     HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
       this.setAttribute("open", "");
     };
     const { container } = render(<EarlyAccess />);
     const steps = container.querySelectorAll(".early-step");
-    expect([...steps].map((s) => s.querySelector(".early-step-n")!.textContent)).toEqual(["1 About you", "2 Your content", "3 Your setup", "4 Last thing"]);
+    expect([...steps].map((s) => s.querySelector(".early-step-n")!.textContent)).toEqual(["1 About you", "2 Your content", "3 Last thing"]);
     const seen: unknown[] = [];
     const onPick = (e: Event) => seen.push((e as CustomEvent).detail);
     const onOpen = () => seen.push("open");

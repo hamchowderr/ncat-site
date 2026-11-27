@@ -25,8 +25,6 @@ const ANSWERS: ((f: Locator) => Promise<void>)[] = [
   (f) => f.getByLabel("Podcasts", { exact: true }).check(),
   async () => {},
   (f) => f.getByLabel("5 to 20 hours", { exact: true }).check(),
-  (f) => f.getByLabel("A rented server", { exact: true }).check(),
-  async () => {},
   async () => {},
 ];
 
