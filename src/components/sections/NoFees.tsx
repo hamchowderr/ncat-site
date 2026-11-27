@@ -39,11 +39,11 @@ export function NoFees() {
           <Reveal className="fees-text">
             <h2 id="fees-title">Stop paying fees to edit your own content</h2>
             <p>
-              Clipping apps charge for upload minutes, render credits and seats, every month, just to cut and caption what you already made. The NCA
-              Toolkit engine does that editing for free. You pay once for the shell around it, never for the processing.
+              Clipping apps charge for upload minutes, render credits and seats, every month, just to cut and caption what you already made. The engine
+              underneath does that editing for free. You pay once for the shell around it, never for the processing.
             </p>
             <ul className="ticks">
-              <li>Self-host it on your own toolkit for unlimited runs with no meter</li>
+              <li>Self-host it on your own server for unlimited runs with no meter</li>
               <li>Your own version with access to the code, not another subscription</li>
               <li>One price whatever the size of your team</li>
             </ul>
@@ -86,7 +86,7 @@ export function NoFees() {
                   ))}
                 </ul>
               </div>
-              <p className="ours-f">Runs on your toolkit, as often as you like. No meter.</p>
+              <p className="ours-f">Runs on your server, as often as you like. No meter.</p>
             </div>
           </div>
         </div>

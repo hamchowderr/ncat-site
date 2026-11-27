@@ -8,7 +8,6 @@ import {
   ROLES,
   SOURCES,
   TEAM_SIZES,
-  TOOLKIT,
   VOLUMES,
   type EarlyAccessInput,
 } from "@/lib/early-access";
@@ -34,7 +33,6 @@ export function betaAnswers(v: EarlyAccessInput): { question: string; answer: st
       ["Posts to", labels(PLATFORMS, v.platforms)],
       ["Records each week", label(VOLUMES, v.volume)],
       ["Would run it on", label(HOSTING, v.hosting)],
-      ["NCA Toolkit", label(TOOLKIT, v.toolkit)],
       ["Finishes videos in", labels(EDITORS, v.editors)],
       ["Jobs to run by themselves", labels(JOBS, v.jobs)],
       ["First automation, in their words", v.details],

@@ -135,7 +135,7 @@ const EMAIL = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/;
 export const STEPS: { title: string; fields: Field[] }[] = [
   { title: "About you", fields: ["name", "email", "role", "teamSize", "link"] },
   { title: "Your content", fields: ["content", "platforms", "volume"] },
-  { title: "Your setup", fields: ["hosting", "toolkit", "editors"] },
+  { title: "Your setup", fields: ["hosting", "editors"] },
   { title: "What to automate", fields: ["jobs", "details", "source"] },
 ];
 
@@ -152,7 +152,7 @@ export const SCREENS: { section: number; show: Field[]; check: Field[] }[] = [
   { section: 1, show: ["content"], check: ["content"] },
   { section: 1, show: ["platforms"], check: ["platforms"] },
   { section: 1, show: ["volume"], check: ["volume"] },
-  { section: 2, show: ["hosting", "toolkit"], check: ["hosting", "toolkit"] },
+  { section: 2, show: ["hosting"], check: ["hosting"] },
   { section: 2, show: ["editors"], check: ["editors"] },
   { section: 3, show: ["jobs"], check: [] },
   { section: 3, show: ["details"], check: ["jobs", "details"] },
@@ -222,7 +222,7 @@ export function earlyAccessEmail(v: EarlyAccessInput) {
   const sections: [string, [string, string][]][] = [
     ["About them", [["Name", v.name], ["Email", v.email], ["Who", label(ROLES, v.role)], ["Team size", label(TEAM_SIZES, v.teamSize)], ["Link", v.link]]],
     ["Their content", [["Makes", labels(CONTENT, v.content)], ["Posts to", labels(PLATFORMS, v.platforms)], ["Records per week", label(VOLUMES, v.volume)]]],
-    ["Their setup", [["Would run it on", label(HOSTING, v.hosting)], ["NCA Toolkit", label(TOOLKIT, v.toolkit)], ["Finishes in", labels(EDITORS, v.editors)]]],
+    ["Their setup", [["Would run it on", label(HOSTING, v.hosting)], ["Finishes in", labels(EDITORS, v.editors)]]],
     ["What to automate", [["Jobs", labels(JOBS, v.jobs)], ["In their words", v.details], ["Heard about it from", label(SOURCES, v.source)], ["Product news", v.newsletter ? "Ticked the box (confirms by email)" : "No"]]],
     ...(v.tried ? ([["Tried the demo first", [["On", v.tried]]]] as [string, [string, string][]][]) : []),
   ];

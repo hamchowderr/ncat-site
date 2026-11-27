@@ -61,6 +61,35 @@ describe("EarlyAccessForm", () => {
     });
   });
 
+  it("never names the toolkit on any screen", () => {
+    // Chowderr 2026-11-26: the toolkit is not mentioned in the form at all
+    const { container } = render(<EarlyAccessForm />);
+    const seen: string[] = [container.textContent ?? ""];
+    fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava Reyes" } });
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    const answers: [string | RegExp, string][] = [
+      ["What describes you best?", "Editing agency"],
+      ["How many people would use it?", "6 to 20"],
+      ["What do you make?", "Podcasts"],
+      [/Where does it get posted/, "TikTok"],
+      ["Roughly how much do you record each week?", "5 to 20 hours"],
+      ["Where would it run?", "A rented server"],
+      [/Where do you finish videos/, "Premiere Pro"],
+      [/Which jobs should run/, "Captions burned in"],
+    ];
+    next();
+    for (const [group, option] of answers) {
+      seen.push(container.textContent ?? "");
+      pick(group, option);
+      next();
+    }
+    seen.push(container.textContent ?? "");
+    next();
+    seen.push(container.textContent ?? "");
+    expect(screen.getByText("11 of 11")).toBeInTheDocument();
+    for (const text of seen) expect(text).not.toMatch(/toolkit/i);
+  });
+
   it("leaves the news box unticked, and sends it only when ticked", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);

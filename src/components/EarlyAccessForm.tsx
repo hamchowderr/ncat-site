@@ -13,7 +13,6 @@ import {
   SOURCES,
   STEPS,
   TEAM_SIZES,
-  TOOLKIT,
   VOLUMES,
   NEWSLETTER_WORDING,
   checkEarlyAccess,
@@ -245,7 +244,6 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
         {shows("platforms") && multi("platforms", "Where does it get posted?", PLATFORMS, "Pick all that apply.", true)}
         {shows("volume") && choice("volume", "Roughly how much do you record each week?", VOLUMES)}
         {shows("hosting") && choice("hosting", "Where would it run?", HOSTING)}
-        {shows("toolkit") && choice("toolkit", "Do you run the NCA Toolkit already?", TOOLKIT, true)}
         {shows("editors") && multi("editors", "Where do you finish videos?", EDITORS, "Pick all that apply.", true)}
         {shows("jobs") && multi("jobs", "Which jobs should run by themselves?", JOBS, "Pick any, or describe it on the next screen.")}
         {shows("details") && (

@@ -621,9 +621,9 @@ test("the Editing with AI tab says what it costs today and what changes", async 
   await expect(panel.locator(".case-outs li")).toHaveCount(4);
 });
 
-test("the FAQ answers what you pay for when the toolkit is free", async ({ page }) => {
+test("the FAQ answers what you pay for when the editing engine is free", async ({ page }) => {
   await page.goto("/");
-  const q = page.getByText("If the NCA Toolkit is free, what am I paying for?");
+  const q = page.getByText("If the editing engine is free, what am I paying for?");
   await q.scrollIntoViewIfNeeded();
   await q.click();
   await expect(page.getByText(/You never pay for the processing itself/)).toBeVisible();
@@ -831,3 +831,13 @@ test("the AI apps page has every app, n8n too, sign in, with no API keys to make
   await expect(page.getByText("There are no API keys to make or look after.")).toBeVisible();
   await expect(page.locator("main")).not.toContainText("Bearer");
 });
+
+// Chowderr 2026-11-26: the toolkit is not named anywhere on the site, except the About story
+// and the licence note in the terms.
+for (const path of ["/", "/pricing", "/support", "/privacy", "/docs/ai-apps"]) {
+  test(`${path} never names the toolkit`, async ({ page }) => {
+    await page.goto(path);
+    const text = await page.evaluate(() => document.body.innerText + " " + document.title + " " + [...document.querySelectorAll("[alt],[aria-label],meta[content]")].map((e) => e.getAttribute("alt") ?? e.getAttribute("aria-label") ?? e.getAttribute("content")).join(" "));
+    expect(text).not.toMatch(/toolkit/i);
+  });
+}
