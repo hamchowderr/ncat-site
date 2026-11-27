@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { checkEarlyAccess, earlyAccessEmail, STEPS } from "./early-access";
+import { checkEarlyAccess, earlyAccessEmail, SOURCES, STEPS } from "./early-access";
 
 const full = {
   name: "  Ava Reyes ", email: "ava@studio.co", link: "https://youtube.com/@ava", role: "agency", teamSize: "6-20",
   content: ["podcasts", "client-work"], platforms: ["youtube", "tiktok"], volume: "5-20", hosting: "machine", toolkit: "new",
   editors: ["premiere"], jobs: ["captions", "vertical"], details: "Clips for 12 clients a week", source: "kinn",
 };
+
+describe("where did you hear about it", () => {
+  it("lists Tech Week, not the Claude Code event held during it", () => {
+    // Chowderr 2026-11-27: the Claude Code event was part of a16z Tech Week, so it is not its own option
+    expect(SOURCES.map((s) => s.label)).toEqual(["a16z Tech Week Los Angeles", "The KINN", "Social media", "A friend or colleague", "Somewhere else"]);
+  });
+});
 
 describe("checkEarlyAccess", () => {
   it("accepts a full intake and trims text", () => {

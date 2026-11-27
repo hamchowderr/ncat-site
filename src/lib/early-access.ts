@@ -90,7 +90,6 @@ export const JOBS = opts([
 ] as const);
 
 export const SOURCES = opts([
-  { value: "creators-summit", label: "Claude Code Creators Summit" },
   { value: "tech-week", label: "a16z Tech Week Los Angeles" },
   { value: "kinn", label: "The KINN" },
   { value: "social", label: "Social media" },
