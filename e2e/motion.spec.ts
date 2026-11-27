@@ -426,8 +426,10 @@ test("every Join the beta button opens the pop-up, and Escape closes it", async 
   const box = (await page.locator("dialog[open]").boundingBox())!;
   const vp = page.viewportSize()!;
   expect(box.x).toBeGreaterThanOrEqual(0);
-  expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
-  expect(box.height).toBeLessThanOrEqual(vp.height);
+  // On phones the pop-up fills the screen (100dvh), which can land a hair over
+  // the viewport height from sub-pixel rounding; allow under one pixel.
+  expect(box.x + box.width).toBeLessThanOrEqual(vp.width + 0.5);
+  expect(box.height).toBeLessThanOrEqual(vp.height + 0.5);
   await page.keyboard.press("Escape");
   await page.goto("/pricing#early");
   await expect(page.locator("dialog[open] form")).toBeVisible();
