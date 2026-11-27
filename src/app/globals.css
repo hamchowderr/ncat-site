@@ -5510,7 +5510,7 @@ html:has(.ea-dialog[open]) {
 
 /* ---------- Beta form on phones ----------
    The pop-up fills the screen like an app sheet: the header and progress at the top,
-   one or two questions in the middle, Back / Next pinned to the bottom. Each screen is
+   one or two questions, then Back / Next straight after them. Each screen is
    sized so it fits without scrolling (checked by e2e/beta-form-fit.spec.ts). */
 @media (max-width: 640px) {
   .ea-dialog {
@@ -5551,8 +5551,9 @@ html:has(.ea-dialog[open]) {
     color: var(--mute);
     font-weight: 600;
   }
+  /* the buttons follow the questions, with no big gap; a long screen shrinks to fit */
   .ea-dialog .ea-body {
-    flex: 1;
+    flex: 0 1 auto;
     min-height: 0;
     align-content: start;
     gap: 20px;

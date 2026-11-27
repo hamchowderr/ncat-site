@@ -3,7 +3,8 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 /**
  * Chowderr (2026-11-26): on a phone the beta form should never need scrolling. Every
  * screen fits, and Next takes you to the next questions until it's done. This walks all
- * eleven screens on a small, a mid and a large phone and fails if any screen scrolls.
+ * eleven screens on four phones and fails if any screen scrolls, or if the buttons sit
+ * far below the questions (2026-11-26: "It does not need to be a giant gap").
  */
 const PHONES = [
   { name: "small phone (360 x 640)", width: 360, height: 640 },
@@ -35,7 +36,10 @@ async function fits(page: Page) {
     const dialog = document.querySelector("dialog[open]")!;
     const body = dialog.querySelector(".ea-body")!;
     const nav = dialog.querySelector(".ea-nav")!.getBoundingClientRect();
+    const lastQuestion = [...body.children].at(-1)!.getBoundingClientRect();
     return {
+      // Back / Next sit right under the questions, not at the bottom of the screen
+      gapAboveButtons: nav.top - lastQuestion.bottom <= 48,
       bodyOverflow: body.scrollHeight - body.clientHeight,
       dialogOverflow: dialog.scrollHeight - dialog.clientHeight,
       navOnScreen: nav.bottom <= innerHeight + 1,
@@ -53,7 +57,7 @@ for (const phone of PHONES) {
     await expect(form).toBeVisible();
     for (let i = 0; i < ANSWERS.length; i++) {
       await expect(form.getByText(`${i + 1} of ${ANSWERS.length}`)).toBeVisible();
-      expect(await fits(page), `screen ${i + 1}`).toEqual({ bodyOverflow: 0, dialogOverflow: 0, navOnScreen: true, fullScreen: true });
+      expect(await fits(page), `screen ${i + 1}`).toEqual({ gapAboveButtons: true, bodyOverflow: 0, dialogOverflow: 0, navOnScreen: true, fullScreen: true });
       await ANSWERS[i](form);
       if (i < ANSWERS.length - 1) await form.getByRole("button", { name: "Next" }).click();
     }
