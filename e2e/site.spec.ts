@@ -664,10 +664,10 @@ test("the page ends on one centred ask, with the button before the email address
   expect(Math.abs(btn.x + btn.width / 2 - vw / 2)).toBeLessThan(24);
   const mail = early.locator(".socials a");
   await expect(mail).toHaveCount(1);
-  await expect(mail).toHaveAttribute("href", "mailto:hello@takewon.com");
+  await expect(mail).toHaveAttribute("href", "mailto:support@takewon.com");
   await expect(mail).toBeVisible();
-  await expect(page.locator("#faq a[href^='mailto:']")).toHaveText("hello@takewon.com");
-  await expect(page.locator("footer.foot").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "mailto:hello@takewon.com");
+  await expect(page.locator("#faq a[href^='mailto:']")).toHaveText("support@takewon.com");
+  await expect(page.locator("footer.foot").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "mailto:support@takewon.com");
 });
 
 test("the feeds section shows the agent badge and the brand every clip carries, inside the screen", async ({ page }) => {

@@ -102,7 +102,7 @@ describe("POST /api/early-access", () => {
     vi.stubEnv("TOSEND_API_KEY", "");
     const res = await post(valid);
     expect(res.status).toBe(503);
-    expect((await res.json()).error).toContain("hello@takewon.com");
+    expect((await res.json()).error).toContain("support@takewon.com");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -111,7 +111,7 @@ describe("POST /api/early-access", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const failed = await post(valid);
     expect(failed.status).toBe(502);
-    expect((await failed.json()).error).toContain("hello@takewon.com");
+    expect((await failed.json()).error).toContain("support@takewon.com");
     fetchMock.mockRejectedValue(new Error("offline"));
     expect((await post(valid)).status).toBe(502);
   });
