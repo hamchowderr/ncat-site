@@ -8,32 +8,41 @@ afterEach(() => vi.unstubAllGlobals());
 const next = () => fireEvent.click(screen.getByRole("button", { name: "Next" }));
 const pick = (group: string | RegExp, option: string) => fireEvent.click(within(screen.getByRole("group", { name: group })).getByLabelText(option));
 
-/** Walks all four steps with the required answers. */
+/** Walks every screen with the required answers, ending on the last one. */
 function fillAll() {
   fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava Reyes" } });
   fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+  next();
   pick("What describes you best?", "Editing agency");
+  next();
   pick("How many people would use it?", "6 to 20");
   next();
   pick("What do you make?", "Podcasts");
   pick("What do you make?", "Interviews and talks");
+  next();
   pick(/Where does it get posted/, "TikTok");
+  next();
   pick("Roughly how much do you record each week?", "5 to 20 hours");
   next();
-  pick("Where would it run?", "My own always-on machine, like a Mac Mini");
-  pick(/Where do you finish videos/, "Premiere Pro");
-  next();
-  pick(/Which jobs should run/, "Captions burned in");
 }
 
 describe("EarlyAccessForm", () => {
-  it("walks four steps and sends every answer", async () => {
+  it("asks one or two questions per screen and sends every answer", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     render(<EarlyAccessForm />);
-    expect(screen.getByRole("heading", { name: /Step 1 of 4:\s*About you/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Step 1 of 3:\s*About you/ })).toBeInTheDocument();
+    expect(screen.getByText("1 of 7")).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "What describes you best?" })).toBeNull();
     fillAll();
-    expect(screen.getByRole("heading", { name: /Step 4 of 4:\s*What to automate/ })).toBeInTheDocument();
+    expect(screen.getByText("7 of 7")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Step 3 of 3:\s*Last thing/ })).toBeInTheDocument();
+    // Chowderr 2026-11-26: nothing is switched on from the answers, so the form never asks which jobs to run
+    expect(screen.queryByRole("group", { name: /Which jobs should run/ })).toBeNull();
+    expect(screen.queryByLabelText(/in your words/)).toBeNull();
+    // Chowderr 2026-11-27: nor about their setup
+    expect(screen.queryByRole("group", { name: "Where would it run?" })).toBeNull();
+    expect(screen.queryByRole("group", { name: /Where do you finish videos/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Join the beta" }));
     expect(await screen.findByRole("status")).toHaveTextContent("Thanks, Ava. You’re on the beta list.");
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
@@ -45,10 +54,37 @@ describe("EarlyAccessForm", () => {
       content: ["podcasts", "interviews"],
       platforms: ["tiktok"],
       volume: "5-20",
-      hosting: "machine",
-      editors: ["premiere"],
-      jobs: ["captions"],
     });
+    expect(body.hosting).toBe("");
+    expect(body.editors).toEqual([]);
+  });
+
+  it("never names the toolkit on any screen", () => {
+    // Chowderr 2026-11-26: the toolkit is not mentioned in the form at all
+    const { container } = render(<EarlyAccessForm />);
+    const seen: string[] = [container.textContent ?? ""];
+    fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava Reyes" } });
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    const answers: [string | RegExp, string][] = [
+      ["What describes you best?", "Editing agency"],
+      ["How many people would use it?", "6 to 20"],
+      ["What do you make?", "Podcasts"],
+      [/Where does it get posted/, "TikTok"],
+      ["Roughly how much do you record each week?", "5 to 20 hours"],
+    ];
+    next();
+    for (const [group, option] of answers) {
+      seen.push(container.textContent ?? "");
+      pick(group, option);
+      next();
+    }
+    seen.push(container.textContent ?? "");
+    expect(screen.getByText("7 of 7")).toBeInTheDocument();
+    for (const text of seen) {
+      expect(text).not.toMatch(/toolkit/i);
+      // Chowderr 2026-11-27: no setup questions either
+      expect(text).not.toMatch(/Where would it run|Where do you finish videos/);
+    }
   });
 
   it("leaves the news box unticked, and sends it only when ticked", async () => {
@@ -64,11 +100,10 @@ describe("EarlyAccessForm", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).newsletter).toBe(true);
   });
 
-  it("will not move on until the step is answered, and says what is missing", () => {
+  it("will not move on until the screen is answered, and says what is missing", () => {
     render(<EarlyAccessForm />);
     next();
     expect(screen.getByText("Add your name.")).toBeInTheDocument();
-    expect(screen.getByText("Pick what describes you best.")).toBeInTheDocument();
     expect(screen.getByLabelText("Your name")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByRole("heading", { name: /About you/ })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "not-an-email" } });
@@ -80,21 +115,26 @@ describe("EarlyAccessForm", () => {
     render(<EarlyAccessForm />);
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    next();
     pick("What describes you best?", "Creator");
-    pick("How many people would use it?", "Just me");
     next();
     fireEvent.click(screen.getByRole("button", { name: "Back" }));
-    expect(screen.getByLabelText("Your name")).toHaveValue("Ava");
     expect(within(screen.getByRole("group", { name: "What describes you best?" })).getByLabelText("Creator")).toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByLabelText("Your name")).toHaveValue("Ava");
   });
 
-  it("takes the job typed in the ask bar", () => {
+  it("sends along the job typed in the home page's ask bar", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
     render(<EarlyAccessForm />);
     act(() => {
       window.dispatchEvent(new CustomEvent(PREFILL_EVENT, { detail: "Caption every upload" }));
     });
     fillAll();
-    expect(screen.getByLabelText(/The first automation you’d want/)).toHaveValue("Caption every upload");
+    fireEvent.click(screen.getByRole("button", { name: "Join the beta" }));
+    await screen.findByRole("status");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).details).toBe("Caption every upload");
   });
 
   it("starts with the answers picked on the page already ticked, and never unticks them", () => {
@@ -102,17 +142,20 @@ describe("EarlyAccessForm", () => {
     act(() => {
       window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "content", value: "streams" } }));
       window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "content", value: "streams" } }));
-      window.dispatchEvent(new CustomEvent(PICK_EVENT, { detail: { field: "hosting", value: "machine" } }));
     });
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
+    next();
     pick("What describes you best?", "Editing agency");
+    next();
     pick("How many people would use it?", "6 to 20");
     next();
     expect(within(screen.getByRole("group", { name: "What do you make?" })).getByLabelText("Livestreams")).toBeChecked();
+    next();
+    next();
     pick("Roughly how much do you record each week?", "5 to 20 hours");
     next();
-    expect(within(screen.getByRole("group", { name: "Where would it run?" })).getByLabelText("My own always-on machine, like a Mac Mini")).toBeChecked();
+    expect(screen.getByRole("heading", { name: /Last thing/ })).toBeInTheDocument();
   });
 
   it("sends people back to the step the server flagged", async () => {

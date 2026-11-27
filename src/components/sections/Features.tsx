@@ -26,7 +26,7 @@ const ROWS: StoryRow[] = [
     body: "Once it is on, an automation starts on its own when a file is uploaded, lands in a watched folder, a schedule comes round or another tool calls it. Plain editing steps do the work, so nothing is billed per video.",
     points: ["Starts from an upload, a folder, a schedule or a webhook", "Watch each step finish, or come back to a list of what happened", "Comes with its own automation builder, made for content"],
     video: "runs",
-    alt: "Screen recording: Space interviews.mp4 is uploaded, the Clips for social run starts by itself, cuts 3 clips, captions them and pauses for approval. Sped up while the toolkit works.",
+    alt: "Screen recording: Space interviews.mp4 is uploaded, the Clips for social run starts by itself, cuts 3 clips, captions them and pauses for approval. Sped up while it works.",
     extra: (
       <ul className="logo-chips" aria-label="Outside platforms">
         <li>

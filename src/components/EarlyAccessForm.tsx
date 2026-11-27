@@ -4,18 +4,16 @@ import { CONTACT_EMAIL } from "@/lib/contact";
 import { useEffect, useRef, useState } from "react";
 import {
   CONTENT,
-  EDITORS,
-  HOSTING,
-  JOBS,
   PLATFORMS,
   ROLES,
+  SCREENS,
   SOURCES,
   STEPS,
   TEAM_SIZES,
-  TOOLKIT,
   VOLUMES,
   NEWSLETTER_WORDING,
   checkEarlyAccess,
+  screenFor,
   type EarlyAccessInput,
   type Errors,
   type Field,
@@ -60,7 +58,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     // an answer picked on the page before the form opened: tick it, never untick
     const onPick = (e: Event) => {
       const { field, value } = (e as CustomEvent<Pick>).detail;
-      setData((d) => (field === "hosting" ? { ...d, hosting: value } : d[field].includes(value) ? d : { ...d, [field]: [...d[field], value] }));
+      setData((d) => (field === "source" ? { ...d, [field]: value } : d[field].includes(value) ? d : { ...d, [field]: [...d[field], value] }));
     };
     window.addEventListener(PREFILL_EVENT, on);
     window.addEventListener(PICK_EVENT, onPick);
@@ -78,18 +76,20 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     setData((d) => ({ ...d, [k]: v }));
     if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
   };
-  const toggle = (k: "content" | "platforms" | "editors" | "jobs", v: string) => {
+  const toggle = (k: "content" | "platforms", v: string) => {
     const list = data[k];
     set(k, list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
   };
 
-  const last = step === STEPS.length - 1;
+  const last = step === SCREENS.length - 1;
+  const screen = SCREENS[step];
+  const shows = (f: Field) => screen.show.includes(f);
 
   const next = () => {
-    const r = checkEarlyAccess(data, STEPS[step].fields);
+    const r = checkEarlyAccess(data, screen.check);
     if (!r.ok) {
       setErrors(r.errors);
-      const first = STEPS[step].fields.find((f) => r.errors[f]);
+      const first = screen.check.find((f) => r.errors[f]);
       if (first) document.getElementById(`ea-${first}`)?.focus();
       return false;
     }
@@ -108,7 +108,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     const all = checkEarlyAccess(data);
     if (!all.ok) {
       setErrors(all.errors);
-      const i = STEPS.findIndex((s) => s.fields.some((f) => all.errors[f]));
+      const i = screenFor(Object.keys(all.errors) as Field[]);
       if (i >= 0) setStep(i);
       return;
     }
@@ -123,7 +123,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
       const body = (await res.json().catch(() => ({}))) as { errors?: Errors; error?: string };
       if (res.status === 422 && body.errors) {
         setErrors(body.errors);
-        const i = STEPS.findIndex((s) => s.fields.some((f) => body.errors?.[f]));
+        const i = screenFor(Object.keys(body.errors) as Field[]);
         if (i >= 0) setStep(i);
         setStatus({ kind: "idle" });
         return;
@@ -151,7 +151,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     ) : null;
   const describedBy = (f: Field, hint?: boolean) => [hint && `ea-${f}-hint`, errors[f] && `ea-${f}-err`].filter(Boolean).join(" ") || undefined;
 
-  const choice = (f: "role" | "teamSize" | "volume" | "hosting" | "toolkit" | "source", legend: string, options: readonly Option[], optional = false) => (
+  const choice = (f: "role" | "teamSize" | "volume" | "source", legend: string, options: readonly Option[], optional = false) => (
     <fieldset className="ea-q" id={`ea-${f}`} tabIndex={-1} aria-describedby={describedBy(f)} aria-invalid={!!errors[f] || undefined}>
       <legend>
         {legend}
@@ -169,7 +169,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     </fieldset>
   );
 
-  const multi = (f: "content" | "platforms" | "editors" | "jobs", legend: string, options: readonly Option[], hint: string, optional = false) => (
+  const multi = (f: "content" | "platforms", legend: string, options: readonly Option[], hint: string, optional = false) => (
     <fieldset className="ea-q" id={`ea-${f}`} tabIndex={-1} aria-describedby={describedBy(f, true)} aria-invalid={!!errors[f] || undefined}>
       <legend>
         {legend}
@@ -215,74 +215,46 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     <form className="ea" onSubmit={submit} noValidate aria-labelledby="ea-step-title">
       <ol className="ea-progress" aria-label="Progress">
         {STEPS.map((s, i) => (
-          <li key={s.title} className={i < step ? "done" : i === step ? "now" : undefined} aria-current={i === step ? "step" : undefined}>
+          <li key={s.title} className={i < screen.section ? "done" : i === screen.section ? "now" : undefined} aria-current={i === screen.section ? "step" : undefined}>
             <span>{s.title}</span>
           </li>
         ))}
       </ol>
       <h3 className="ea-step" id="ea-step-title" ref={heading} tabIndex={-1}>
         <span className="sr">
-          Step {step + 1} of {STEPS.length}:{" "}
+          Step {screen.section + 1} of {STEPS.length}:{" "}
         </span>
-        {STEPS[step].title}
+        {STEPS[screen.section].title}
       </h3>
 
-      {step === 0 && (
-        <div className="ea-body">
+      <div className="ea-body" key={step}>
+        {shows("name") && (
           <div className="ea-two">
             {text("name", "Your name", "text", "name")}
             {text("email", "Email", "email", "email")}
           </div>
-          {choice("role", "What describes you best?", ROLES)}
-          {choice("teamSize", "How many people would use it?", TEAM_SIZES)}
-          {text("link", "Your channel, show or website", "url", "url", true, "https://")}
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="ea-body">
-          {multi("content", "What do you make?", CONTENT, "Pick all that apply.")}
-          {multi("platforms", "Where does it get posted?", PLATFORMS, "Pick all that apply.", true)}
-          {choice("volume", "Roughly how much do you record each week?", VOLUMES)}
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="ea-body">
-          {choice("hosting", "Where would it run?", HOSTING)}
-          {choice("toolkit", "Do you run the NCA Toolkit already?", TOOLKIT, true)}
-          {multi("editors", "Where do you finish videos?", EDITORS, "Pick all that apply.", true)}
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="ea-body">
-          {multi("jobs", "Which jobs should run by themselves?", JOBS, "Pick all that apply, or describe it below.")}
-          <div className="ea-q">
-            <label htmlFor="ea-details">
-              The first automation you’d want, in your words<span className="opt"> (optional if you picked jobs)</span>
+        )}
+        {shows("role") && choice("role", "What describes you best?", ROLES)}
+        {shows("teamSize") && choice("teamSize", "How many people would use it?", TEAM_SIZES)}
+        {shows("link") && text("link", "Your channel, show or website", "url", "url", true, "https://")}
+        {shows("content") && multi("content", "What do you make?", CONTENT, "Pick all that apply.")}
+        {shows("platforms") && multi("platforms", "Where does it get posted?", PLATFORMS, "Pick all that apply.", true)}
+        {shows("volume") && choice("volume", "Roughly how much do you record each week?", VOLUMES)}
+        {shows("source") && (
+          <>
+            {choice("source", "Where did you hear about it?", SOURCES, true)}
+            <label className="ea-consent">
+              <input
+                type="checkbox"
+                name="newsletter"
+                checked={data.newsletter === true}
+                onChange={(e) => setData((d) => ({ ...d, newsletter: e.target.checked }))}
+              />
+              <span>{NEWSLETTER_WORDING}</span>
             </label>
-            <textarea
-              id="ea-details"
-              name="details"
-              rows={4}
-              value={data.details}
-              placeholder="Every new episode in my folder: transcript, MP3, cut the silences and 9:16 clips with my captions"
-              onChange={(e) => set("details", e.target.value)}
-            />
-          </div>
-          {choice("source", "Where did you hear about it?", SOURCES, true)}
-          <label className="ea-consent">
-            <input
-              type="checkbox"
-              name="newsletter"
-              checked={data.newsletter === true}
-              onChange={(e) => setData((d) => ({ ...d, newsletter: e.target.checked }))}
-            />
-            <span>{NEWSLETTER_WORDING}</span>
-          </label>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       <div className="hp" aria-hidden="true">
         <label htmlFor="ea-website">Website</label>
@@ -313,7 +285,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
           {last ? (status.kind === "sending" ? "Sending…" : "Join the beta") : "Next"}
         </button>
         <span className="ea-count" aria-hidden="true">
-          {step + 1} of {STEPS.length}
+          {step + 1} of {SCREENS.length}
         </span>
       </div>
     </form>

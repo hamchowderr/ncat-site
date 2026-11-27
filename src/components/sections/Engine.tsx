@@ -7,17 +7,17 @@ import { Reveal } from "@/components/Reveal";
 export const WAYS: { name: string; how: string; leaves: string; ours?: boolean }[] = [
   {
     name: "The engine alone",
-    how: "Send requests to the toolkit's API from your own scripts.",
+    how: "Run FFmpeg yourself, from your own scripts.",
     leaves: "Every new job is new code, and every failure is yours to catch.",
   },
   {
     name: "An AI agent on your computer",
-    how: "Ask Claude Code or another agent to edit each video through the toolkit or FFmpeg.",
+    how: "Ask Claude Code or another agent to edit each video with FFmpeg.",
     leaves: "Sitting with it every time, using up your plan's limits or API credits, laptop open.",
   },
   {
     name: "n8n with the engine",
-    how: "It comes with the toolkit, though many people never set it up.",
+    how: "Connect each editing step yourself in an automation tool.",
     leaves: "Wiring each request and typing expressions by hand, with no library, review or brand settings.",
   },
   {
@@ -52,8 +52,8 @@ export function Engine() {
               FFmpeg underneath. It has cut, resized, captioned and converted video for over 20 years, and it costs nothing to run.
             </p>
             <p>
-              The NCA Toolkit puts FFmpeg and transcription behind an API on your own server. It is free and open source, and it has no screens:
-              no accounts, no schedule, nothing that runs on its own. Takewon is the fine-tuned shell we built around it, so the engine runs your
+              Free, open-source tools put FFmpeg and transcription to work on your own server, but on their own they have no screens:
+              no accounts, no schedule, nothing that runs on its own. Takewon is the fine-tuned shell we built around them, so the engine runs your
               content by itself. You pay for the shell, never for the processing.
             </p>
           </Reveal>

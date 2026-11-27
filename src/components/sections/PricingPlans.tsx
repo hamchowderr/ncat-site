@@ -6,7 +6,7 @@ const SELF = [
   "Your own version of the platform",
   "Runs on a rented server or your own always-on machine, such as a Mac Mini",
   "The agent that sets up your automations, plus templates, the canvas, files and outputs",
-  "Unlimited runs on your toolkit, no meter",
+  "Unlimited runs on your own server, no meter",
   "Team workspace, brand set once, approvals and alerts",
   "Export to Premiere Pro, DaVinci Resolve, Final Cut Pro and CapCut",
   "One price for your whole team, whatever its size",
@@ -42,7 +42,7 @@ export function PricingPlans() {
             </h2>
             <p className="plan-price">One-time purchase</p>
             <p className="plan-tba">Price announced at launch</p>
-            <p className="plan-desc">Takewon and the cohort come together as one purchase. Runs on the NCA Toolkit you host.</p>
+            <p className="plan-desc">Takewon and the cohort come together as one purchase. Runs on a server you host.</p>
             <a className="btn primary" href="#early">
               Join the beta
             </a>
@@ -58,7 +58,7 @@ export function PricingPlans() {
             </h2>
             <p className="plan-price">Credits</p>
             <p className="plan-tba">Details coming</p>
-            <p className="plan-desc">Don’t want to manage a server? We run the toolkit for you.</p>
+            <p className="plan-desc">Don’t want to manage a server? We run it for you.</p>
             {TRIAL ? (
               <a className="btn ghost" href={TRIAL}>
                 {TRIAL_LABEL}

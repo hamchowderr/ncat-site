@@ -87,14 +87,17 @@ test("navigation reaches pricing and back home", async ({ page, isMobile }) => {
 async function answerFirstSteps(form: import("@playwright/test").Locator) {
   await form.getByLabel("Your name").fill("Ava Reyes");
   await form.getByLabel("Email").fill("ava@studio.co");
+  const next = () => form.getByRole("button", { name: "Next" }).click();
+  await next();
   await form.getByLabel("Editing agency", { exact: true }).check();
+  await next();
   await form.getByLabel("2 to 5", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
+  await next();
   await form.getByLabel("Podcasts", { exact: true }).check();
+  await next();
+  await next();
   await form.getByLabel("5 to 20 hours", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
-  await form.getByLabel("A rented server", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
+  await next();
 }
 
 test("early-access form checks each step, then sends", async ({ page }) => {
@@ -110,11 +113,16 @@ test("early-access form checks each step, then sends", async ({ page }) => {
     await r.fulfill({ json: { ok: true } });
   });
   await answerFirstSteps(form);
-  await expect(form.getByRole("heading", { name: /What to automate/ })).toBeVisible();
-  await form.getByLabel("Cut out silences", { exact: true }).check();
+  await expect(form.getByRole("heading", { name: /Last thing/ })).toBeVisible();
+  // Chowderr 2026-11-26: nothing is switched on from the answers, so no jobs question
+  await expect(form.getByText(/Which jobs should run/)).toHaveCount(0);
+  // Chowderr 2026-11-27: nor where it would run or which editor they finish in
+  await expect(form.getByText(/Where would it run|Where do you finish videos/)).toHaveCount(0);
+  await form.getByLabel("The KINN", { exact: true }).check();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.getByRole("status")).toContainText("You’re on the beta list");
-  expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
+  expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], source: "kinn" });
+  expect(sent.hosting).toBe("");
 });
 
 test("tapping an answer in the closing steps opens the form with it picked", async ({ page }) => {
@@ -128,7 +136,6 @@ test("tapping an answer in the closing steps opens the form with it picked", asy
     await r.fulfill({ json: { ok: true } });
   });
   await answerFirstSteps(form);
-  await form.getByLabel("Cut out silences", { exact: true }).check();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.getByRole("status")).toContainText("You’re on the beta list");
   expect(sent.content).toEqual(expect.arrayContaining(["streams", "podcasts"]));
@@ -141,8 +148,8 @@ test("the closing steps fill in one after another once they are in view", async 
   await expect(steps).toHaveClass(/is-in/);
   await expect(page.locator(".early-step.is-done")).toHaveCount(1, { timeout: 5000 });
   await expect(page.locator(".early-step").first().locator(".fill").first()).toHaveText("Ava Reyes");
-  await expect(page.locator(".early-step.is-done")).toHaveCount(4, { timeout: 8000 });
-  await expect(page.locator(".early-answer.is-picked")).toHaveCount(3);
+  await expect(page.locator(".early-step.is-done")).toHaveCount(3, { timeout: 8000 });
+  await expect(page.locator(".early-answer.is-picked")).toHaveCount(2);
   // the picked answers stay real buttons that open the form
   await page.locator(".early-answer.is-picked").first().click();
   await expect(page.locator("dialog[open] form")).toBeVisible();
@@ -611,9 +618,9 @@ test("the Editing with AI tab says what it costs today and what changes", async 
   await expect(panel.locator(".case-outs li")).toHaveCount(4);
 });
 
-test("the FAQ answers what you pay for when the toolkit is free", async ({ page }) => {
+test("the FAQ answers what you pay for when the editing engine is free", async ({ page }) => {
   await page.goto("/");
-  const q = page.getByText("If the NCA Toolkit is free, what am I paying for?");
+  const q = page.getByText("If the editing engine is free, what am I paying for?");
   await q.scrollIntoViewIfNeeded();
   await q.click();
   await expect(page.getByText(/You never pay for the processing itself/)).toBeVisible();
@@ -654,10 +661,10 @@ test("the page ends on one centred ask, with the button before the email address
   expect(Math.abs(btn.x + btn.width / 2 - vw / 2)).toBeLessThan(24);
   const mail = early.locator(".socials a");
   await expect(mail).toHaveCount(1);
-  await expect(mail).toHaveAttribute("href", "mailto:hello@takewon.com");
+  await expect(mail).toHaveAttribute("href", "mailto:support@takewon.com");
   await expect(mail).toBeVisible();
-  await expect(page.locator("#faq a[href^='mailto:']")).toHaveText("hello@takewon.com");
-  await expect(page.locator("footer.foot").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "mailto:hello@takewon.com");
+  await expect(page.locator("#faq a[href^='mailto:']")).toHaveText("support@takewon.com");
+  await expect(page.locator("footer.foot").getByRole("link", { name: "Contact" })).toHaveAttribute("href", "mailto:support@takewon.com");
 });
 
 test("the feeds section shows the agent badge and the brand every clip carries, inside the screen", async ({ page }) => {
@@ -821,3 +828,13 @@ test("the AI apps page has every app, n8n too, sign in, with no API keys to make
   await expect(page.getByText("There are no API keys to make or look after.")).toBeVisible();
   await expect(page.locator("main")).not.toContainText("Bearer");
 });
+
+// Chowderr 2026-11-26: the toolkit is not named anywhere on the site, except the About story
+// and the licence note in the terms.
+for (const path of ["/", "/pricing", "/support", "/privacy", "/docs/ai-apps"]) {
+  test(`${path} never names the toolkit`, async ({ page }) => {
+    await page.goto(path);
+    const text = await page.evaluate(() => document.body.innerText + " " + document.title + " " + [...document.querySelectorAll("[alt],[aria-label],meta[content]")].map((e) => e.getAttribute("alt") ?? e.getAttribute("aria-label") ?? e.getAttribute("content")).join(" "));
+    expect(text).not.toMatch(/toolkit/i);
+  });
+}

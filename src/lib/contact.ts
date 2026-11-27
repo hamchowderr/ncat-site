@@ -1,5 +1,5 @@
 /** The one address the site gives for questions, sales and support. */
-export const CONTACT_EMAIL = "hello@takewon.com";
+export const CONTACT_EMAIL = "support@takewon.com";
 export const CONTACT_HREF = `mailto:${CONTACT_EMAIL}`;
 
 /** The two talk pages: the only resources the site links to. */

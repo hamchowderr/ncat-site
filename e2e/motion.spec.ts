@@ -308,15 +308,17 @@ async function signUp(page: import("@playwright/test").Page) {
   const form = page.locator("dialog[open] form");
   await form.getByLabel("Your name").fill("Ava Reyes");
   await form.getByLabel("Email").fill("ava@studio.co");
+  const next = () => form.getByRole("button", { name: "Next" }).click();
+  await next();
   await form.getByLabel("Editing agency", { exact: true }).check();
+  await next();
   await form.getByLabel("2 to 5", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
+  await next();
   await form.getByLabel("Podcasts", { exact: true }).check();
+  await next();
+  await next();
   await form.getByLabel("1 to 5 hours", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
-  await form.getByLabel("A rented server", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
-  await expect(form.getByLabel(/in your words/i)).toHaveValue("I ran my-first-video.mp4, 35 s through the demo.");
+  await next();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.locator("dialog[open]").getByRole("status")).toContainText("You’re on the beta list");
   await page.locator("dialog[open]").getByRole("button", { name: "Close" }).click();
@@ -418,8 +420,10 @@ test("every Join the beta button opens the pop-up, and Escape closes it", async 
   const box = (await page.locator("dialog[open]").boundingBox())!;
   const vp = page.viewportSize()!;
   expect(box.x).toBeGreaterThanOrEqual(0);
-  expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
-  expect(box.height).toBeLessThanOrEqual(vp.height);
+  // On phones the pop-up fills the screen (100dvh), which can land a hair over
+  // the viewport height from sub-pixel rounding; allow under one pixel.
+  expect(box.x + box.width).toBeLessThanOrEqual(vp.width + 0.5);
+  expect(box.height).toBeLessThanOrEqual(vp.height + 0.5);
   await page.keyboard.press("Escape");
   await page.goto("/pricing#early");
   await expect(page.locator("dialog[open] form")).toBeVisible();

@@ -13,7 +13,7 @@ describe("Engine and shell", () => {
     render(<Engine />);
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Free engine. Fine-tuned shell.");
     const copy = document.querySelector(".engine-text")!.textContent!;
-    expect(copy).toMatch(/free and open source/);
+    expect(copy).toMatch(/Free, open-source tools/);
     expect(copy).toMatch(/no screens/);
     expect(copy).toMatch(/You pay for the shell, never for the processing/);
   });
@@ -32,10 +32,10 @@ describe("Engine and shell", () => {
     expect(WAYS.filter((w) => w.ours)).toHaveLength(1);
   });
 
-  it("names the AI agent way's real costs and says n8n comes with the toolkit", () => {
-    render(<Engine />);
+  it("names the AI agent way's real costs and never names the toolkit", () => {
+    const { container } = render(<Engine />);
     expect(screen.getByText(/using up your plan's limits or API credits/)).toBeInTheDocument();
-    expect(screen.getByText(/It comes with the toolkit, though many people never set it up/)).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/toolkit/i);
   });
 
   it("never calls it just a dashboard or says no server is needed", () => {
@@ -78,12 +78,14 @@ describe("Use cases", () => {
 });
 
 describe("FAQ and pricing", () => {
-  it("answers what you pay for, the AI agent question and the n8n question", () => {
+  it("answers what you pay for, the AI agent question and the n8n question, never naming the toolkit", () => {
     const qs = FAQ.map((f) => f.q);
-    expect(qs).toContain("If the NCA Toolkit is free, what am I paying for?");
-    expect(qs).toContain("Can’t I just edit with an AI agent and the toolkit?");
-    expect(qs).toContain("Doesn’t the toolkit come with n8n?");
-    const pay = text(FAQ.find((f) => f.q.startsWith("If the NCA Toolkit is free"))!.a);
+    expect(qs).toContain("If the editing engine is free, what am I paying for?");
+    expect(qs).toContain("Can’t I just edit with an AI agent and FFmpeg?");
+    expect(qs).toContain("Do I need n8n?");
+    // Chowderr 2026-11-26: the toolkit is named only on the About page (and the licence note in the terms)
+    for (const f of FAQ) expect(`${f.q} ${text(f.a)}`).not.toMatch(/toolkit|Stephen/i);
+    const pay = text(FAQ.find((f) => f.q.startsWith("If the editing engine is free"))!.a);
     expect(pay).toMatch(/You never pay for the processing itself/);
     const agent = text(FAQ.find((f) => f.q.startsWith("Can’t I just"))!.a);
     expect(agent).toMatch(/many MCP clients/);

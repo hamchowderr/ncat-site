@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { checkEarlyAccess, earlyAccessEmail, STEPS } from "./early-access";
+import { checkEarlyAccess, earlyAccessEmail, SOURCES, STEPS } from "./early-access";
 
 const full = {
   name: "  Ava Reyes ", email: "ava@studio.co", link: "https://youtube.com/@ava", role: "agency", teamSize: "6-20",
   content: ["podcasts", "client-work"], platforms: ["youtube", "tiktok"], volume: "5-20", hosting: "machine", toolkit: "new",
   editors: ["premiere"], jobs: ["captions", "vertical"], details: "Clips for 12 clients a week", source: "kinn",
 };
+
+describe("where did you hear about it", () => {
+  it("lists Tech Week, not the Claude Code event held during it", () => {
+    // Chowderr 2026-11-27: the Claude Code event was part of a16z Tech Week, so it is not its own option
+    expect(SOURCES.map((s) => s.label)).toEqual(["a16z Tech Week Los Angeles", "The KINN", "Social media", "A friend or colleague", "Somewhere else"]);
+  });
+});
 
 describe("checkEarlyAccess", () => {
   it("accepts a full intake and trims text", () => {
@@ -17,7 +24,7 @@ describe("checkEarlyAccess", () => {
   it("names every missing required answer", () => {
     const r = checkEarlyAccess({});
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["content", "email", "hosting", "jobs", "name", "role", "teamSize", "volume"]);
+    if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["content", "email", "name", "role", "teamSize", "volume"]);
   });
 
   it("checks one step at a time when asked", () => {
@@ -51,7 +58,7 @@ describe("earlyAccessEmail", () => {
     const r = checkEarlyAccess(full);
     if (!r.ok) throw new Error("expected valid");
     const m = earlyAccessEmail(r.value);
-    expect(m.subject).toBe("[Editing agency · 6 to 20 · My own always-on machine, like a Mac Mini] Takewon beta sign-up: Ava Reyes");
+    expect(m.subject).toBe("[Editing agency · 6 to 20] Takewon beta sign-up: Ava Reyes");
     expect(m.text).toContain("THEIR CONTENT\nMakes: Podcasts, Client edits\nPosts to: YouTube, TikTok");
     expect(m.text).toContain("Heard about it from: The KINN");
     expect(m.text).not.toContain("undefined");

@@ -90,7 +90,6 @@ export const JOBS = opts([
 ] as const);
 
 export const SOURCES = opts([
-  { value: "creators-summit", label: "Claude Code Creators Summit" },
   { value: "tech-week", label: "a16z Tech Week Los Angeles" },
   { value: "kinn", label: "The KINN" },
   { value: "social", label: "Social media" },
@@ -135,9 +134,28 @@ const EMAIL = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/;
 export const STEPS: { title: string; fields: Field[] }[] = [
   { title: "About you", fields: ["name", "email", "role", "teamSize", "link"] },
   { title: "Your content", fields: ["content", "platforms", "volume"] },
-  { title: "Your setup", fields: ["hosting", "toolkit", "editors"] },
-  { title: "What to automate", fields: ["jobs", "details", "source"] },
+  { title: "Last thing", fields: ["source"] },
 ];
+
+/**
+ * The screens the form actually shows: one or two questions each, so every screen fits
+ * a phone without scrolling. `section` points into STEPS for the progress bar; `check`
+ * is what must be answered before Next. There are no jobs or setup screens (Chowderr
+ * 2026-11-26/27: nothing is switched on from the answers); a job typed in the home page's
+ * ask bar still comes along as `details`, and old hosting/editors answers are still parsed.
+ */
+export const SCREENS: { section: number; show: Field[]; check: Field[] }[] = [
+  { section: 0, show: ["name", "email"], check: ["name", "email"] },
+  { section: 0, show: ["role"], check: ["role"] },
+  { section: 0, show: ["teamSize", "link"], check: ["teamSize", "link"] },
+  { section: 1, show: ["content"], check: ["content"] },
+  { section: 1, show: ["platforms"], check: ["platforms"] },
+  { section: 1, show: ["volume"], check: ["volume"] },
+  { section: 2, show: ["source"], check: ["source"] },
+];
+
+/** The first screen that asks about one of these fields. */
+export const screenFor = (fields: Field[]) => SCREENS.findIndex((s) => s.check.some((f) => fields.includes(f)));
 
 const REQUIRED_MESSAGES: Partial<Record<Field, string>> = {
   name: "Add your name.",
@@ -146,8 +164,6 @@ const REQUIRED_MESSAGES: Partial<Record<Field, string>> = {
   teamSize: "Pick your team size.",
   content: "Pick at least one kind of content.",
   volume: "Pick roughly how much you record.",
-  hosting: "Pick where it would run, or “Not sure yet”.",
-  jobs: "Pick at least one job, or describe it below.",
 };
 
 export function checkEarlyAccess(raw: unknown, only?: Field[]): Checked {
@@ -183,7 +199,6 @@ export function checkEarlyAccess(raw: unknown, only?: Field[]): Checked {
   for (const [f, msg] of Object.entries(REQUIRED_MESSAGES) as [Field, string][]) {
     if (!want(f)) continue;
     const v = value[f];
-    if (f === "jobs") { if (!value.jobs.length && !value.details) errors.jobs = msg; continue; }
     if (Array.isArray(v) ? !v.length : !v) errors[f] = msg;
   }
   if (want("email") && value.email && !EMAIL.test(value.email)) errors.email = "That email address doesn’t look right.";
@@ -199,11 +214,10 @@ export function earlyAccessEmail(v: EarlyAccessInput) {
   const sections: [string, [string, string][]][] = [
     ["About them", [["Name", v.name], ["Email", v.email], ["Who", label(ROLES, v.role)], ["Team size", label(TEAM_SIZES, v.teamSize)], ["Link", v.link]]],
     ["Their content", [["Makes", labels(CONTENT, v.content)], ["Posts to", labels(PLATFORMS, v.platforms)], ["Records per week", label(VOLUMES, v.volume)]]],
-    ["Their setup", [["Would run it on", label(HOSTING, v.hosting)], ["NCA Toolkit", label(TOOLKIT, v.toolkit)], ["Finishes in", labels(EDITORS, v.editors)]]],
-    ["What to automate", [["Jobs", labels(JOBS, v.jobs)], ["In their words", v.details], ["Heard about it from", label(SOURCES, v.source)], ["Product news", v.newsletter ? "Ticked the box (confirms by email)" : "No"]]],
+    ["Also", [["Jobs", labels(JOBS, v.jobs)], ["Typed in the ask bar", v.details], ["Heard about it from", label(SOURCES, v.source)], ["Product news", v.newsletter ? "Ticked the box (confirms by email)" : "No"]]],
     ...(v.tried ? ([["Tried the demo first", [["On", v.tried]]]] as [string, [string, string][]][]) : []),
   ];
-  const tags = [v.tried ? "Tried the demo" : "", label(ROLES, v.role), label(TEAM_SIZES, v.teamSize), label(HOSTING, v.hosting)].filter(Boolean);
+  const tags = [v.tried ? "Tried the demo" : "", label(ROLES, v.role), label(TEAM_SIZES, v.teamSize)].filter(Boolean);
   const text = sections
     .map(([h, rows]) => [h.toUpperCase(), ...rows.filter(([, x]) => x).map(([k, x]) => `${k}: ${x}`)].join("\n"))
     .join("\n\n");
