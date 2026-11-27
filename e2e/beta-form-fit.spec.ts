@@ -4,7 +4,8 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
  * Chowderr (2026-11-26): on a phone the beta form should never need scrolling. Every
  * screen fits, and Next takes you to the next questions until it's done. This walks all
  * eleven screens on four phones and fails if any screen scrolls, or if the buttons sit
- * far below the questions (2026-11-26: "It does not need to be a giant gap").
+ * far below the questions (2026-11-26: "It does not need to be a giant gap"), or if the
+ * pop-up leaves an empty half-screen under the buttons (2026-11-26, a screenshot of it).
  */
 const PHONES = [
   { name: "small phone (360 x 640)", width: 360, height: 640 },
@@ -32,6 +33,8 @@ const ANSWERS: ((f: Locator) => Promise<void>)[] = [
 ];
 
 async function fits(page: Page) {
+  // let the pop-up's entrance slide finish before measuring where it sits
+  await page.waitForFunction(() => document.querySelector("dialog[open]")!.getAnimations({ subtree: true }).every((a) => a.playState !== "running"));
   return page.evaluate(() => {
     const dialog = document.querySelector("dialog[open]")!;
     const body = dialog.querySelector(".ea-body")!;
@@ -43,7 +46,9 @@ async function fits(page: Page) {
       bodyOverflow: body.scrollHeight - body.clientHeight,
       dialogOverflow: dialog.scrollHeight - dialog.clientHeight,
       navOnScreen: nav.bottom <= innerHeight + 1,
-      fullScreen: Math.abs(dialog.getBoundingClientRect().height - innerHeight) <= 1,
+      // a sheet along the bottom, only as tall as what it holds: no empty space under the buttons
+      atBottom: Math.abs(dialog.getBoundingClientRect().bottom - innerHeight) <= 1,
+      noSpaceBelowButtons: dialog.getBoundingClientRect().bottom - nav.bottom <= 40,
     };
   });
 }
@@ -57,7 +62,7 @@ for (const phone of PHONES) {
     await expect(form).toBeVisible();
     for (let i = 0; i < ANSWERS.length; i++) {
       await expect(form.getByText(`${i + 1} of ${ANSWERS.length}`)).toBeVisible();
-      expect(await fits(page), `screen ${i + 1}`).toEqual({ gapAboveButtons: true, bodyOverflow: 0, dialogOverflow: 0, navOnScreen: true, fullScreen: true });
+      expect(await fits(page), `screen ${i + 1}`).toEqual({ gapAboveButtons: true, bodyOverflow: 0, dialogOverflow: 0, navOnScreen: true, atBottom: true, noSpaceBelowButtons: true });
       await ANSWERS[i](form);
       if (i < ANSWERS.length - 1) await form.getByRole("button", { name: "Next" }).click();
     }
