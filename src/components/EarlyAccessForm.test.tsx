@@ -28,9 +28,6 @@ function fillAll() {
   next();
   pick(/Where do you finish videos/, "Premiere Pro");
   next();
-  pick(/Which jobs should run/, "Captions burned in");
-  next();
-  next();
 }
 
 describe("EarlyAccessForm", () => {
@@ -39,11 +36,14 @@ describe("EarlyAccessForm", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<EarlyAccessForm />);
     expect(screen.getByRole("heading", { name: /Step 1 of 4:\s*About you/ })).toBeInTheDocument();
-    expect(screen.getByText("1 of 11")).toBeInTheDocument();
+    expect(screen.getByText("1 of 9")).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "What describes you best?" })).toBeNull();
     fillAll();
-    expect(screen.getByText("11 of 11")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Step 4 of 4:\s*What to automate/ })).toBeInTheDocument();
+    expect(screen.getByText("9 of 9")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Step 4 of 4:\s*Last thing/ })).toBeInTheDocument();
+    // Chowderr 2026-11-26: nothing is switched on from the answers, so the form never asks which jobs to run
+    expect(screen.queryByRole("group", { name: /Which jobs should run/ })).toBeNull();
+    expect(screen.queryByLabelText(/in your words/)).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Join the beta" }));
     expect(await screen.findByRole("status")).toHaveTextContent("Thanks, Ava. You’re on the beta list.");
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
@@ -57,7 +57,6 @@ describe("EarlyAccessForm", () => {
       volume: "5-20",
       hosting: "machine",
       editors: ["premiere"],
-      jobs: ["captions"],
     });
   });
 
@@ -75,7 +74,6 @@ describe("EarlyAccessForm", () => {
       ["Roughly how much do you record each week?", "5 to 20 hours"],
       ["Where would it run?", "A rented server"],
       [/Where do you finish videos/, "Premiere Pro"],
-      [/Which jobs should run/, "Captions burned in"],
     ];
     next();
     for (const [group, option] of answers) {
@@ -84,9 +82,7 @@ describe("EarlyAccessForm", () => {
       next();
     }
     seen.push(container.textContent ?? "");
-    next();
-    seen.push(container.textContent ?? "");
-    expect(screen.getByText("11 of 11")).toBeInTheDocument();
+    expect(screen.getByText("9 of 9")).toBeInTheDocument();
     for (const text of seen) expect(text).not.toMatch(/toolkit/i);
   });
 
@@ -114,33 +110,6 @@ describe("EarlyAccessForm", () => {
     expect(screen.getByText("That email address doesn’t look right.")).toBeInTheDocument();
   });
 
-  it("counts a job typed in your own words, and asks on that screen when neither is given", () => {
-    render(<EarlyAccessForm />);
-    fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
-    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ava@studio.co" } });
-    next();
-    pick("What describes you best?", "Creator");
-    next();
-    pick("How many people would use it?", "Just me");
-    next();
-    pick("What do you make?", "Podcasts");
-    next();
-    next();
-    pick("Roughly how much do you record each week?", "5 to 20 hours");
-    next();
-    pick("Where would it run?", "A rented server");
-    next();
-    next();
-    next(); // no job picked: that is fine here, they can type it next
-    expect(screen.getByLabelText(/in your words/)).toBeInTheDocument();
-    next();
-    expect(screen.getByText("Go back and pick a job, or describe it here.")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(/in your words/), { target: { value: "Captions on every upload" } });
-    expect(screen.queryByText("Go back and pick a job, or describe it here.")).toBeNull();
-    next();
-    expect(screen.getByRole("group", { name: /Where did you hear about it/ })).toBeInTheDocument();
-  });
-
   it("goes back without losing answers", () => {
     render(<EarlyAccessForm />);
     fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Ava" } });
@@ -154,14 +123,17 @@ describe("EarlyAccessForm", () => {
     expect(screen.getByLabelText("Your name")).toHaveValue("Ava");
   });
 
-  it("takes the job typed in the ask bar", () => {
+  it("sends along the job typed in the home page's ask bar", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
     render(<EarlyAccessForm />);
     act(() => {
       window.dispatchEvent(new CustomEvent(PREFILL_EVENT, { detail: "Caption every upload" }));
     });
     fillAll();
-    fireEvent.click(screen.getByRole("button", { name: "Back" }));
-    expect(screen.getByLabelText(/The first automation you’d want/)).toHaveValue("Caption every upload");
+    fireEvent.click(screen.getByRole("button", { name: "Join the beta" }));
+    await screen.findByRole("status");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).details).toBe("Caption every upload");
   });
 
   it("starts with the answers picked on the page already ticked, and never unticks them", () => {

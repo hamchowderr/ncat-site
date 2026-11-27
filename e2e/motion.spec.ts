@@ -322,9 +322,6 @@ async function signUp(page: import("@playwright/test").Page) {
   await form.getByLabel("A rented server", { exact: true }).check();
   await next();
   await next();
-  await form.getByRole("button", { name: "Next" }).click();
-  await expect(form.getByLabel(/in your words/i)).toHaveValue("I ran my-first-video.mp4, 35 s through the demo.");
-  await form.getByRole("button", { name: "Next" }).click();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.locator("dialog[open]").getByRole("status")).toContainText("You’re on the beta list");
   await page.locator("dialog[open]").getByRole("button", { name: "Close" }).click();

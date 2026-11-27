@@ -93,14 +93,11 @@ describe("early access as a pop-up", () => {
     fireEvent.click(screen.getByLabelText("A rented server"));
     next();
     next();
-    next();
-    expect((screen.getByLabelText(/in your words/i) as HTMLTextAreaElement).value).toBe("I tried the preview on a 35 s video, cut into 5 clips.");
-    next();
     await act(async () => {
       fireEvent.submit(form);
     });
     expect(onSent).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body))).toMatchObject({ tried: "a 35 s video, cut into 5 clips" });
+    expect(JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body))).toMatchObject({ tried: "a 35 s video, cut into 5 clips", details: "I tried the preview on a 35 s video, cut into 5 clips." });
     expect(screen.getByRole("status").textContent).toContain("You’re on the beta list");
   });
 });

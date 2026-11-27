@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { EarlyAccessDialog } from "@/components/EarlyAccessDialog";
 import { Check, Mail } from "lucide-react";
 import { CONTACT_EMAIL, CONTACT_HREF } from "@/lib/contact";
-import { CONTENT, HOSTING, JOBS, STEPS } from "@/lib/early-access";
+import { CONTENT, HOSTING, SOURCES, STEPS } from "@/lib/early-access";
 import { pickEarlyAccess, type Pick } from "@/lib/prefill";
 
 const label = (opts: readonly { value: string; label: string }[], value: string) => opts.find((o) => o.value === value)!.label;
@@ -17,7 +17,7 @@ const PREVIEW: { answers: { pick?: Pick; text: string; fill?: string }[]; shown?
     { pick: { field: "hosting", value: "server" }, text: label(HOSTING, "server") },
     { pick: { field: "hosting", value: "machine" }, text: "My own always-on machine" },
   ] },
-  { answers: ["captions", "silences", "vertical"].map((v) => ({ pick: { field: "jobs", value: v }, text: label(JOBS, v) })) },
+  { answers: ["tech-week", "kinn", "social"].map((v) => ({ pick: { field: "source", value: v }, text: label(SOURCES, v) })) },
 ];
 
 /** The answer each step shows being picked while the steps fill in, one after another. */

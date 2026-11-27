@@ -17,7 +17,7 @@ describe("checkEarlyAccess", () => {
   it("names every missing required answer", () => {
     const r = checkEarlyAccess({});
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["content", "email", "hosting", "jobs", "name", "role", "teamSize", "volume"]);
+    if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["content", "email", "hosting", "name", "role", "teamSize", "volume"]);
   });
 
   it("checks one step at a time when asked", () => {

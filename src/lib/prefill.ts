@@ -2,8 +2,8 @@
 export const PREFILL_EVENT = "early-access:prefill";
 /** Event the step previews fire so the form starts with that answer picked. */
 export const PICK_EVENT = "early-access:pick";
-/** An answer picked before the form opens: a ticked box for content and jobs, the one choice for hosting. */
-export type Pick = { field: "content" | "hosting" | "jobs"; value: string };
+/** An answer picked before the form opens: a ticked box for content, the one choice for hosting and source. */
+export type Pick = { field: "content" | "hosting" | "source" | "jobs"; value: string };
 /** Event that opens the early-access pop-up. */
 export const OPEN_EVENT = "early-access:open";
 

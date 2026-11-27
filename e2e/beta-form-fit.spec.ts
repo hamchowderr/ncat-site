@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 /**
  * Chowderr (2026-11-26): on a phone the beta form should never need scrolling. Every
  * screen fits, and Next takes you to the next questions until it's done. This walks all
- * eleven screens on four phones and fails if any screen scrolls, or if the buttons sit
+ * nine screens on four phones and fails if any screen scrolls, or if the buttons sit
  * far below the questions (2026-11-26: "It does not need to be a giant gap"), or if the
  * pop-up leaves an empty half-screen under the buttons (2026-11-26, a screenshot of it).
  */
@@ -26,8 +26,6 @@ const ANSWERS: ((f: Locator) => Promise<void>)[] = [
   async () => {},
   (f) => f.getByLabel("5 to 20 hours", { exact: true }).check(),
   (f) => f.getByLabel("A rented server", { exact: true }).check(),
-  async () => {},
-  (f) => f.getByLabel("Cut out silences", { exact: true }).check(),
   async () => {},
   async () => {},
 ];

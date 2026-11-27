@@ -6,7 +6,6 @@ import {
   CONTENT,
   EDITORS,
   HOSTING,
-  JOBS,
   PLATFORMS,
   ROLES,
   SCREENS,
@@ -61,7 +60,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     // an answer picked on the page before the form opened: tick it, never untick
     const onPick = (e: Event) => {
       const { field, value } = (e as CustomEvent<Pick>).detail;
-      setData((d) => (field === "hosting" ? { ...d, hosting: value } : d[field].includes(value) ? d : { ...d, [field]: [...d[field], value] }));
+      setData((d) => (field === "hosting" || field === "source" ? { ...d, [field]: value } : d[field].includes(value) ? d : { ...d, [field]: [...d[field], value] }));
     };
     window.addEventListener(PREFILL_EVENT, on);
     window.addEventListener(PICK_EVENT, onPick);
@@ -93,7 +92,7 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
     if (!r.ok) {
       setErrors(r.errors);
       const first = screen.check.find((f) => r.errors[f]);
-      if (first) document.getElementById(first === "jobs" && shows("details") ? "ea-details" : `ea-${first}`)?.focus();
+      if (first) document.getElementById(`ea-${first}`)?.focus();
       return false;
     }
     setErrors({});
@@ -245,27 +244,6 @@ export function EarlyAccessForm({ onSent, tried = "" }: { onSent?: (who: SignedU
         {shows("volume") && choice("volume", "Roughly how much do you record each week?", VOLUMES)}
         {shows("hosting") && choice("hosting", "Where would it run?", HOSTING)}
         {shows("editors") && multi("editors", "Where do you finish videos?", EDITORS, "Pick all that apply.", true)}
-        {shows("jobs") && multi("jobs", "Which jobs should run by themselves?", JOBS, "Pick any, or describe it on the next screen.")}
-        {shows("details") && (
-          <div className="ea-q">
-            <label htmlFor="ea-details">
-              The first automation you’d want, in your words<span className="opt"> (optional if you picked jobs)</span>
-            </label>
-            <textarea
-              id="ea-details"
-              name="details"
-              rows={4}
-              value={data.details}
-              placeholder="Every new episode in my folder: transcript, MP3, cut the silences and 9:16 clips with my captions"
-              aria-describedby={errors.jobs ? "ea-jobs-err" : undefined}
-              onChange={(e) => {
-                set("details", e.target.value);
-                if (errors.jobs) setErrors((x) => ({ ...x, jobs: undefined }));
-              }}
-            />
-            {err("jobs")}
-          </div>
-        )}
         {shows("source") && (
           <>
             {choice("source", "Where did you hear about it?", SOURCES, true)}

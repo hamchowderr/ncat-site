@@ -116,13 +116,13 @@ test("early-access form checks each step, then sends", async ({ page }) => {
     await r.fulfill({ json: { ok: true } });
   });
   await answerFirstSteps(form);
-  await expect(form.getByRole("heading", { name: /What to automate/ })).toBeVisible();
-  await form.getByLabel("Cut out silences", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
-  await form.getByRole("button", { name: "Next" }).click();
+  await expect(form.getByRole("heading", { name: /Last thing/ })).toBeVisible();
+  // Chowderr 2026-11-26: nothing is switched on from the answers, so no jobs question
+  await expect(form.getByText(/Which jobs should run/)).toHaveCount(0);
+  await form.getByLabel("The KINN", { exact: true }).check();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.getByRole("status")).toContainText("You’re on the beta list");
-  expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", jobs: ["silences"] });
+  expect(sent).toMatchObject({ role: "agency", teamSize: "2-5", content: ["podcasts"], hosting: "server", source: "kinn" });
 });
 
 test("tapping an answer in the closing steps opens the form with it picked", async ({ page }) => {
@@ -136,9 +136,6 @@ test("tapping an answer in the closing steps opens the form with it picked", asy
     await r.fulfill({ json: { ok: true } });
   });
   await answerFirstSteps(form);
-  await form.getByLabel("Cut out silences", { exact: true }).check();
-  await form.getByRole("button", { name: "Next" }).click();
-  await form.getByRole("button", { name: "Next" }).click();
   await form.getByRole("button", { name: "Join the beta" }).click();
   await expect(page.getByRole("status")).toContainText("You’re on the beta list");
   expect(sent.content).toEqual(expect.arrayContaining(["streams", "podcasts"]));
