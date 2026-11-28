@@ -831,7 +831,7 @@ test("the AI apps page has every app, n8n too, sign in, with no API keys to make
 
 // Chowderr 2026-11-26: the toolkit is not named anywhere on the site, except the About story
 // and the licence note in the terms.
-for (const path of ["/", "/pricing", "/support", "/privacy", "/docs/ai-apps"]) {
+for (const path of ["/", "/pricing", "/beta", "/support", "/privacy", "/docs/ai-apps"]) {
   test(`${path} never names the toolkit`, async ({ page }) => {
     await page.goto(path);
     const text = await page.evaluate(() => document.body.innerText + " " + document.title + " " + [...document.querySelectorAll("[alt],[aria-label],meta[content]")].map((e) => e.getAttribute("alt") ?? e.getAttribute("aria-label") ?? e.getAttribute("content")).join(" "));
