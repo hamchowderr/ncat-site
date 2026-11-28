@@ -12,6 +12,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "Features", href: "/#features" },
       { label: "How it works", href: "/#how-it-works" },
       { label: "Pricing", href: "/pricing" },
+      { label: "Beta", href: "/beta" },
       { label: "Questions", href: "/#faq" },
       { label: "Use from AI apps", href: "/docs/ai-apps" },
     ],

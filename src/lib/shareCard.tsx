@@ -51,6 +51,7 @@ export type ShareCard = { eyebrow: string; title: string; line: string; art: Sha
 export const SHARE_CARDS = {
   home: { eyebrow: "Takewon", title: "Your content, social media ready.", line: "One recording in, a clip for every feed out. No fee for each video.", art: "clips" },
   about: { eyebrow: "About Takewon", title: "Built for everyone who hit the same wall.", line: "A free engine, creators tired of paying for every step, and two talks.", art: "talks" },
+  beta: { eyebrow: "The Takewon beta", title: "Help build Takewon.", line: "Free while it’s in beta. Testers invited a few at a time.", art: "clips" },
   pricing: { eyebrow: "Takewon pricing", title: "Pay once. Own your version.", line: "One purchase, a 4-week cohort with Chowderr, no fee for each video.", art: "plan" },
 } satisfies Record<string, ShareCard>;
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { EarlyAccessDialog } from "@/components/EarlyAccessDialog";
+import Link from "next/link";
 import { Check, Mail } from "lucide-react";
 import { CONTACT_EMAIL, CONTACT_HREF } from "@/lib/contact";
 import { CONTENT, SOURCES, STEPS } from "@/lib/early-access";
@@ -63,7 +64,7 @@ export function EarlyAccess() {
         <div className="early-in">
           <h2 id="early-title">Join the beta</h2>
           <p className="early-lede">
-            Takewon is in beta, and I’m inviting testers a few at a time. Three short steps, about two minutes. Tap an answer to start with it picked, and I reply to everyone myself.
+            Takewon is in beta, and I’m inviting testers a few at a time. Three short steps, about two minutes. Tap an answer to start with it picked, and I reply to everyone myself. <Link href="/beta">What the beta involves</Link>
           </p>
           <ol className="early-steps" ref={ref}>
             {STEPS.map((s, i) => (
